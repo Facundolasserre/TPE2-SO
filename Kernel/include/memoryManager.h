@@ -16,5 +16,7 @@ void * mem_alloc(uint32_t s);
 
 void mem_free(void *p);
 
+void fill_stack(uint64_t sp);
+
 
 #endif 

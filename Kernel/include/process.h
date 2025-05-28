@@ -17,14 +17,14 @@ typedef struct {
     uint64_t rip;      // Instruction pointer
     int state;         // READY, RUNNING, BLOCKED
     int priority;      // Prioridad del proceso
-} PCB;
+} Process;
 
-PCB *create_process(int priority, void *entry_point);
-void free_process(PCB *process);
+Process *create_process(int priority, void *entry_point);
+void free_process(Process *process);
 
 //Funciones para gestionar procesos
 void init_process_list(void);
-void add_process(PCB *process);
-int get_process_list(PCB *buffer, int max);
+void add_process(Process *process);
+int get_process_list(Process *buffer, int max);
 
 #endif

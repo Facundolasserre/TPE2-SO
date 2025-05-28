@@ -1,7 +1,7 @@
 #include "process.h"
 
 static uint64_t next_pid = 1;
-static PCB *process_list[MAX_PROCESSES];
+static Process *process_list[MAX_PROCESSES];
 static int process_count = 0;
 
 void init_process_list(void) {
@@ -11,13 +11,13 @@ void init_process_list(void) {
     }
 }
 
-void add_process(PCB *process) {
+void add_process(Process *process) {
     if (process_count < MAX_PROCESSES) {
         process_list[process_count++] = process;
     }
 }
 
-int get_process_list(PCB *buffer, int max) {
+int get_process_list(Process *buffer, int max) {
     int count = 0;
     for (int i = 0; i < process_count && count < max; i++) {
         if (process_list[i] != NULL) {
@@ -27,8 +27,8 @@ int get_process_list(PCB *buffer, int max) {
     return count;
 }
 
-PCB *create_process(int priority, void *entry_point) {
-    PCB *process = (PCB *)mem_alloc(sizeof(PCB));
+Process *create_process(int priority, void *entry_point) {
+    Process *process = (Process *)mem_alloc(sizeof(Process));
     if (!process) return NULL;
 
     process->pid = next_pid++;
@@ -47,7 +47,7 @@ PCB *create_process(int priority, void *entry_point) {
     return process;
 }
 
-void free_process(PCB *process) {
+void free_process(Process *process) {
     if (process) {
         for (int i = 0; i < process_count; i++) {
             if (process_list[i] == process) {
