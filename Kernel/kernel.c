@@ -24,6 +24,7 @@ static const uint64_t PageSize = 0x1000;
 
 static void * const sampleCodeModuleAddress = (void*)0x400000;
 static void * const sampleDataModuleAddress = (void*)0x500000;
+static void * const memoryManagerModuleAdress = (void*)0x300000; //definimos direccion donde trabajara el memorymanager
 
 typedef int (*EntryPoint)();
 
@@ -46,7 +47,8 @@ void * initializeKernelBinary()
 {
 	void * moduleAddresses[] = {
 		sampleCodeModuleAddress,
-		sampleDataModuleAddress
+		sampleDataModuleAddress,
+		memoryManagerModuleAdress
 	};
 
 	loadModules(&endOfKernelBinary, moduleAddresses);

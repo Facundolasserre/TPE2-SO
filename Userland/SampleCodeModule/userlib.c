@@ -3,10 +3,15 @@
 #include <exc_test.h>
 #include <time.h>
 #include <userlib.h>
+#include <test_util.h>
+#include <shell.h> 
+
+#define MAX_BUFF 256 // or any appropriate size
 
 #define STDIN 0
 #define STDOUT 1
 #define STDERR 2
+#define MAX_BLOCKS 254
 
 const Color BLACK = {0, 0, 0};
 const Color WHITE = {255, 255, 255};
@@ -26,6 +31,12 @@ const Color LIGHT_PINK = {0, 100, 244};
 const Color LIGHT_GREEN = {0, 255, 0};
 
 static char buffer[64] = {'0'};
+
+typedef struct MemoryBlock
+{
+	void *address;
+	uint32_t size;
+} MemoryBlock;
 
 int scr_height;
 int scr_width;
@@ -388,4 +399,81 @@ int atoi(const char *str)
 int print_mem(uint64_t mem)
 {
 	return sys_printmem(mem);
+}
+
+uint64_t mm_test(uint64_t argc, char *argv[])
+{
+	MemoryBlock blocks[MAX_BLOCKS];
+	uint8_t block = 0;
+	uint32_t total = 0;
+	uint64_t max_mem;
+
+	if (argc != 1)
+	{
+		printsColor("ERROR: Invalid number of arguments.\n", MAX_BUFF, RED);
+		return -1;
+	}
+
+	if ((max_mem = satoi(argv[0])) <= 0)
+	{
+		printsColor("ERROR: Invalid memory size.\n", MAX_BUFF, RED);
+		return -1;
+	}
+
+	while (block < MAX_BLOCKS && total < max_mem)
+	{
+		blocks[block].size = GetUniform(max_mem - total - 1) + 1;
+		blocks[block].address = sys_mem_alloc(blocks[block].size);
+		
+		if (blocks[block].address)
+		{
+			printsColor("Allocated block: ", MAX_BUFF, GREEN);
+			printDec(blocks[block].size);
+			printsColor(" bytes at address: ", MAX_BUFF, GREEN);
+			printDec((uint64_t)blocks[block].address);
+			prints("\n", MAX_BUFF);
+			total += blocks[block].size;
+			block++;
+		}
+		else
+		{
+			printsColor("ERROR: Memory allocation failed.\n", MAX_BUFF, RED);
+			break; // Salir si la asignación de memoria falla
+		}
+	}
+
+	// Set up
+	uint32_t i;
+	for (i = 0; i < block; i++)
+	{
+		if (blocks[i].address)
+		{
+			sys_mem_init(blocks[i].size);
+		}
+	}
+
+	// Check
+	for (i = 0; i < block; i++)
+	{
+		if (blocks[i].address)
+		{
+			if (!memcheck(blocks[i].address, i, blocks[i].size))
+			{
+				printsColor("ERROR: Memory check failed.\n", MAX_BUFF, RED);
+				return -1;
+			}
+		}
+	}
+
+	// Free
+	for (i = 0; i < block; i++)
+	{
+		if (blocks[i].address)
+		{
+			sys_mem_free(blocks[i].address);
+		}
+	}
+
+	printsColor("Memory Manager Test completed successfully.\n", MAX_BUFF, GREEN);
+	return 0;
 }

@@ -45,4 +45,9 @@ uint64_t sys_scrHeight();
 
 uint64_t sys_drawCursor();
 
+//memorymanager
+void * sys_mem_init(int size);
+void * sys_mem_alloc(uint64_t size);
+void sys_mem_free(void *ptr);
+
 #endif

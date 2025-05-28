@@ -21,6 +21,9 @@ extern const Color LIGHT_YELLOW;
 extern const Color LIGHT_PINK;
 extern const Color LIGHT_GREEN;
 
+#define CHUNK_SIZE 10
+#define CHUNK_COUNT 10
+
 typedef struct Note
 {
     int tone;
@@ -79,8 +82,6 @@ void wait(uint64_t ms);
 void inforeg();
 void test_invopcode();
 void test_zerodiv();
-// void sizePlus();
-// void sizeMinus();
 int print_mem(uint64_t mem);
 void printcColor(char c, Color color);
 
@@ -93,5 +94,7 @@ void drawCursor();
 void welcome();
 
 void registerInfo();
+
+uint64_t mm_test(uint64_t argc, char *argv[]);
 
 #endif /* _USERLIB_H_ */

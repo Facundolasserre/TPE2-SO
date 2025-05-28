@@ -16,6 +16,11 @@ GLOBAL sys_pixelPlus
 GLOBAL sys_playSpeaker
 GLOBAL sys_writeColor
 GLOBAL sys_stopSpeaker
+
+;Agregamos syscalls del memorymanager
+GLOBAL sys_mem_init
+GLOBAL sys_mem_alloc
+GLOBAL sys_mem_free
 section .text
 
 ; Pasaje de parametros en C:
@@ -118,5 +123,21 @@ sys_drawCursor:
 
 sys_writeColor:
     mov rax, 0x11
+    int 80h
+    ret
+
+
+sys_mem_init:
+    mov rax, 0x12
+    int 80h
+    ret
+
+sys_mem_alloc:
+    mov rax, 0x13
+    int 80h
+    ret
+
+sys_mem_free:
+    mov rax, 0x14
     int 80h
     ret
