@@ -2,81 +2,97 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct node * queueNode;
 
-typedef struct node{
-    ;char * path; 
-    size_t size;
-    struct node * next;
-}node;
-
-typedef struct processQueueCDT{
-    queueNode first;
-    queueNode iterator;
-    queueNode last;
-    int (*compare)(size_t, size_t);
-}processQueueCDT;
-
-processQueueADT newProcessQueue(int (*compare)(size_t, size_t)) {
+processQueueADT newProcessQueue() {
     processQueueADT queue = calloc(1, sizeof(processQueueCDT));
-    if (!queue) {
+    if (queue == NULL) {
         fprintf(stderr, "No se pudo alocar memoria para processQueueADT\n");
         return NULL; 
     }
     queue->first = NULL;
     queue->iterator = NULL;
     queue->last = NULL;
-    queue->compare = compare;
+    
     return queue;
 }
 
 
 
-
-static queueNode recursiveAdd(queueNode current, char * path, size_t size_mb,  int (*compare)(size_t, size_t)) {
-    if (current == NULL || compare(size_mb, current->size) < 0) {
-        queueNode newNode = malloc(sizeof(processNode));
-        if (!newNode) {
-            fprintf(stderr, "No se pudo alocar memoria para el nuevo nodo\n");
-            return NULL; 
-        }
-        newNode->path = path;
-        newNode->size = size_mb;
-        newNode->next = current;
-        return newNode; 
-    }
-
-    if(compare(current->size, size_mb) < 0){
-        current->next = recursiveAdd(current->next, path, size_mb, compare);
-    }
-    
-    return current; 
-}
-
-void add(processQueueADT queue, char * path, size_t size_mb) {
-    queueNode newNode = malloc(sizeof(processNode));
-    if (!newNode) {
-        fprintf(stderr, "No se pudo alocar memoria para el nuevo nodo\n");
+void freeProcessQueue(processQueueADT queue) {
+    if (queue == NULL || queue->first == NULL){
+        free(queue);
         return;
     }
-    newNode->path = path;
-    newNode->size = size_mb;
-    newNode->next = NULL;
-
-    queue->first = recursiveAdd(queue->first, path, newNode, queue->compare);
-
-    free(newNode);
+    
+    processNode *  current = queue->first;
+    processNode * next;
+    
+    do{
+        next = current->next;
+        free(current->pcb); //liberar el processCB asociado
+        free(current); // liberar el nodo
+        current = next;
+    }while(current != queue->first);
+    
+    free(queue);// liberar el ultimo nodo
 }
 
-void freeProcessQueue(processQueueADT queue) {
-    queueNode current = queue->first;
-    while (current != NULL) {
-        queueNode nextNode = current->next;
-        free(current);
-        current = nextNode;
+
+
+
+void addProcessToQueue(processQueueADT queue, processCB * pcb) {
+    processNode * new = (processNode*)malloc(sizeof(processNode));
+    if (new == NULL) {
+        fprintf(stderr, "No se pudo alocar memoria para processNode\n");
+        return;
     }
-    free(queue);
+
+    new->pcb = pcb;
+    new->next = NULL;
+    new->prev = NULL;
+
+    if (queue->first == NULL) {
+        // Cola vacía
+        queue->first = new;
+        queue->last = new;
+        new->next = new; // Circular
+        new->prev = new; // Circular
+    } else {
+        // insertar al final de la cola
+        new->prev = queue->last;
+        new->next = queue->first;
+        queue->last->next = new;
+        queue->first->prev = new;
+        queue->last = new; 
+    }
 }
+
+
+
+
+processCB * dequeueProcess(processQueueADT queue) {
+    processNode empty = {0};
+    if (queue == NULL || queue->first == NULL) { //si esta vacia
+        return &empty; 
+    }
+    
+    processNode * nodeToDequeue = queue->first;
+    processCB * pcb = nodeToDequeue->pcb;
+
+   if(queue->first == queue->last) { // solo un nodo en la cola
+        queue->first = NULL;
+        queue->last = NULL;
+    } else {
+        queue->first = nodeToDequeue->next;
+        queue->last->next = queue->first; //circular
+        queue->first->prev = queue->last; 
+    }
+    free(nodeToDequeue); // libero el nodo
+    return pcb; // devuelvo pcb del nodo eliminado
+}
+
+
+
 
 
 void to_begin(processQueueADT queue) {
@@ -87,9 +103,8 @@ int has_next(processQueueADT queue) {
 }
 char * next(processQueueADT queue) {
     if (hasNext(queue)) {
-        char * path = queue->iterator->path;
+       
         queue->iterator = queue->iterator->next;
-        return path;
     }else{
         fprintf(stderr, "No existe el path\n");
         exit(1);

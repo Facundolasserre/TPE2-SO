@@ -3,10 +3,12 @@
 
 #include <stdint.h>
 #include "memoryManager.h"
+#include "processQueue.h"
 
 #define READY 1
 #define RUNNING 2
 #define BLOCKED 3
+#define TERMINATED 4
 #define MAX_PROCESSES 100
 
 
@@ -19,12 +21,15 @@ typedef struct {
     int priority;      // Prioridad del proceso
 } Process;
 
-Process *create_process(int priority, void *entry_point);
-void free_process(Process *process);
+
+Process *createProcess(int priority, void *entry_point, processQueueADT queue,  uint64_t argc, char *argv[]);
+
+void freeProcess(Process *process);
 
 //Funciones para gestionar procesos
-void init_process_list(void);
-void add_process(Process *process);
-int get_process_list(Process *buffer, int max);
+void initProcessList(void);
+void addProcess(Process *process);
+int getProcessList(Process *buffer, int max);
+
 
 #endif
