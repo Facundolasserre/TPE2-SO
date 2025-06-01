@@ -9,7 +9,7 @@ Process *createProcess(int priority, void *entry_point, processQueueADT queue,  
 
     fill_stack(stackPointer,&initProcessWrapper, entry_point, argc, argv);
 
-    Process *process = {PID++, stackPointer,    QUANTUM,    0,    READY};
+    Process *process = {PID++, stackPointer + STACK_SIZE,    QUANTUM,    0,    READY};
                        // PID,    RSP,  assigned_quantum, used_quantum, state
     addProcessToQueue(queue, process);
 }
@@ -23,7 +23,6 @@ void addProcess(Process *process) {
 int getProcessList(Process *buffer, int max) {
    
 }
-
 
 
 void freeProcess(Process *process) {

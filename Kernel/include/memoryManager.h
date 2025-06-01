@@ -9,6 +9,9 @@
 #define CHUNK_COUNT 4096
 #define MEMORY_START 0x300000
 
+#define ALIGNMENT 8
+
+
 
 void * mem_init(int s);
 

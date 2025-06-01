@@ -1,5 +1,7 @@
 GLOBAL scheduling_handler
 
+GLOBAL halt_asm
+
 EXTERN schedule 
 
 section .text
@@ -36,4 +38,16 @@ fill_stack:
     mov rsp, rbp
     pop rbp
 
+    ret
+
+halt_asm:
+    hlt
+    ret
+
+cli_asm:
+    cli
+    ret
+
+sti_asm:
+    sti
     ret

@@ -7,7 +7,7 @@ int size, current;
 void * free_ptrs[CHUNK_COUNT];
 
 void * mem_init(int s){
-    start = (void*)MEMORY_START;
+    start = ((uintptr_t)(MEMORY_START) + ((ALIGNMENT) - ((uintptr_t)(MEMORY_START) % (ALIGNMENT))));
     size = s;
     current = 0;
     for(int i=0; i< CHUNK_COUNT; i++){
@@ -17,11 +17,24 @@ void * mem_init(int s){
 }
 
 void * mem_alloc(uint32_t s){
-    if(current >= CHUNK_COUNT || s > size){
+    if(current >= CHUNK_COUNT || s > CHUNK_SIZE){
         return NULL;
     }
     return free_ptrs[current++];
+
+    //alineamos direccion del bloque actual
+    void * alignedPtr = (void *) ((uintptr_t)(free_ptrs[current]) + ((ALIGNMENT) - ((uintptr_t)(free_ptrs[current]) % (ALIGNMENT))));
+
+    //verificamos que la lineacion del bloque tenga espacio suficiente
+    if((uintptr_t)(alignedPtr) + s > (uintptr_t)(free_ptrs[current]) + CHUNK_SIZE){
+        return NULL; 
+    }
+
+    current++;
+
+    return alignedPtr;
 }
+
 
 void mem_free(void *ptr){
     if(ptr < start || ptr > start +size){
