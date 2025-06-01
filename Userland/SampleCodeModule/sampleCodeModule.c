@@ -3,7 +3,7 @@
 #include <userlib.h>
 #include <shell.h>
 
-int main() {
+int main(uint64_t argc, char *argv[]) {
 	welcome();
 
 	shell();

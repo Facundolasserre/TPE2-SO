@@ -3,10 +3,7 @@
 #include <processQueue.h>
 #include "process.h"
 
-#define MAX_PROCESSES 100
-
 processQueueADT processQueue = NULL;
-struct Process processes[MAX_PROCESSES];
 processCB currentProcess;
 processQueueADT processQueue = NULL;
 processQueueADT blockedQueue= NULL;
@@ -21,7 +18,11 @@ void initProcessWrapper(program_t program, uint64_t argc, char *argv[]) {
 
     }
     currentProcess.state = TERMINATED; 
-    exit(1); // Terminar el proceso actual
+
+}
+
+void cp_halt(){
+    create_process(0, &halt, processQueue, 0, NULL);
 }
 
 void initSchedule(){
@@ -32,10 +33,6 @@ void initSchedule(){
 
 uint64_t schedule(uint64_t rsp){
     cli_asm();
-
-    if (processQueue == NULL) {
-        processQueue = initSchedule(); //inicializacion de scheduler
-    }
 
     currentProcess.rsp = rsp; // Actualizar el rsp del proceso actual
 

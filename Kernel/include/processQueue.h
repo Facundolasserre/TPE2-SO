@@ -24,15 +24,6 @@ typedef struct processCB{
 } processCB;
 
 
-typedef struct node * queueNode; //puntero a un nodo de la cola
-// estructura de nodo de la cola de procesos
-typedef struct node{
-    processCB * pcb; //punteo al process control block 
-    struct node * prev; //puntero al nodo anterior
-    struct node * next; // puntero al nodo siguiente
-} processNode;
-
-
 //estructura propia de la cola
 typedef struct processQueueCDT{
     queueNode first; //puntero al primer nodo de la cola

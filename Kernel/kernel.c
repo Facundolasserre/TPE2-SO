@@ -1,13 +1,14 @@
 #include <stdint.h>
 #include <string.h>
-#include "lib.h"
+#include <lib.h>
 #include <moduleLoader.h>
 #include <naiveConsole.h>
-#include "videoDriver.h"
-#include "keyboard.h"
-#include "idtLoader.h"
-#include "time.h"
-#include "interrupts.h"
+#include <videoDriver.h>
+#include <keyboard.h>
+#include <idtLoader.h>
+#include <time.h>
+#include <interrupts.h>
+#include <scheduler.h>
 
 
 
@@ -63,7 +64,8 @@ int main()
 	load_idt();
 
 	setCeroChar();
-    ((EntryPoint)sampleCodeModuleAddress)();
+    init_scheduler();
+	create_process(5, sampleCodeModuleAddress, 0, NULL);
 
     while(1) _hlt();
     return 0;

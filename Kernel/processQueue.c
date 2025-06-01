@@ -1,10 +1,11 @@
 #include <processQueue.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <memoryManager.h>
 
 
 processQueueADT newProcessQueue() {
-    processQueueADT queue = calloc(1, sizeof(processQueueCDT));
+    processQueueADT queue = mem_alloc(1, sizeof(processQueueCDT));
     if (queue == NULL) {
         fprintf(stderr, "No se pudo alocar memoria para processQueueADT\n");
         return NULL; 
@@ -20,7 +21,7 @@ processQueueADT newProcessQueue() {
 
 void freeProcessQueue(processQueueADT queue) {
     if (queue == NULL || queue->first == NULL){
-        free(queue);
+        mem_free(queue);
         return;
     }
     
@@ -29,21 +30,20 @@ void freeProcessQueue(processQueueADT queue) {
     
     do{
         next = current->next;
-        free(current->pcb); //liberar el processCB asociado
-        free(current); // liberar el nodo
+        mem_free(current->pcb); //liberar el processCB asociado
+        mem_free(current); // liberar el nodo
         current = next;
     }while(current != queue->first);
     
-    free(queue);// liberar el ultimo nodo
+    mem_free(queue);// liberar el ultimo nodo
 }
 
 
 
 
 void addProcessToQueue(processQueueADT queue, processCB * pcb) {
-    processNode * new = (processNode*)malloc(sizeof(processNode));
+    processNode * new = (processNode*)mem_alloc(sizeof(processNode));
     if (new == NULL) {
-        fprintf(stderr, "No se pudo alocar memoria para processNode\n");
         return;
     }
 
@@ -87,7 +87,7 @@ processCB * dequeueProcess(processQueueADT queue) {
         queue->last->next = queue->first; //circular
         queue->first->prev = queue->last; 
     }
-    free(nodeToDequeue); // libero el nodo
+    mem_free(nodeToDequeue); // libero el nodo
     return pcb; // devuelvo pcb del nodo eliminado
 }
 

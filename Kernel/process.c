@@ -12,6 +12,7 @@ Process *createProcess(int priority, void *entry_point, processQueueADT queue,  
     Process *process = {PID++, stackPointer + STACK_SIZE,    QUANTUM,    0,    READY};
                        // PID,    RSP,  assigned_quantum, used_quantum, state
     addProcessToQueue(queue, process);
+    return process.pid;
 }
 
 
