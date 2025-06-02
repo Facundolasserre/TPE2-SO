@@ -9,7 +9,7 @@
 #include <time.h>
 #include <interrupts.h>
 #include <scheduler.h>
-
+#include <memoryManager.h>
 
 
 extern uint8_t text;
@@ -61,11 +61,17 @@ void * initializeKernelBinary()
 
 int main()
 {	
+	_cli();
 	load_idt();
 
 	setCeroChar();
+
+	mem_init(memoryManagerModuleAdress);
+
     init_scheduler();
 	create_process(5, sampleCodeModuleAddress, 0, NULL);
+
+	_sti();
 
     while(1) _hlt();
     return 0;

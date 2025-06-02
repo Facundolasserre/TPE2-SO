@@ -24,7 +24,7 @@ static void setup_IDT_entry(int index, uint64_t offset);
 void load_idt()
 {
   // Clear Interruptions
-  _cli();
+  //_cli();
 
   // Load IDT
   setup_IDT_entry(0x21, (uint64_t)&interrupt_keyboardHandler);
@@ -42,7 +42,7 @@ void load_idt()
   picSlaveMask(0xFF);
 
   // Start Interruptions
-  _sti();
+  //_sti();
 }
 
 static void setup_IDT_entry(int index, uint64_t offset)

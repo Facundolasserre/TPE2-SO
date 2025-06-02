@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <processQueue.h>
 
-typedef int64_t (*program_t)(uint64_t argc, char *argv[]);
+typedef uint64_t (*program_t)(uint64_t argc, char *argv[]);
 
 void halt_asm();
 
@@ -19,17 +19,36 @@ void sti_asm();
 
 void scheduling_handler();
 
-// ESTAS SON LAS NUEVAS, CHEQUEAR
 void init_scheduler();
+
 uint64_t create_process(int priority, program_t program, uint64_t argc, char *argv[]);
+
+uint64_t create_process_state(int priority, program_t program, int state, uint64_t argc, char *argv[]);
 
 processQueueADT initSchedule();
 
-uint64_t schedule(uint64_t rsp);
+uint64_t schedule(void* rsp);
 
-void fill_stack(uint64_t sp, uint64_t * initProcessWrapper, program_t entryPoint, uint64_t argc, char * argv[]);
+void fill_stack(uintptr_t sp, void (* initProcessWrapper)(program_t, uint64_t, char**), program_t entryPoint, uint64_t argc, char ** argv);
 
-void initProcessWrapper(program_t entryPoint, uint64_t argc, char * argv[]);
+void initProcessWrapper(program_t entryPoint, uint64_t argc, char ** argv);
 
+void kill_process(uint64_t pid);
+
+void list_processes(char * buffer);
+
+void block_process(uint64_t pid);
+
+void unblock_process(uint64_t pid);
+
+uint64_t get_PID();
+
+void yield();
+
+void cp_halt();
+
+uint64_t createProcess(int priority, program_t program,  uint64_t argc, char *argv[]);
+
+uint64_t create_process_state(int priority, program_t program, int state, uint64_t argc, char *argv[]);
 
 #endif

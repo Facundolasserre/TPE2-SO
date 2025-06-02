@@ -11,7 +11,7 @@
 //process control block (informacion de un proceso)
 typedef struct processCB{ 
     uint64_t pid; 
-    uint64_t rsp;
+    void* rsp;
     int assignedQuantum;
     int usedQuantum;
     enum {
@@ -24,6 +24,7 @@ typedef struct processCB{
 } processCB;
 
 
+
 //estructura propia de la cola
 typedef struct processQueueCDT{
     queueNode first; //puntero al primer nodo de la cola
@@ -31,8 +32,20 @@ typedef struct processQueueCDT{
     queueNode last; //puntero al ultimo nodo de la cola
     int (*compare)(size_t, size_t); //funcion de comparacion para ordenar los nodos
 } processQueueCDT;
+
+typedef struct node{
+    processCB * pcb; //puntero al proceso
+    struct node * next; //puntero al siguiente nodo
+    struct node * prev; //puntero al nodo anterior
+}node_t;
+
+typedef node_t * queueNode;
+
 typedef struct processQueueCDT * processQueueADT;
 
+size_t get_size(processQueueADT queue);
+
+processCB find_pid_dequeue(processQueueADT queue, uint64_t pid);
 
 //crea una nueva cola de procesos, devuelve la cola inicializada o NULL si no se pudo alocar memoria
 processQueueADT newProcessQueue();
@@ -49,8 +62,8 @@ void addProcessToQueue(processQueueADT queue, processCB * pcb);
 
 void toBeginProcess(processQueueADT queue); //coloca el iterador al principio de la cola
 int hasNextProcess(processQueueADT queue);//verifica si la cola tiene mas procesos y devuelve 1 si tiene, 0 si no tiene
-processCB * nextProcess(processQueueADT queue); // devuelve el siguiente proceso de la cola y avanza el iterador
+processCB nextProcess(processQueueADT queue); // devuelve el siguiente proceso de la cola y avanza el iterador
 
-processCB * dequeueProcess(processQueueADT queue); // saca el primer proceso de la cola y lo devuelve, si no hay procesos devuelve NULL
+processCB dequeueProcess(processQueueADT queue); // saca el primer proceso de la cola y lo devuelve, si no hay procesos devuelve NULL
 
 #endif 

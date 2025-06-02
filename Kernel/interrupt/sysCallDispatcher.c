@@ -4,6 +4,8 @@
 #include <time.h>
 #include <sound.h>
 #include <memoryManager.h>
+#include <stdint.h>
+#include <scheduler.h>
 
 #define STDIN 0
 #define STDOUT 1
@@ -177,7 +179,33 @@ static void sys_mem_free(void * ptr){
     return mem_free(ptr);
 }
 
+static uint64_t s_create_process(int priority, program_t program, uint64_t argc, char *argv[]){
+    return create_process(priority, program, argc, argv);
+}
 
+static void s_kill_process(uint64_t pid){
+    kill_process(pid);
+}
+
+static void s_list_processes(char *buf){
+    list_processes(buf);
+}
+
+static uint64_t s_getPID(){
+    return get_pid();
+}
+
+static void s_yield(){
+    yield();
+}
+
+static void s_block_process(uint64_t pid){
+    block_process(pid);
+}
+
+static void s_unblock_process(uint64_t pid){
+    unblock_process(pid);
+}
 
 
 
@@ -243,6 +271,25 @@ uint64_t syscall_dispatcher(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r
         return (uint64_t)sys_mem_alloc(rdi);
     case 20:
         sys_mem_free((void*)rdi);
+    case 21:
+        return s_create_process(rdi, (program_t)rsi, rdx, (char **)r10);
+    case 22:
+        s_kill_process(rdi);
+        return 0;
+    case 23:
+        s_list_processes((char *)rdi);
+        return 0;
+    case 24:
+        return s_getPID();
+    case 25:
+        s_yield();
+        return 0;
+    case 26:
+        s_block_process(rdi);
+        return 0;
+    case 27:
+        s_unblock_process(rdi);
+        return 0;
     default:
         return 0;
     }

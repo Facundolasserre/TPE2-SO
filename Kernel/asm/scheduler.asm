@@ -57,6 +57,7 @@ scheduling_handler:
     out 20h, al
    
     popState
+    pop rax
     iretq
 
 fill_stack:
