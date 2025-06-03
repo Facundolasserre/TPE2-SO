@@ -1,15 +1,8 @@
 #include <processQueue.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <memoryManager.h>
 
-
 typedef struct node * queue_t;
-
-typedef struct queue_CDT{
-    queue_t rear;
-    size_t size;
-}queue_CDT;
 
 typedef struct node{
     processCB pcb; //puntero al proceso
@@ -17,14 +10,19 @@ typedef struct node{
     struct node * prev; //puntero al nodo anterior
 } node_t;
 
+typedef struct processQueueCDT{
+    queue_t rear;
+    size_t size;
+} processQueueCDT;
+
 processQueueADT newProcessQueue() {
-    processQueueADT queue = mem_alloc(1, sizeof(processQueueCDT));
+    processQueueADT queue = mem_alloc(sizeof(processQueueCDT));
     if (queue == NULL) {
         fprintf(stderr, "No se pudo alocar memoria para processQueueADT\n");
         return NULL; 
     }
     queue->size = 0;
-    queue->iterator = NULL;
+    queue->rear = NULL;
     
     return queue;
 }
@@ -36,22 +34,20 @@ size_t get_size(processQueueADT queue) {
 
 
 void freeProcessQueue(processQueueADT queue) {
-    if (queue == NULL || queue->first == NULL){
-        mem_free(queue);
-        return;
+    
+    while(queue->rear != NULL){
+            queue_t temp = queue->rear->next;
+        
+        if(queue->rear == queue->rear->next) { // Solo un nodo en la cola
+            mem_free(queue->rear);
+            queue->rear = NULL;
+        } else {
+            queue->rear->next = temp->next;
+            temp->next->prev = queue->rear;
+            mem_free(temp); // Liberar el nodo eliminado
+        }
     }
-    
-    processNode *  current = queue->first;
-    processNode * next;
-    
-    do{
-        next = current->next;
-        mem_free(current->pcb); //liberar el processCB asociado
-        mem_free(current); // liberar el nodo
-        current = next;
-    }while(current != queue->first);
-    
-    mem_free(queue);// liberar el ultimo nodo
+    mem_free(queue); // Liberar la cola
 }
 
 
@@ -66,19 +62,19 @@ void addProcessToQueue(processQueueADT queue, processCB pcb) {
     queue->size++;
     new->pcb = pcb;
 
-    if (queue->iterator == NULL) {
+    if (queue->rear == NULL) {
 
-        queue->iterator = new;
-        queue->iterator->next = queue->iterator;
-        new->iterator->prev = queue->iterator;
+        queue->rear = new;
+        queue->rear->next = queue->rear;
+        queue->rear->prev = queue->rear;
         return;
 
     }
     // insertar al final de la cola
-    queue_t rear = queue->iterator;
-    iterator->prev->next = new;
-    new->prev = iterator->prev;
-    iterator->prev = new;
+    queue_t rear = queue->rear;
+    rear->prev->next = new;
+    new->prev = rear->prev;
+    rear->prev = new;
     new->next = rear;
 }
 
@@ -86,17 +82,17 @@ void addProcessToQueue(processQueueADT queue, processCB pcb) {
 
 
 processCB dequeueProcess(processQueueADT queue) {
-    if (has_next(queue)){
-        if (queue->iterator == queue->iterator->next) {  // Solo un nodo en la cola
-            processCB pcb = queue->iterator->pcb;
-            mem_free(queue->iterator);
-            queue->iterator = NULL;
+    if (hasNextProcess(queue)){
+        if (queue->rear == queue->rear->next) {  // Solo un nodo en la cola
+            processCB pcb = queue->rear->pcb;
+            mem_free(queue->rear);
+            queue->rear = NULL;
             return pcb;
         }
-        processCB aux = queue->iterator;
-        queue->iterator->prev->next = queue->iterator->next;
-        queue->iterator->next->prev = queue->iterator->prev;
-        queue->iterator = queue->iterator->next;
+        queue_t aux = queue->rear;
+        queue->rear->prev->next = queue->rear->next;
+        queue->rear->next->prev = queue->rear->prev;
+        queue->rear = queue->rear->next;
         queue->size--;
         processCB pcb = aux->pcb;            // Almacenar el PCB antes de liberar
         mem_free(aux);                   // Liberar el nodo eliminado
@@ -108,28 +104,28 @@ processCB dequeueProcess(processQueueADT queue) {
 
 processCB find_pid_dequeue(processQueueADT queue, uint64_t pid){
 
-    if(queue->iterator == NULL){
+    if(queue->rear == NULL){
         return (processCB){0,0,0,0,TERMINATED}; //si esta vacia
     }
 
-    queue_t aux = queue->iterator;
+    queue_t aux = queue->rear;
     do {
         if (aux->pcb.pid == pid) {
             // Si encontramos el proceso con el pid correspondiente
 
             processCB found_pcb = aux->pcb;
 
-            if (aux == queue->iterator && queue->iterator->next == queue->iterator) {
+            if (aux == queue->rear && queue->rear->next == queue->rear) {
                 // Solo un nodo en la cola y es el que buscamos
-                queue->iterator = NULL;
+                queue->rear = NULL;
             } else {
                 // Ajustamos los punteros para eliminar el nodo
                 aux->prev->next = aux->next;
                 aux->next->prev = aux->prev;
 
                 // Si el nodo que estamos eliminando es el rear, lo actualizamos
-                if (aux == queue->iterator) {
-                    queue->iterator = aux->next;
+                if (aux == queue->rear) {
+                    queue->rear = aux->next;
                 }
             }
 
@@ -138,8 +134,8 @@ processCB find_pid_dequeue(processQueueADT queue, uint64_t pid){
             return found_pcb;   // Retornamos el PCB del proceso encontrado
         }
 
-        current = current->next;  // Pasamos al siguiente nodo
-    } while (current != queue->iterator);  // Seguimos mientras no volvamos al inicio
+        aux = aux->next;  // Pasamos al siguiente nodo
+    } while (aux != queue->rear);  // Seguimos mientras no volvamos al inicio
 
     // Si no encontramos el proceso con el pid dado, retornamos un PCB "nulo"
     return (processCB){-1, 0, 0, 0, TERMINATED};
@@ -151,7 +147,7 @@ processCB find_pid_dequeue(processQueueADT queue, uint64_t pid){
 
 
 int hasNextProcess(processQueueADT queue) {
-    return queue->iterator != NULL;
+    return queue->rear != NULL;
 }
 
 

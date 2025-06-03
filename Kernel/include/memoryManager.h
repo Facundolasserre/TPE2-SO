@@ -5,11 +5,11 @@
 #include <stdint.h>
 
 
-#define CHUNK_SIZE 128
-#define CHUNK_COUNT 4096
+#define CHUNK_SIZE 4096
+#define CHUNK_COUNT 32768
 #define MEMORY_START 0x300000
 
-#define ALIGNMENT 8
+#define ALIGNMENT 8 //word align
 #define ALIGN_POINTER(ptr, alignment) \
     ((uintptr_t)(ptr) + ((alignment) - ((uintptr_t)(ptr) % (alignment))))
 

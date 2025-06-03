@@ -1,7 +1,7 @@
 #ifndef _SCHEDULER_H
 #define _SCHEDULER_H
 
-#define STACK_SIZE 128
+#define STACK_SIZE 4096
 #define QUANTUM 5
 #define IO_BOUND_QUANTUM 7
 #define CPU_BOUND_QUANTUM 3
@@ -25,11 +25,11 @@ uint64_t create_process(int priority, program_t program, uint64_t argc, char *ar
 
 uint64_t create_process_state(int priority, program_t program, int state, uint64_t argc, char *argv[]);
 
-processQueueADT initSchedule();
+void initSchedule();
 
 uint64_t schedule(void* rsp);
 
-void fill_stack(uintptr_t sp, void (* initProcessWrapper)(program_t, uint64_t, char**), program_t entryPoint, uint64_t argc, char ** argv);
+void *fill_stack(uintptr_t sp, void (* initProcessWrapper)(program_t, uint64_t, char**), program_t entryPoint, uint64_t argc, char ** argv);
 
 void initProcessWrapper(program_t entryPoint, uint64_t argc, char ** argv);
 

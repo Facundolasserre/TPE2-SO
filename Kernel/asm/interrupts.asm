@@ -15,10 +15,9 @@ GLOBAL excRegData
 GLOBAL registerInfo
 GLOBAL hasregisterInfo
 
+EXTERN schedule
 EXTERN timer_handler
 EXTERN keyboard_handler
-
-EXTERN tick_handler
 EXTERN syscall_dispatcher
 EXTERN exception_handler
 EXTERN vDriver_newline
@@ -183,8 +182,9 @@ interrupt_keyboardHandler:
 interrupt_timerHandler:
 	pushState
 
-	call scheduling_handler
-	call timer_handler
+	mov rdi, rsp
+	call schedule 
+	mov rsp, rax 
 
 	endOfHardwareInterrupt
 	popState

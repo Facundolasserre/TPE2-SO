@@ -141,3 +141,38 @@ sys_mem_free:
     mov rax, 0x14
     int 80h
     ret
+
+sys_create_process:
+    mov rax, 0x15
+    int 80h
+    ret
+
+sys_kill_process:
+    mov rax, 0x16
+    int 80h
+    ret
+
+sys_getpid:
+    mov rax, 0x17
+    int 80h
+    ret
+
+sys_block_process:
+    mov rax, 0x18
+    int 80h
+    ret
+
+sys_unblock_process:
+    mov rax, 0x19
+    int 80h
+    ret
+
+sys_yield:
+    mov rax, 0x1A
+    int 80h
+    ret
+
+sys_nice:
+    mov rax, 0x1B
+    int 80h
+    ret

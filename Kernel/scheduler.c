@@ -5,7 +5,6 @@
 
 processQueueADT processQueue = NULL;
 processCB currentProcess;
-processQueueADT processQueue = NULL;
 processQueueADT blockedQueue= NULL;
 static int  PID = 0;
 
@@ -16,22 +15,22 @@ uint64_t createProcess(int priority, program_t program, uint64_t argc, char *arg
 
 //retorna -1 por error
 uint64_t create_process_state(int priority, program_t program, int state, uint64_t argc, char *argv[]){
-    void* stackPointer = (uint64_t)mem_alloc(STACK_SIZE);
+    void* base_pointer = mem_alloc(STACK_SIZE);
 
-    if(stackPointer == NULL) return -1;
-    stackPointer += STACK_SIZE
+    if(base_pointer == NULL) return -1;
+    //base_pointer += STACK_SIZE
 
-    fill_stack(stackPointer,&initProcessWrapper, entry_point, argc, argv);
+    void * stackPointer = fill_stack(base_pointer, initProcessWrapper, program, argc, argv);
 
-    Process process = {
+    processCB newProcess = {
         PID++,
         stackPointer,
         QUANTUM,
         0,
         READY};
                        // PID,    RSP,  assigned_quantum, used_quantum, state
-    addProcessToQueue(queue, process);
-    return process.pid;
+    addProcessToQueue(processQueue, newProcess); //TO DO: CHEQUEAR LO DEL AMPERSAND NO ESTOY SEGURO SI VA O NO
+    return newProcess.pid;
 }
 
 void initProcessWrapper(program_t program, uint64_t argc, char *argv[]) {
@@ -43,6 +42,12 @@ void initProcessWrapper(program_t program, uint64_t argc, char *argv[]) {
     }
     currentProcess.state = TERMINATED; 
 
+}
+
+void halt(){
+    while(1){
+        halt_asm();
+    }
 }
 
 void cp_halt(){
@@ -123,13 +128,13 @@ uint64_t schedule(void* rsp){
             }
 
             
-            addProcessToQueue(processQueue, &currentProcess); // agregar el proceso actual a la cola
+            addProcessToQueue(processQueue, currentProcess); // agregar el proceso actual a la cola
         }
     }else if(currentProcess.state == BLOCKED) {
             if (++currentProcess.usedQuantum < currentProcess.assignedQuantum && currentProcess.assignedQuantum < IO_BOUND_QUANTUM) {
                 currentProcess.assignedQuantum++; // reiniciar quantum para I/O
             } 
-            addProcessToQueue(blockedQueue, &currentProcess); // agregar el proceso actual a la cola
+            addProcessToQueue(blockedQueue, currentProcess); // agregar el proceso actual a la cola
     
      }else{ //proceso TERMINATED
         mem_free(currentProcess.rsp);
@@ -140,7 +145,7 @@ uint64_t schedule(void* rsp){
         createProcessHalt(); // Si no hay más procesos, crear un proceso de parada
     }
 
-    currentProcess = *dequeueProcess(processQueue); // Obtener el siguiente proceso de la cola
+    currentProcess = dequeueProcess(processQueue); // Obtener el siguiente proceso de la cola
     currentProcess.state = RUNNING; // Cambiar el estado del proceso a RUNNING
 
     sti_asm();
@@ -148,8 +153,3 @@ uint64_t schedule(void* rsp){
     
 }
 
-void halt(){
-    while(1){
-        halt_asm();
-    }
-}

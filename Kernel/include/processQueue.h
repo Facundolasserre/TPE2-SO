@@ -7,11 +7,12 @@
 #include <string.h>
 #include <stdlib.h>
 
+typedef struct processQueueCDT * processQueueADT;
 
 //process control block (informacion de un proceso)
 typedef struct processCB{ 
     uint64_t pid; 
-    void* rsp;
+    void *rsp;
     int assignedQuantum;
     int usedQuantum;
     enum {
@@ -22,24 +23,6 @@ typedef struct processCB{
     } state;
 
 } processCB;
-
-
-
-//estructura propia de la cola
-typedef struct processQueueCDT{
-    queueNode first; //puntero al primer nodo de la cola
-    queueNode iterator; //puntero al nodo actual de la iteracion
-    queueNode last; //puntero al ultimo nodo de la cola
-    int (*compare)(size_t, size_t); //funcion de comparacion para ordenar los nodos
-} processQueueCDT;
-
-typedef struct node{
-    processCB * pcb; //puntero al proceso
-    struct node * next; //puntero al siguiente nodo
-    struct node * prev; //puntero al nodo anterior
-}node_t;
-
-typedef node_t * queueNode;
 
 typedef struct processQueueCDT * processQueueADT;
 
@@ -56,7 +39,7 @@ void freeProcessQueue(processQueueADT queue);
 
 
 //agrega el proceso pcb a la cola queue
-void addProcessToQueue(processQueueADT queue, processCB * pcb);
+void addProcessToQueue(processQueueADT queue, processCB pcb);
 
 
 

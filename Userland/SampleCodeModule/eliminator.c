@@ -237,7 +237,7 @@ int eliminator(int playerCount)
 {
 
     clear_scr();
-    playMelody(marioBrosMelody, (sizeof(marioBrosMelody) / sizeof(NoteType)));
+    //playMelody(marioBrosMelody, (sizeof(marioBrosMelody) / sizeof(NoteType)));
     PlayerType player1 = {WIDTH / 3, HEIGHT / 3, RED, 3, {WIDTH / 3, HEIGHT / 3}};
     PlayerType player2 = {WIDTH / 2, HEIGHT / 2, BLUE, 0, {WIDTH / 2, HEIGHT / 2}};
     PlayerType players[2] = {player1, player2};
@@ -268,7 +268,7 @@ int eliminator(int playerCount)
         wait(100);
     }
 
-    playMelody(marioBrosMelodyBackwards, (sizeof(marioBrosMelodyBackwards) / sizeof(NoteType)));
+    //playMelody(marioBrosMelodyBackwards, (sizeof(marioBrosMelodyBackwards) / sizeof(NoteType)));
     return gameOverScreen(loser);
 }
 
