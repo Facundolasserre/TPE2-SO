@@ -1,12 +1,11 @@
-GLOBAL scheduling_handler //tick handler
-
+GLOBAL scheduling_handler ; tick handler
 GLOBAL halt_asm
 GLOBAL cli_asm
 GLOBAL sti_asm
 GLOBAL fill_stack
 EXTERN schedule 
 
-section .text
+section .text:
 
 %macro pushState 0
     push rax
@@ -45,7 +44,7 @@ section .text
 %endmacro
 
 ;visto en clase 5 de mayo
-scheduling_handler: //tick handler
+scheduling_handler: ; tick handler
     pushState
     mov rdi, rsp
     call schedule
@@ -55,7 +54,7 @@ scheduling_handler: //tick handler
     out 20h, al
    
     popState
-    ;pop rax //debug a ver si esta el RIP de initProcessWrapper
+    ;pop rax debug a ver si esta el RIP de initProcessWrapper
     iretq
 
 fill_stack:

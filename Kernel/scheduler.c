@@ -1,12 +1,12 @@
 #include <scheduler.h>
 #include <memoryManager.h>
 #include <processQueue.h>
-#include "process.h"
+#include <process.h>
 
 processQueueADT processQueue = NULL;
 processCB currentProcess;
 processQueueADT blockedQueue= NULL;
-static int  PID = 0;
+uint64_t PID = 0;
 
 //retorna -1 por error
 uint64_t createProcess(int priority, program_t program, uint64_t argc, char *argv[]) {
@@ -62,43 +62,53 @@ void list_processes(char *buffer){
     //8 chars para el state, 3 para el pid, 1 para un espacio y 1 para newline
     buffer = mem_alloc(10 + (get_size(processQueue) + get_size(blockedQueue)) * 13);
     // sprintf(buffer, "PID | STATE\n");
-    while(has_next(processQueue)){
+    while(hasNextProcess(processQueue)){
         processCB process = dequeueProcess(processQueue);
         // sprintf(buffer, "%s %.8s", "TODO", process.pid, process.state);
     }
-    while(has_next(blockedQueue)){
+    while(hasNextProcess(blockedQueue)){
         processCB process = dequeueProcess(processQueue);
         // sprintf(buffer, "%s %.8s", "TODO", process.pid, process.state);
     }
 }
 
-void kill_process(uint64_t pid){
+uint64_t kill_process(uint64_t pid){
     processCB process;
-    if((process = find_pid_dequeue(processQueue, pid)).pid > 0 || (process = find_pid_dequeue(blockedQueue, pid)).pid > 0){
-        process.state = TERMINATED;
+    if(currentProcess.pid == pid){
+        currentProcess.state = TERMINATED;
+    } else if( (process = find_pid_dequeue(processQueue, pid)).pid > 0 || (process = find_pid_dequeue(blockedQueue, pid)).pid > 0 ){
+        mem_free(process.rsp);
+    } else {
+        return -1;
     }
 }
 
-void block_process(uint64_t pid){
+uint64_t block_process(uint64_t pid){
     processCB process;
-    if((process = find_pid_dequeue(processQueue, pid)).pid > 0){
+    // if((process = find_pid_dequeue(processQueue, pid)).pid > 0){
+    if(currentProcess.pid == pid){
+        currentProcess.state = BLOCKED;
+    }else if( (process = find_pid_dequeue(processQueue, pid)).pid > 0 ){
         process.state = BLOCKED;
         addProcessToQueue(blockedQueue, process);
+    } else {
+        return -1;
     }
 }
 
-void unblock_process(uint64_t pid){
+uint64_t unblock_process(uint64_t pid){
     processCB process;
     if((process = find_pid_dequeue(blockedQueue, pid)).pid > 0){
         process.state = READY;
         addProcessToQueue(processQueue, process);
+    } else {
+        return -1;
     }
 }
 
 void yield(){
     currentProcess.state = READY;
 }
-
 
 void initSchedule(){
     processQueue = newProcessQueue(); // Crear una nueva cola de procesos
@@ -142,7 +152,7 @@ uint64_t schedule(void* rsp){
 
     if(!hasNextProcess(processQueue)) {
         //TODO: El halt queda para siempre en la cola
-        createProcessHalt(); // Si no hay más procesos, crear un proceso de parada
+        cp_halt(); // Si no hay más procesos, crear un proceso de parada
     }
 
     currentProcess = dequeueProcess(processQueue); // Obtener el siguiente proceso de la cola

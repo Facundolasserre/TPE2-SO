@@ -21,6 +21,13 @@ GLOBAL sys_stopSpeaker
 GLOBAL sys_mem_init
 GLOBAL sys_mem_alloc
 GLOBAL sys_mem_free
+GLOBAL sys_create_process
+GLOBAL sys_kill
+GLOBAL sys_getPID
+GLOBAL sys_list_processes
+GLOBAL sys_block
+GLOBAL sys_unblock
+GLOBAL sys_yield
 section .text
 
 ; Pasaje de parametros en C:
@@ -147,32 +154,32 @@ sys_create_process:
     int 80h
     ret
 
-sys_kill_process:
+sys_kill:
     mov rax, 0x16
     int 80h
     ret
 
-sys_getpid:
+sys_getPID:
     mov rax, 0x17
     int 80h
     ret
 
-sys_block_process:
+sys_list_processes:
     mov rax, 0x18
     int 80h
     ret
 
-sys_unblock_process:
+sys_block:
     mov rax, 0x19
     int 80h
     ret
 
-sys_yield:
+sys_unblock:
     mov rax, 0x1A
     int 80h
     ret
 
-sys_nice:
+sys_yield:
     mov rax, 0x1B
     int 80h
     ret

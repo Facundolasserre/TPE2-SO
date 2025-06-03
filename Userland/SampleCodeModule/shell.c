@@ -6,6 +6,7 @@
 #include <eliminator.h>
 #include <shell.h>
 #include <ascii.h>
+#include <tests.h>
 
 // initialize all to 0
 char line[MAX_BUFF + 1] = {0};
@@ -40,14 +41,15 @@ void printHelp()
 	printsColor("\n    >invopcode          - testeo invalid op code exception", MAX_BUFF, GREEN);
 	printsColor("\n    >eliminator         - launch ELIMINATOR videogame", MAX_BUFF, GREEN);
 	printsColor("\n    >mem_test            - testeo del memory manager\n", MAX_BUFF, GREEN);
+	printsColor("\n    >schetest           - test scheduler\n", MAX_BUFF, LIGHT_BLUE);
 
 	printsColor("\n    >exit               - exit OS\n", MAX_BUFF, GREEN);
 
 	printc('\n');
 }
 
-const char *commands[] = {"undefined", "help", "ls", "time", "clear", "registersinfo", "zerodiv", "invopcode", "setusername", "whoami", "exit", "ascii", "eliminator", "mem_test"};
-static void (*commands_ptr[MAX_ARGS])() = {cmd_undefined, cmd_help, cmd_help, cmd_time, cmd_clear, cmd_registersinfo, cmd_zeroDiv, cmd_invOpcode, cmd_setusername, cmd_whoami, cmd_exit, cmd_ascii, cmd_eliminator, cmd_memoryManagerTest};
+const char *commands[] = {"undefined", "help", "ls", "time", "clear", "registersinfo", "zerodiv", "invopcode", "setusername", "whoami", "exit", "ascii", "eliminator", "memtest", "schetest"};
+static void (*commands_ptr[MAX_ARGS])() = {cmd_undefined, cmd_help, cmd_help, cmd_time, cmd_clear, cmd_registersinfo, cmd_zeroDiv, cmd_invOpcode, cmd_setusername, cmd_whoami, cmd_exit, cmd_ascii, cmd_eliminator, cmd_memoryManagerTest, cmd_schetest};
 
 void shell()
 {
@@ -169,6 +171,14 @@ void cmd_whoami()
 	prints(username, usernameLength);
 }
 
+void cmd_schetest()
+{
+    char *argv[] = {"10"};
+    if (test_processes(1, argv) == -1){
+		printsColor("test_processes ERROR\n", MAX_BUFF, RED);
+	}
+}
+
 void cmd_help()
 {
 	printsColor("\n\n===== Listing a preview of available commands =====\n", MAX_BUFF, GREEN);
@@ -281,17 +291,11 @@ void cmd_eliminator()
 
 //testeo del memory manager
 void cmd_memoryManagerTest(){
-	prints("\nMemory Manager Test\n", MAX_BUFF);
-
-	sys_mem_init(CHUNK_SIZE * CHUNK_COUNT);
 
 	char *argv[] = {"100000000000000"};
 
 	if (mm_test(1, argv) == -1){
-		printsColor("mem_test ERROR\n", MAX_BUFF, RED);
-	}
-	else{
-		printsColor("mem_test OK\n", MAX_BUFF, GREEN);
+		printsColor("mm_test ERROR\n", MAX_BUFF, RED);
 	}
 }
 

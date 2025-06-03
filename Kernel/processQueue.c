@@ -18,7 +18,6 @@ typedef struct processQueueCDT{
 processQueueADT newProcessQueue() {
     processQueueADT queue = mem_alloc(sizeof(processQueueCDT));
     if (queue == NULL) {
-        fprintf(stderr, "No se pudo alocar memoria para processQueueADT\n");
         return NULL; 
     }
     queue->size = 0;

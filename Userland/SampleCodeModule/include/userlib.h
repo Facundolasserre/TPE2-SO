@@ -23,6 +23,7 @@ extern const Color LIGHT_GREEN;
 
 #define CHUNK_SIZE 10
 #define CHUNK_COUNT 10
+#define MAX_BUFF 254
 
 typedef struct Note
 {

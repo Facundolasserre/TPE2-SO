@@ -180,7 +180,7 @@ static void sys_mem_free(void * ptr){
 }
 
 static uint64_t s_create_process(int priority, program_t program, uint64_t argc, char *argv[]){
-    return create_process(priority, program, argc, argv);
+    return createProcess(priority, program, argc, argv);
 }
 
 static void s_kill_process(uint64_t pid){
@@ -192,7 +192,7 @@ static void s_list_processes(char *buf){
 }
 
 static uint64_t s_getPID(){
-    return get_pid();
+    return get_PID();
 }
 
 static void s_yield(){

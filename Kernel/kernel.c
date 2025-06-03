@@ -68,8 +68,8 @@ int main()
 
 	mem_init(memoryManagerModuleAdress);
 
-    init_scheduler();
-	create_process(5, sampleCodeModuleAddress, 0, NULL);
+    initSchedule();
+	createProcess(5, sampleCodeModuleAddress, 0, NULL);
 
 	_sti();
 

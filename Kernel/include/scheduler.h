@@ -33,13 +33,13 @@ void *fill_stack(uintptr_t sp, void (* initProcessWrapper)(program_t, uint64_t, 
 
 void initProcessWrapper(program_t entryPoint, uint64_t argc, char ** argv);
 
-void kill_process(uint64_t pid);
+uint64_t kill_process(uint64_t pid);
 
 void list_processes(char * buffer);
 
-void block_process(uint64_t pid);
+uint64_t block_process(uint64_t pid);
 
-void unblock_process(uint64_t pid);
+uint64_t unblock_process(uint64_t pid);
 
 uint64_t get_PID();
 
