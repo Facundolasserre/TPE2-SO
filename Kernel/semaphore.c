@@ -1,9 +1,13 @@
 #include <scheduler.h>
-#include <semaphore.h>
+#include "include/semaphore.h"
+#include <memoryManager.h>
+#include <processQueue.h>
+#include <utils.h>
 
-typedef struct semaphoreList{
+
+typedef struct semaphoreList_t{
     semaphore_t semaphore;
-    struct semaphoreList *next;
+    struct semaphoreList_t *next;
 } semaphoreList_t;
 
 semaphoreList_t * semList = NULL;
@@ -16,7 +20,7 @@ semaphoreList_t * add_semaphore(semaphoreList_t **head, char * name, int initial
 
     newSemaphore->semaphore.value = initialValue;
     newSemaphore->semaphore.lock = 0;
-    newSemaphore->semaphore.blockedQueue = new_q();
+    newSemaphore->semaphore.blockedQueue = newProcessQueue();
 
     if (*head == NULL) {
         *head = newSemaphore;
@@ -38,7 +42,7 @@ void remove_sem(semaphoreList_t **head, char * name){
 
     if (temp != NULL && strcmp(temp->semaphore.name, name) == 0) {
         *head = temp->next;
-        free_q(temp->semaphore.blockedQueue);
+        freeProcessQueue(temp->semaphore.blockedQueue);
         mem_free(temp);
         return;
     }
@@ -54,10 +58,10 @@ void remove_sem(semaphoreList_t **head, char * name){
 
     prev->next = temp->next;
 
-    while(has_next(temp->semaphore.blockedQueue)){
+    while(hasNextProcess(temp->semaphore.blockedQueue)){
         unblock_process_from_queue(temp->semaphore.blockedQueue);   
     }
-    free_q(temp->semaphore.blockedQueue);
+    freeProcessQueue(temp->semaphore.blockedQueue);
     mem_free(temp);
 }
 
@@ -73,10 +77,10 @@ semaphoreList_t* find_sem(char * sem_name){
 }
 
 
-int64_t * sem_open(char *sem_name, uint64_t init_value){
+int64_t sem_open(char *sem_name, uint64_t init_value){
     semaphoreList_t * aux = find_sem(sem_name);
     if(aux == NULL)
-        aux = add_sem(&semList, sem_name, init_value);
+        aux = add_semaphore(&semList, sem_name, init_value);
     acquire(aux->semaphore.lock);
     aux->semaphore.value++;
     release(aux->semaphore.lock);
@@ -103,7 +107,7 @@ void sem_wait(char *sem_name){
     if(sem_node->semaphore.value > 0){
         (sem_node->semaphore.value)--;
     } else {
-        block_process_to_queue(currentProcess.pid, sem_node->semaphore.blockedQueue);
+        block_current_process_to_queue(sem_node->semaphore.blockedQueue);
     }
     release(sem_node->semaphore.lock);
 }

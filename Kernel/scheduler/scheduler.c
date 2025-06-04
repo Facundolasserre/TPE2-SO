@@ -14,7 +14,7 @@ processQueueADT blockedReadQueue = NULL; // Cola de procesos bloqueados para lec
 processQueueADT blockedSemaphoreQueue = NULL; // Cola de procesos bloqueados por semáforos
 
 processQueueADT allBlockedQueue = NULL;
-processQueueADT blockedReadQueue = NULL;
+
 
 uint8_t mutexLock = 1;
 int currentSemaphore = 0;

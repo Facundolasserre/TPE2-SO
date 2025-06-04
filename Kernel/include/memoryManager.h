@@ -7,13 +7,12 @@
 
 #define CHUNK_SIZE 4096
 #define CHUNK_COUNT 32768
-#define MEMORY_START 0x300000
+#define MEMORY_START 0xF00000
 
 #define ALIGNMENT 8 //word align
-#define ALIGN_POINTER(ptr, alignment) \
-    ((uintptr_t)(ptr) + ((alignment) - ((uintptr_t)(ptr) % (alignment))))
+#define ALIGN_POINTER(ptr, alignment) ((uintptr_t)(ptr) + ((alignment) - ((uintptr_t)(ptr) % (alignment))))
 
-void * mem_init(int s);
+void * mem_init(void * ptr,int s);
 
 void * mem_alloc(uint32_t s);
 

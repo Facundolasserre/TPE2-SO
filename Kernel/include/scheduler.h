@@ -57,7 +57,7 @@ uint64_t block_process();
 
 uint64_t block_current_process_to_queue(processQueueADT blockedQueue);
 
-uint64_t block_process_to_queue(processQueueADT bloquedQueue);
+uint64_t block_process_to_queue(uint64_t pid, processQueueADT bloquedQueue);
 
 uint64_t unblock_process_from_queue(processQueueADT blockedQueue);
 

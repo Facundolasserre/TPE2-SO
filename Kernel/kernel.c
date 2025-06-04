@@ -9,7 +9,8 @@
 #include <time.h>
 #include <interrupts.h>
 #include <scheduler.h>
-#include <memoryManager.h>
+#include "include/memoryManager.h"
+#define MEM_SIZE 1024*1024
 
 
 extern uint8_t text;
@@ -25,7 +26,7 @@ static const uint64_t PageSize = 0x1000;
 
 static void * const sampleCodeModuleAddress = (void*)0x400000;
 static void * const sampleDataModuleAddress = (void*)0x500000;
-static void * const memoryManagerModuleAdress = (void*)0x300000; //definimos direccion donde trabajara el memorymanager
+static void * const memoryManagerModuleAdress = (void*)0x700000; //definimos direccion donde trabajara el memorymanager
 
 typedef int (*EntryPoint)();
 
@@ -49,12 +50,12 @@ void * initializeKernelBinary()
 	void * moduleAddresses[] = {
 		sampleCodeModuleAddress,
 		sampleDataModuleAddress,
-		memoryManagerModuleAdress
 	};
 
 	loadModules(&endOfKernelBinary, moduleAddresses);
 
 	clearBSS(&bss, &endOfKernel - &bss);
+	mem_init(memoryManagerModuleAdress, MEM_SIZE);
 	return getStackBase();
 }
 
@@ -82,13 +83,10 @@ int main()
 
 	setCeroChar();
 
-	mem_init(memoryManagerModuleAdress);
+	
 
     initScheduler();
 
-	// createProcess(5, &test_process_1, 0, NULL);Add commentMore actions
-	// createProcess(5, &test_process_2, 0, NULL);
-	// createProcess(5, &test_process_3, 0, NULL);
 	createProcess(0, sampleCodeModuleAddress, 0, NULL);
 
 	_sti();

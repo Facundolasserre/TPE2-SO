@@ -166,24 +166,24 @@ static uint64_t sys_stopSpeaker()
 }
 
 //syscalls para semaforos
-static semaphore_t * sys_sem_open(char * name, int init_value){
+static int64_t sys_sem_open(char * name, uint64_t init_value){
     return sem_open(name, init_value);
 }
-static void sys_sem_close(semaphore_t * sem){
-    sem_close(sem);
+static int64_t sys_sem_close(char * name){
+    return sem_close(name);
 }
-static void sys_sem_wait(semaphore_t * sem){
-    sem_wait(sem);
+static void sys_sem_wait(char * name){
+    sem_wait(name);
 }
-static void sys_sem_post(semaphore_t * sem){
-    sem_post(sem);
+static int64_t sys_sem_post(char * name){
+    return sem_post(name);
 }
 
 
 
 //nuevas syscalls para memorymanager
-static void * sys_mem_init(int size){
-    return mem_init(size);
+static void * sys_mem_init(void *ptr, int size){
+    return mem_init(ptr, size);
 }
 
 static void * sys_mem_alloc(uint64_t size){
@@ -281,7 +281,7 @@ uint64_t syscall_dispatcher(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r
         color.b = b;
         return sys_writeColor(rdi, (char)rsi, color);
     case 18: 
-        return (uint64_t)sys_mem_init(rdi);
+        return (uint64_t)sys_mem_init((void*)rdi, rsi);
     case 19: 
         return (uint64_t)sys_mem_alloc(rdi);
     case 20:
@@ -308,13 +308,13 @@ uint64_t syscall_dispatcher(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r
     case 28:
         return (uint64_t)sys_sem_open((char *)rdi, rsi);
     case 29:
-        sys_sem_close((semaphore_t *)rdi);
+        sys_sem_close((char *)rdi);
         return 0;
     case 30:
-        sys_sem_wait((semaphore_t *)rdi);
+        sys_sem_wait((char *)rdi);
         return 0;
     case 31:
-        sys_sem_post((semaphore_t *)rdi);
+        sys_sem_post((char *)rdi);
         return 0;
     default:
         return 0;

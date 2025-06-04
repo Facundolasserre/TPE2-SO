@@ -2,10 +2,12 @@
 #define _SEMAPHORE_H
 
 #include <stdint.h>
+#include <interrupts.h>
+#include <processQueue.h>
 
 #define SEM_NAME_SIZE 32
 
-typedef struct{
+typedef struct {
     lock_t lock;
     char name[SEM_NAME_SIZE];
     int value;

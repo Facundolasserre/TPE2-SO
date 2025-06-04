@@ -102,3 +102,51 @@ cd Toolchain/
 make clean all
 cd ..
 make clean all
+cd ROOT
+cd root
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make celan all
+make clean all
+cd ..
+mkae clean all
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean al
+cd ..
+make clean all
