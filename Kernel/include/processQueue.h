@@ -12,8 +12,9 @@ typedef struct processQueueCDT * processQueueADT;
 typedef struct processCB{ 
     uint64_t pid; 
     void *rsp;
-    int assignedQuantum;
-    int usedQuantum;
+    uint8_t priority;
+    uint8_t assignedQuantum;
+    uint8_t usedQuantum;
     enum {
         RUNNING,
         READY,

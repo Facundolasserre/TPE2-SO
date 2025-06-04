@@ -5,8 +5,8 @@
 #define QUANTUM 5
 #define IO_BOUND_QUANTUM 7
 #define CPU_BOUND_QUANTUM 3
-#define MAX_SEMAPHORES (CHUNK_SIZE / sizeof(semaphore_t))
-#define SEM_NAME_SIZE 32
+// #define MAX_SEMAPHORES (CHUNK_SIZE / sizeof(semaphore_t))
+// #define SEM_NAME_SIZE 32
 
 
 
@@ -18,12 +18,14 @@
 
 typedef uint64_t (*program_t)(uint64_t argc, char *argv[]);
 
-typedef struct{
-    lock_t lock;
-    char name[SEM_NAME_SIZE];
-    int value;
-    processQueueADT blockedQueue;
-} semaphore_t;
+
+// BORRAR
+// typedef struct{
+//     lock_t lock;
+//     char name[SEM_NAME_SIZE];
+//     int value;
+//     processQueueADT blockedQueue;
+// } semaphore_t;
 
 void halt_asm();
 
@@ -31,7 +33,7 @@ void cli_asm();
 
 void sti_asm();
 
-void scheduling_handler();
+// void scheduling_handler();
 
 void init_scheduler();
 
@@ -39,11 +41,11 @@ uint64_t create_process(int priority, program_t program, uint64_t argc, char *ar
 
 uint64_t create_process_state(int priority, program_t program, int state, uint64_t argc, char *argv[]);
 
-void initSchedule();
-
 uint64_t schedule(void* rsp);
 
-void *fill_stack(uintptr_t sp, void (* initProcessWrapper)(program_t, uint64_t, char**), program_t entryPoint, uint64_t argc, char ** argv);
+// void *fill_stack(uintptr_t sp, void (* initProcessWrapper)(program_t, uint64_t, char**), program_t entryPoint, uint64_t argc, char ** argv);
+
+processCB getNextProcess();
 
 void initProcessWrapper(program_t entryPoint, uint64_t argc, char ** argv);
 
@@ -51,9 +53,11 @@ uint64_t kill_process(uint64_t pid);
 
 void list_processes(char * buffer);
 
-uint64_t block_process(uint64_t);
+uint64_t block_process();
 
-uint64_t block_process_to_queue(uint64_t pid, processQueueADT bloquedQueue);
+uint64_t block_current_process_to_queue(processQueueADT blockedQueue);
+
+uint64_t block_process_to_queue(processQueueADT bloquedQueue);
 
 uint64_t unblock_process_from_queue(processQueueADT blockedQueue);
 
@@ -70,9 +74,17 @@ uint64_t createProcess(int priority, program_t program,  uint64_t argc, char *ar
 uint64_t create_process_state(int priority, program_t program, int state, uint64_t argc, char *argv[]);
 
 
-int64_t sem_open(char *sem_id, uint64_t initialValue);
-int64_t sem_close(char * sem_id);
-void sem_wait(char * sem_name);
-int64_t sem_post(char *sem_id);
+// int64_t sem_open(char *sem_id, uint64_t initialValue);
+// int64_t sem_close(char * sem_id);
+// void sem_wait(char * sem_name);
+// int64_t sem_post(char *sem_id);
+
+
+// Queue management
+uint8_t add_priority_queue(processCB process);
+processCB find_dequeue_priority(uint64_t pid);
+
+// Stack management
+void* fill_stack(uintptr_t sp, void (*initProcessWrapper)(program_t, uint64_t, char**), program_t program, uint64_t argc, char** argv);
 
 #endif

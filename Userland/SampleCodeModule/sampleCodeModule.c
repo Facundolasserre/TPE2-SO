@@ -6,8 +6,7 @@
 
 int main(uint64_t argc, char *argv[]) {
 	
-	sys_create_process(5, &shell, 0, argv);
+	shell();
 	
-
 	return 0;
 } 

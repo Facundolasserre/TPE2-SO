@@ -6,6 +6,7 @@
 #include <memoryManager.h>
 #include <stdint.h>
 #include <scheduler.h>
+#include <semaphore.h>
 
 #define STDIN 0
 #define STDOUT 1
@@ -194,7 +195,6 @@ static void sys_mem_free(void * ptr){
 }
 
 static uint64_t s_create_process(int priority, program_t program, uint64_t argc, char *argv[]){
-    int a = argv;
     return createProcess(priority, program, argc, argv);
 }
 

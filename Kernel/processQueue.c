@@ -79,7 +79,7 @@ void addProcessToQueue(processQueueADT queue, processCB pcb) {
 
 processCB dequeueProcess(processQueueADT queue) {
     if (queue->rear == NULL) {
-        return (processCB){-1, 0, 0, 0, TERMINATED}; // Si la cola está vacía
+        return (processCB){-1, 0, 0, 0, 0, TERMINATED}; // Si la cola está vacía
     }
     processCB pcb = queue->rear->next->pcb; // guardamoS el PCB del primer nodo
 
@@ -103,7 +103,7 @@ processCB dequeueProcess(processQueueADT queue) {
 processCB find_pid_dequeue(processQueueADT queue, uint64_t pid){
 
     if(queue->rear == NULL){
-        return (processCB){-1,0,0,0,TERMINATED}; //si esta vacia devuelve un pcb null
+        return (processCB){-1, 0, 0, 0, 0, TERMINATED}; //si esta vacia devuelve un pcb null
     }
 
     queue_t current = queue->rear;
@@ -141,7 +141,7 @@ processCB find_pid_dequeue(processQueueADT queue, uint64_t pid){
     } while (current != queue->rear);  // Seguimos mientras no volvamos al inicio
 
     // Si no encontramos el proceso con el pid dado, retornamos un PCB "nulo"
-    return (processCB){-1, 0, 0, 0, TERMINATED};
+    return (processCB){-1, 0, 0, 0, 0, TERMINATED};
     
 }
 

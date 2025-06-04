@@ -84,12 +84,12 @@ int main()
 
 	mem_init(memoryManagerModuleAdress);
 
-    initSchedule();
+    initScheduler();
 
 	// createProcess(5, &test_process_1, 0, NULL);Add commentMore actions
 	// createProcess(5, &test_process_2, 0, NULL);
 	// createProcess(5, &test_process_3, 0, NULL);
-	createProcess(5, sampleCodeModuleAddress, 0, NULL);
+	createProcess(0, sampleCodeModuleAddress, 0, NULL);
 
 	_sti();
 
