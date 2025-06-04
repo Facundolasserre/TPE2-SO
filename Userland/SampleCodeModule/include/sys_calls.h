@@ -68,4 +68,13 @@ uint64_t sys_unblock(uint64_t pid);
 
 uint64_t sys_yield();
 
+
+//semaphores
+uint64_t sys_sem_open(char* sem_name, int init_value);
+uint64_t sys_sem_close(void *sem);
+
+uint64_t sys_sem_wait(void *sem);
+
+uint64_t sys_sem_post(void *sem);
+
 #endif

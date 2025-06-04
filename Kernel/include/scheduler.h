@@ -5,11 +5,25 @@
 #define QUANTUM 5
 #define IO_BOUND_QUANTUM 7
 #define CPU_BOUND_QUANTUM 3
+#define MAX_SEMAPHORES (CHUNK_SIZE / sizeof(semaphore_t))
+#define SEM_NAME_SIZE 32
+
+
 
 #include <stdint.h>
 #include <processQueue.h>
+#include <memoryManager.h>
+#include <interrupts.h>
+#include <processQueue.h>
 
 typedef uint64_t (*program_t)(uint64_t argc, char *argv[]);
+
+typedef struct{
+    lock_t lock;
+    char name[SEM_NAME_SIZE];
+    int value;
+    processQueueADT blockedQueue;
+} semaphore_t;
 
 void halt_asm();
 
@@ -37,7 +51,11 @@ uint64_t kill_process(uint64_t pid);
 
 void list_processes(char * buffer);
 
-uint64_t block_process(uint64_t pid);
+uint64_t block_process(uint64_t);
+
+uint64_t block_process_to_queue(uint64_t pid, processQueueADT bloquedQueue);
+
+uint64_t unblock_process_from_queue(processQueueADT blockedQueue);
 
 uint64_t unblock_process(uint64_t pid);
 
@@ -50,5 +68,11 @@ void cp_halt();
 uint64_t createProcess(int priority, program_t program,  uint64_t argc, char *argv[]);
 
 uint64_t create_process_state(int priority, program_t program, int state, uint64_t argc, char *argv[]);
+
+
+int64_t sem_open(char *sem_id, uint64_t initialValue);
+int64_t sem_close(char * sem_id);
+void sem_wait(char * sem_name);
+int64_t sem_post(char *sem_id);
 
 #endif

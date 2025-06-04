@@ -164,6 +164,20 @@ static uint64_t sys_stopSpeaker()
     return 1;
 }
 
+//syscalls para semaforos
+static semaphore_t * sys_sem_open(char * name, int init_value){
+    return sem_open(name, init_value);
+}
+static void sys_sem_close(semaphore_t * sem){
+    sem_close(sem);
+}
+static void sys_sem_wait(semaphore_t * sem){
+    sem_wait(sem);
+}
+static void sys_sem_post(semaphore_t * sem){
+    sem_post(sem);
+}
+
 
 
 //nuevas syscalls para memorymanager
@@ -180,6 +194,7 @@ static void sys_mem_free(void * ptr){
 }
 
 static uint64_t s_create_process(int priority, program_t program, uint64_t argc, char *argv[]){
+    int a = argv;
     return createProcess(priority, program, argc, argv);
 }
 
@@ -289,6 +304,17 @@ uint64_t syscall_dispatcher(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r
         return 0;
     case 27:
         s_unblock_process(rdi);
+        return 0;
+    case 28:
+        return (uint64_t)sys_sem_open((char *)rdi, rsi);
+    case 29:
+        sys_sem_close((semaphore_t *)rdi);
+        return 0;
+    case 30:
+        sys_sem_wait((semaphore_t *)rdi);
+        return 0;
+    case 31:
+        sys_sem_post((semaphore_t *)rdi);
         return 0;
     default:
         return 0;

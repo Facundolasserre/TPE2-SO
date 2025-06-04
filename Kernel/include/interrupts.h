@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+typedef uint8_t * lock_t;
+
 void interrupt_keyboardHandler(void);
 void interrupt_timerHandler(void);
 void interrupt_systemCall(void);
@@ -13,13 +15,15 @@ void _cli(void);
 
 void _sti(void);
 
-void _hlt(void);
-
 void picMasterMask(uint8_t mask);
 
 void picSlaveMask(uint8_t mask);
 
 // Termina la ejecución de la cpu.
 void haltcpu(void);
+
+void acquire(lock_t lock);
+
+void release(lock_t lock);
 
 #endif /* INTERRUPS_H_ */

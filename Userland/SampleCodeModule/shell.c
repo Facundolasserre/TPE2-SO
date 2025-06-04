@@ -40,19 +40,24 @@ void printHelp()
 	printsColor("\n    >zerodiv            - testeo divide by zero exception", MAX_BUFF, GREEN);
 	printsColor("\n    >invopcode          - testeo invalid op code exception", MAX_BUFF, GREEN);
 	printsColor("\n    >eliminator         - launch ELIMINATOR videogame", MAX_BUFF, GREEN);
-	printsColor("\n    >mem_test            - testeo del memory manager\n", MAX_BUFF, GREEN);
-	printsColor("\n    >schetest           - test scheduler\n", MAX_BUFF, LIGHT_BLUE);
+	printsColor("\n    >mem_test            - testeo del memory manager", MAX_BUFF, GREEN);
+	printsColor("\n    >schetest           - test scheduler", MAX_BUFF, GREEN);
+	printsColor("\n    >priotest           - priority scheduler", MAX_BUFF, GREEN);
+	printsColor("\n    >testschedulerprocesses - test scheduler processes", MAX_BUFF, GREEN);
+	printsColor("\n    >testsync            - test sync processes", MAX_BUFF, GREEN);
 
 	printsColor("\n    >exit               - exit OS\n", MAX_BUFF, GREEN);
 
 	printc('\n');
 }
 
-const char *commands[] = {"undefined", "help", "ls", "time", "clear", "registersinfo", "zerodiv", "invopcode", "setusername", "whoami", "exit", "ascii", "eliminator", "memtest", "schetest"};
-static void (*commands_ptr[MAX_ARGS])() = {cmd_undefined, cmd_help, cmd_help, cmd_time, cmd_clear, cmd_registersinfo, cmd_zeroDiv, cmd_invOpcode, cmd_setusername, cmd_whoami, cmd_exit, cmd_ascii, cmd_eliminator, cmd_memoryManagerTest, cmd_schetest};
+const char *commands[] = {"undefined", "help", "ls", "time", "clear", "registersinfo", "zerodiv", "invopcode", "setusername", "whoami", "exit", "ascii", "eliminator", "memtest", "schetest", "priotest", "testschedulerprocesses", "testsync"};
+static void (*commands_ptr[MAX_ARGS])() = {cmd_undefined, cmd_help, cmd_help, cmd_time, cmd_clear, cmd_registersinfo, cmd_zeroDiv, cmd_invOpcode, cmd_setusername, cmd_whoami, cmd_exit, cmd_ascii, cmd_eliminator, cmd_memoryManagerTest, cmd_schetest, cmd_priotest, cmd_testschedulerprocesses, cmd_test_sync};
 
 void shell()
 {
+	welcome();
+
 	char c;
 	printPrompt();
 
@@ -173,10 +178,12 @@ void cmd_whoami()
 
 void cmd_schetest()
 {
-    char *argv[] = {"10"};
-    if (test_processes(1, argv) == -1){
-		printsColor("test_processes ERROR\n", MAX_BUFF, RED);
-	}
+    char *argv[] = {"3"};
+    sys_create_process(1, &test_processes, 1, argv);
+}
+
+void cmd_priotest(){
+	test_prio();
 }
 
 void cmd_help()
@@ -294,8 +301,8 @@ void cmd_memoryManagerTest(){
 
 	char *argv[] = {"100000000000000"};
 
-	if (mm_test(1, argv) == -1){
-		printsColor("mm_test ERROR\n", MAX_BUFF, RED);
+	if (test_mm(1, argv) == -1){
+		printsColor("test_mm ERROR\n", MAX_BUFF, RED);
 	}
 }
 
@@ -327,6 +334,14 @@ void cmd_ascii()
 	}
 }
 
+void cmd_testschedulerprocesses()
+{
+	if (test_scheduler_processes() == -1)
+	{
+		printsColor("test_scheduler_processes ERROR\n", MAX_BUFF, RED);
+	}
+}
+
 void newLineUsername()
 {
 	strcpy(username, line);
@@ -342,6 +357,12 @@ void newLineUsername()
 
 	prints("\n", MAX_BUFF);
 	clear_scr();
+}
+
+void cmd_test_sync() {
+    char *argv[] = {"5", "1"};
+	sys_create_process(1, &test_sync, 2, argv);
+	printsColor("CREATED 'test_sync' PROCESS!\n", MAX_BUFF, RED);
 }
 
 void welcome()
@@ -370,7 +391,9 @@ void welcome()
 
 	//playMelody(windowsXPmelody, (sizeof(windowsXPmelody) / sizeof(NoteType)));
 
-	printsColor("\n    Welcome this efficient and simple operating system\n", MAX_BUFF, GREEN);
+	printsColor("\n    Welcome to this efficient and simple operating system\n", MAX_BUFF, GREEN);
 	printsColor("    Here's a list of available commands\n", MAX_BUFF, GREEN);
 	printHelp();
+
+	return 0;
 }

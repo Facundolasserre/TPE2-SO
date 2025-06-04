@@ -2,152 +2,406 @@
 #include <test_util.h>
 #include <sys_calls.h>
 #include <tests.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <time.h>
 
 #define MAX_BLOCKS 128
+#define MINOR_WAIT 1000000 // TODO: Change this value to prevent a process from flooding the screen
+#define WAIT 10000000      // TODO: Change this value to make the wait long enough to see theese processes beeing run at least twice
 
-enum State{
-    RUNNING,
-    BLOCKED,
-    KILLED };
+#define TOTAL_PROCESSES 3
+#define LOWEST 0  // TODO: Change as required
+#define MEDIUM 1  // TODO: Change as required
+#define HIGHEST 2 // TODO: Change as required
 
-typedef struct Process_rq {
+#define SEM_ID "sem"
+#define TOTAL_PAIR_PROCESSES 2
+#define NULL ((void*)0)
+
+
+enum State { RUNNING,
+             BLOCKED,
+             KILLED };
+
+typedef struct P_rq {
   int32_t pid;
   enum State state;
-} process_rq;
+} p_rq;
 
-typedef struct MemoryManager_rq{
-    void *address;
-    uint32_t size;
-} MemoryManager_rq;
+typedef struct MM_rq {
+  void *address;
+  uint32_t size;
+} mm_rq;
 
-uint64_t mm_test(uint64_t argc, char *argv[]){
-    MemoryManager_rq mm_rqs[MAX_BLOCKS];
-    uint8_t rq;
-    uint32_t total;
-    uint64_t max_memory;
+int64_t prio[TOTAL_PROCESSES] = {LOWEST, MEDIUM, HIGHEST};
 
-    if(argc != 1) return -1;
+uint64_t test_mm(uint64_t argc, char *argv[]) {
 
-    if(max_memory = satoi(argv[0]) <= 0) return -1;
+  mm_rq mm_rqs[MAX_BLOCKS];
+  uint8_t rq;
+  uint32_t total;
+  uint64_t max_memory;
 
-    while (1){
-        rq = 0;
-        total = 0;
+  if (argc != 1)
+    return -1;
 
-        while(rq < MAX_BLOCKS && total < max_memory){
-            mm_rqs[rq].size = GetUniform(max_memory - total - 1) + 1;
-            mm_rqs[rq].address = sys_mem_alloc(mm_rqs[rq].size);
+  if ((max_memory = satoi(argv[0])) <= 0)
+    return -1;
 
-            if(mm_rqs[rq].address){
-                total += mm_rqs[rq].size;
-                rq++;
-            }
-        }
+  while (1) {
+    rq = 0;
+    total = 0;
 
-        //Para el Set
-        uint32_t i;
-        for(i = 0; i < rq; i++){
-            if(mm_rqs[i].address) sys_mem_init(mm_rqs[i].size);
-        }
+    // Request as many blocks as we can
+    while (rq < MAX_BLOCKS && total < max_memory) {
+      mm_rqs[rq].size = GetUniform(max_memory - total - 1) + 1;
+      mm_rqs[rq].address = sys_mem_alloc(mm_rqs[rq].size);
 
-
-        //Para el check
-        for(i = 0; i < rq; i++){
-            if(mm_rqs[i].address){
-                if(!memcheck(mm_rqs[i].address, i, mm_rqs[i].size)){
-                    return -1;
-                }
-            }
-        }
-
-        //Para el free
-        for(i = 0; i < rq; i++){
-            if(mm_rqs[i].address){
-                sys_mem_free(mm_rqs[i].address);
-            }
-        }
+      if (mm_rqs[rq].address) {
+        total += mm_rqs[rq].size;
+        rq++;
+      }
     }
+
+    // Set
+    uint32_t i;
+    for (i = 0; i < rq; i++)
+      if (mm_rqs[i].address)
+        sys_mem_init(mm_rqs[i].size);
+
+    // Check
+    for (i = 0; i < rq; i++)
+      if (mm_rqs[i].address)
+        if (!memcheck(mm_rqs[i].address, i, mm_rqs[i].size)) {
+          return -1;
+        }
+
+    // Free
+    for (i = 0; i < rq; i++)
+      if (mm_rqs[i].address)
+        sys_mem_free(mm_rqs[i].address);
+  }
 }
 
-int64_t test_processes(uint64_t argc, char *argv[]){
-    uint8_t rq;
-    uint8_t alive = 0;
-    uint8_t action;
-    uint64_t max_processes;
-    char *auxArgv[] = {0};
+int64_t test_processes(uint64_t argc, char *argv[]) {
+  uint8_t rq;
+  uint8_t alive = 0;
+  uint8_t action;
+  uint64_t max_processes;
+  char *argvAux[] = {0};
 
-    if(argc != 1) return -1;
+  if (argc != 1)
+    return -1;
 
-    if((max_processes = satoi(argv[0])) <= 0) return -1;
+  if ((max_processes = satoi(argv[0])) <= 0)
+    return -1;
 
-    process_rq processes_rqs[max_processes];
+  p_rq p_rqs[max_processes];
 
-    while(1){
+  while (1) {
+    prints("======================= Starting test=======================\n", MAX_BUFF);
+    // Create max_processes processes
+    for (rq = 0; rq < max_processes; rq++) {
+      // p_rqs[rq].pid = sys_create_process("endless_loop", 0, 0, argvAux);
+      p_rqs[rq].pid = sys_create_process(5, &endless_loop, 0, argvAux);
 
+      if (p_rqs[rq].pid == -1) {
+        prints("test_processes: ERROR creating process\n", MAX_BUFF);
+        return -1;
+      } else {
+        prints("[test_processes] Process created with pid\n", MAX_BUFF);
+        p_rqs[rq].state = RUNNING;
+        alive++;
+      }
+    }
 
-        prints("======================= Starting test=======================\n", MAX_BUFF);
+    char buffer[4096];
+    sys_list_processes(buffer);
+    prints(buffer, 4096);
 
-        for(rq = 0; rq < max_processes; rq++){
-            //processes_rqs[rq].pid = sys_create_process("endless_loop", 0, 0, auxArgv);
+    // Randomly kills, blocks or unblocks processes until every one has been killed
+    while (alive > 0) {
 
-            processes_rqs[rq].pid = sys_create_process(5, &endless_loop, 0, auxArgv);
+      for (rq = 0; rq < max_processes; rq++) {
+        action = GetUniform(100) % 2;
 
-            if(processes_rqs[rq].pid == -1){
-                prints("test_processes: ERROR creating process\n", MAX_BUFF);
+        switch (action) {
+          case 0:
+            if (p_rqs[rq].state == RUNNING || p_rqs[rq].state == BLOCKED) {
+              if (sys_kill(p_rqs[rq].pid) == -1) {
+                prints("test_processes: ERROR killing process\n", MAX_BUFF);
                 return -1;
-            } else {
-                prints("[test_processes] Process created with pid\n", MAX_BUFF);
-                processes_rqs[rq].state = RUNNING;
-                alive++;
+              }
+              prints("[test_processes] Process killed\n", MAX_BUFF);
+              p_rqs[rq].state = KILLED;
+              alive--;
             }
+            break;
+
+          case 1:
+            if (p_rqs[rq].state == RUNNING) {
+              if (sys_block(p_rqs[rq].pid) == -1) {
+                prints("test_processes: ERROR blocking process\n", MAX_BUFF);
+                return -1;
+              }
+              p_rqs[rq].state = BLOCKED;
+              prints("[test_processes] Process blocked\n", MAX_BUFF);
+            }
+            break;
         }
+      }
 
-        char buffer[4096];
-        sys_list_processes(buffer);
-        prints(buffer, 4096);
-
-        while(alive > 0){
-
-            for(rq = 0; rq < max_processes; rq++){
-                action = GetUniform(100) % 2;
-
-                switch(action){
-                    case 0:
-                        if(processes_rqs[rq].state == RUNNING || processes_rqs[rq].state == BLOCKED){
-                            if(sys_kill(processes_rqs[rq].pid) == -1){
-                                prints("test_processes: ERROR killing process\n", MAX_BUFF);
-                                return -1;
-                            }
-                            prints("[test_processes] Process killed\n", MAX_BUFF);
-                            processes_rqs[rq].state = KILLED;
-                            alive--;
-                        }
-                        break;
-
-                    case 1:
-                        if (processes_rqs[rq].state == RUNNING) {
-                            if (sys_block(processes_rqs[rq].pid) == -1) {
-                                prints("test_processes: ERROR blocking process\n", MAX_BUFF);
-                                return -1;
-                            }
-                            processes_rqs[rq].state = BLOCKED;
-                            prints("[test_processes] Process blocked\n", MAX_BUFF);
-
-                        }
-                        break;
-                }
-            }
-
-            for(rq = 0; rq < max_processes; rq++){
-                if(processes_rqs[rq].state == BLOCKED && GetUniform(100) % 2){
-                    if(sys_unblock(processes_rqs[rq].pid) == -1){
-                        prints("test_processes: ERROR unblocking process\n", MAX_BUFF);
-                        return -1;
-                    }
-                    prints("[test_processes] Process unblocked\n", MAX_BUFF);
-                    processes_rqs[rq].state = RUNNING;
-                }
-            }
+      // Randomly unblocks processes
+      for (rq = 0; rq < max_processes; rq++)
+        if (p_rqs[rq].state == BLOCKED && GetUniform(100) % 2) {
+          if ((p_rqs[rq].pid) == -1) {
+            prints("test_processes: ERROR unblocking process\n", MAX_BUFF);
+            return -1;
+          }
+          prints("[test_processes] Process unblocked\n", MAX_BUFF);
+          p_rqs[rq].state = RUNNING;
         }
     }
+  }
+}
+
+void test_process(int n){
+  while(1){
+    sys_clear();
+    switch(n){
+      case 0:
+        prints("++++++++++++++++++++++++++++++\n", MAX_BUFF);
+        break;
+      case 1:
+        prints("------------------------------\n", MAX_BUFF);
+        break;
+      case 2:
+        prints("******************************\n", MAX_BUFF);
+        break;
+      case 3:
+        prints("/ / / / / / / / / / / / / / / / /\n", MAX_BUFF);
+        break;
+      case 4:
+        prints(":::::::::::::::::::::::::::::::\n", MAX_BUFF);
+        break;
+      case 5:
+        prints("0000000000000000000000000000000\n", MAX_BUFF);
+        break;
+      default:
+        prints("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\n", MAX_BUFF);
+        break;
+    }
+  }
+}
+
+int64_t test_scheduler_processes() {
+  uint8_t rq;
+  uint8_t alive = 0;
+  uint8_t action;
+  uint64_t max_processes = 5;
+
+  p_rq p_rqs[max_processes];
+
+  prints("======================= CREATING TEST PROCESSES!=======================\n", MAX_BUFF);
+    // Create max_processes processes
+    for (rq = 0; rq < max_processes; rq++) {
+      // p_rqs[rq].pid = sys_create_process("endless_loop", 0, 0, argvAux);
+      char *argv[] = {rq};
+      p_rqs[rq].pid = sys_create_process(5, &test_process, 0, argv);
+
+      if (p_rqs[rq].pid == -1) {
+        prints("ERROR creating process\n", MAX_BUFF);
+        return -1;
+      } else {
+        prints("Process created with pid\n", MAX_BUFF);
+        p_rqs[rq].state = RUNNING;
+        alive++;
+      }
+    }
+
+    char buffer[4096];
+    sys_list_processes(buffer);
+    prints(buffer, 4096);
+}
+
+void test_prio() {
+  int64_t pids[TOTAL_PROCESSES];
+  char *argv[] = {0};
+  uint64_t i;
+
+  for (i = 0; i < TOTAL_PROCESSES; i++)
+    pids[i] = sys_create_process(5, &endless_loop, 0, argv);
+
+  bussy_wait(WAIT);
+  prints("\nCHANGING PRIORITIES...\n", MAX_BUFF);
+
+  for (i = 0; i < TOTAL_PROCESSES; i++)
+    //my_nice(pids[i], prio[i]);
+
+  bussy_wait(WAIT);
+  prints("\nBLOCKING...\n" ,MAX_BUFF);
+
+  for (i = 0; i < TOTAL_PROCESSES; i++)
+    sys_block(pids[i]);
+
+  prints("CHANGING PRIORITIES WHILE BLOCKED...\n",MAX_BUFF);
+
+  for (i = 0; i < TOTAL_PROCESSES; i++)
+    //my_nice(pids[i], MEDIUM);
+
+  prints("UNBLOCKING...\n",MAX_BUFF);
+
+  for (i = 0; i < TOTAL_PROCESSES; i++)
+    sys_unblock(pids[i]);
+
+  bussy_wait(WAIT);
+  prints("\nKILLING...\n",MAX_BUFF);
+
+  for (i = 0; i < TOTAL_PROCESSES; i++)
+    sys_kill(pids[i]);
+}
+
+
+
+
+//SEMAPHORES
+
+
+ int stringArrayLen(char **array) {
+    int len = 0;
+	while (*(array++) != NULL)
+		len++;
+	return len;
+}
+
+char *memcpy(char *dest, const char *src, uint64_t size){
+	int i = 0;
+	while (i < size, src[i] != 0)
+	{
+		dest[i] = src[i];
+		i++;
+	}
+	dest[i] = 0;
+	return dest;
+}
+
+static char **mem_alloc_args(char **args) {
+  int argc = stringArrayLen(args), totalArgsLen = 0;
+  int argsLen[argc];
+  
+  for (int i = 0; i < argc; i++) {
+    argsLen[i] = strlen(args[i]) + 1;
+    totalArgsLen += argsLen[i];
+  }
+  
+  char **newArgsArray = (char **) sys_mem_alloc(sizeof(char *) * (argc + 1) + totalArgsLen);
+  
+  char *charPosition = (char *) (newArgsArray + argc + 1);
+  
+  for (int i = 0; i < argc; i++) {
+    newArgsArray[i] = charPosition; 
+    memcpy(charPosition, args[i], argsLen[i]);
+    charPosition += argsLen[i];
+  }
+  
+  newArgsArray[argc] = NULL;
+  return newArgsArray;
+}
+
+int64_t global ; // shared memory
+
+void slowInc(int64_t *p, int64_t inc) {
+  int64_t aux = *p;
+  sys_yield(); // This makes the race condition highly probable
+  aux += inc;
+  *p = aux;
+}
+
+uint64_t my_process_inc(uint64_t argc, char *argv[]) {
+  uint64_t n;
+  int8_t inc;
+  int8_t use_sem;
+  
+
+  if (argc != 3)
+    return -1;
+
+  if ((n = satoi(argv[0])) <= 0)
+    return -1;
+  if ((inc = satoi(argv[1])) == 0)
+    return -1;
+  if ((use_sem = satoi(argv[2])) < 0)
+    return -1;
+
+  if (use_sem)
+    if (sys_sem_open(SEM_ID, 1)) {
+      prints("test_sync: ERROR opening semaphore\n", MAX_BUFF);
+      return -1;
+    }
+
+  uint64_t i;
+  for (i = 0; i < n; i++) {
+    if (use_sem)
+      sys_sem_wait(SEM_ID);
+    slowInc(&global, inc);
+    prints("Process: ", strlen("Process: "));
+    printDec(sys_getPID());
+    prints(" Global: ", strlen(" Global: "));
+    
+    if(global < 0){
+      prints("-", strlen("-"));
+      printDec(-global);
+    } else {
+      printDec(global);
+    }
+
+
+    prints("\n", strlen("\n"));
+    if (use_sem)
+      sys_sem_post(SEM_ID);
+  }
+
+  if (use_sem)
+    sys_sem_close(SEM_ID);
+
+  return 0;
+}
+
+
+
+
+
+uint64_t test_sync(uint64_t argc, char *argv[]) { //{n, use_sem, 0}
+  uint64_t pids[2 * TOTAL_PAIR_PROCESSES];
+
+  if (argc != 2)
+    return -1;
+
+  char *argvDec[] = {"5", "-1", "1", NULL};
+  char *argvInc[] = {"5", "-1", "1", NULL};
+
+  
+
+  uint64_t i;
+  for (i = 0; i < TOTAL_PAIR_PROCESSES; i++) {
+    pids[i] = sys_create_process(5, &my_process_inc, 3, mem_alloc_args(argvDec));
+    pids[i + TOTAL_PAIR_PROCESSES] = sys_create_process(5, &my_process_inc, 3, mem_alloc_args(argvDec));
+  }
+
+  // for (i = 0; i < TOTAL_PAIR_PROCESSES; i++) {
+  //   my_wait(pids[i]);
+  //   my_wait(pids[i + TOTAL_PAIR_PROCESSES]);
+  // }
+
+  // for (i = 0; i < TOTAL_PAIR_PROCESSES; i++) {
+  //   wait(pids[i]);
+  //   wait(pids[i + TOTAL_PAIR_PROCESSES]);
+  // }
+
+  //prints("Final value: ", strlen("Final value: "));
+  //printDec(global);
+  //prints("\n", strlen("\n"));
+
+  return 0;
 }

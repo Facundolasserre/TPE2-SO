@@ -58,6 +58,22 @@ void * initializeKernelBinary()
 	return getStackBase();
 }
 
+//Testeo de procesos
+void testProcess1(){
+	while(1){
+		vDriver_prints("ONE", WHITE, BLACK);
+	}
+}
+void testProcess2(){
+	while(1){
+		vDriver_prints("TWO", WHITE, BLACK);
+	}
+}
+void testProcess3(){
+	while(1){
+		vDriver_prints("THREE", WHITE, BLACK);
+	}
+}
 
 int main()
 {	
@@ -69,6 +85,10 @@ int main()
 	mem_init(memoryManagerModuleAdress);
 
     initSchedule();
+
+	// createProcess(5, &test_process_1, 0, NULL);Add commentMore actions
+	// createProcess(5, &test_process_2, 0, NULL);
+	// createProcess(5, &test_process_3, 0, NULL);
 	createProcess(5, sampleCodeModuleAddress, 0, NULL);
 
 	_sti();

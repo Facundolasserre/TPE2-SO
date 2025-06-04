@@ -28,6 +28,15 @@ GLOBAL sys_list_processes
 GLOBAL sys_block
 GLOBAL sys_unblock
 GLOBAL sys_yield
+
+GLOBAL sys_sem_open
+
+GLOBAL sys_sem_wait
+
+GLOBAL sys_sem_post
+
+GLOBAL sys_sem_close
+
 section .text
 
 ; Pasaje de parametros en C:
@@ -151,6 +160,7 @@ sys_mem_free:
 
 sys_create_process:
     mov rax, 0x15
+    mov r10, rcx        
     int 80h
     ret
 
@@ -181,5 +191,25 @@ sys_unblock:
 
 sys_yield:
     mov rax, 0x1B
+    int 80h
+    ret
+
+sys_sem_open:
+    mov rax, 0x1C
+    int 80h
+    ret
+
+sys_sem_close:
+    mov rax, 0x1D
+    int 80h
+    ret
+
+sys_sem_wait:
+    mov rax, 0x1E
+    int 80h
+    ret
+
+sys_sem_post:
+    mov rax, 0x1F
     int 80h
     ret

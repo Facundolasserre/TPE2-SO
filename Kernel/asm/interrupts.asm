@@ -15,6 +15,10 @@ GLOBAL excRegData
 GLOBAL registerInfo
 GLOBAL hasregisterInfo
 
+GLOBAL acquire
+
+GLOBAL release
+
 EXTERN schedule
 EXTERN timer_handler
 EXTERN keyboard_handler
@@ -214,6 +218,19 @@ haltcpu:
 	cli
 	hlt
 	ret
+
+acquire:
+	mov al, 0
+
+.retry:
+	xchg [rdi], al
+	test al, al
+	jz .retry
+	ret
+
+release:
+	mov byte [rdi], 1
+	ret	
 
 SECTION .bss
 	aux resq 1

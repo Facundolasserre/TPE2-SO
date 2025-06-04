@@ -1,12 +1,22 @@
 #include <scheduler.h>
 #include <memoryManager.h>
 #include <processQueue.h>
-#include <process.h>
+#include <utils.h>
 
-processQueueADT processQueue = NULL;
+
+
 processCB currentProcess;
-processQueueADT blockedQueue= NULL;
 uint64_t PID = 0;
+
+processQueueADT processQueue = NULL; 
+processQueueADT blockedQueue = NULL; // Cola de procesos bloqueados para operaciones generales
+processQueueADT blockedReadQueue = NULL; // Cola de procesos bloqueados para lectura
+processQueueADT blockedSemaphoreQueue = NULL; // Cola de procesos bloqueados por semáforos
+
+uint8_t mutexLock = 1;
+int currentSemaphore = 0;
+
+
 
 //retorna -1 por error
 uint64_t createProcess(int priority, program_t program, uint64_t argc, char *argv[]) {
@@ -41,6 +51,8 @@ void initProcessWrapper(program_t program, uint64_t argc, char *argv[]) {
 
     }
     currentProcess.state = TERMINATED; 
+
+    __asm__ ("int $0x20"); //rimertick
 
 }
 
@@ -83,18 +95,24 @@ uint64_t kill_process(uint64_t pid){
     }
 }
 
-uint64_t block_process(uint64_t pid){
+
+
+uint64_t block_process(uint64_t){
+    return block_process_to_queue(currentProcess.pid, blockedQueue);
+}
+
+uint64_t block_process_to_queue(uint64_t pid, processQueueADT blockedQueue){
     processCB process;
-    // if((process = find_pid_dequeue(processQueue, pid)).pid > 0){
-    if(currentProcess.pid == pid){
+   if(currentProcess.pid == pid){
         currentProcess.state = BLOCKED;
-    }else if( (process = find_pid_dequeue(processQueue, pid)).pid > 0 ){
+   }else if( (process = find_pid_dequeue(processQueue, pid)).pid > 0){
         process.state = BLOCKED;
-        addProcessToQueue(blockedQueue, process);
+        add(blockedQueue, process);
     } else {
         return -1;
     }
 }
+
 
 uint64_t unblock_process(uint64_t pid){
     processCB process;
@@ -111,6 +129,9 @@ void yield(){
 }
 
 void initSchedule(){
+    currentSemaphore = 0;
+
+
     processQueue = newProcessQueue(); // Crear una nueva cola de procesos
     blockedQueue = newProcessQueue(); // Crear una nueva cola de procesos bloqueados
     currentProcess = (processCB){0, 0, QUANTUM, 0, TERMINATED};
@@ -163,3 +184,143 @@ uint64_t schedule(void* rsp){
     
 }
 
+
+// Desbloquea el primer proceso esperando en la cola recibida por parametroAdd commentMore actions
+uint64_t unblock_process_from_queue(processQueueADT blockedQueue){
+    processCB process = dequeueProcess(blockedQueue);
+    process.state = READY;
+    add(processQueue, process);
+}
+
+
+
+//SEMAPHORES
+
+typedef struct semaphoreList{
+    semaphore_t semaphore;
+    struct semaphoreList *next;
+} semaphoreList_t;
+
+semaphoreList_t * semList = NULL;
+
+
+semaphoreList_t * add_semaphore(semaphoreList_t **head, char * name, int initialValue) {
+    semaphoreList_t * newSemaphore = (semaphoreList_t*)mem_alloc(sizeof(semaphoreList_t));
+
+    strcpy(newSemaphore->semaphore.name, name, strlen(name));
+
+    newSemaphore->semaphore.value = initialValue;
+    newSemaphore->semaphore.lock = 0;
+    newSemaphore->semaphore.blockedQueue = new_q();
+
+    if (*head == NULL) {
+        *head = newSemaphore;
+    } else {
+        semaphoreList_t *aux = *head;
+        while (aux->next != NULL) {
+            aux = aux->next;
+        }
+        aux->next = newSemaphore;
+    }
+
+    return newSemaphore;
+}
+
+
+void remove_sem(semaphoreList_t **head, char * name){
+    semaphoreList_t *temp = *head;
+    semaphoreList_t *prev = NULL;
+
+    if (temp != NULL && strcmp(temp->semaphore.name, name) == 0) {
+        *head = temp->next;
+        free_q(temp->semaphore.blockedQueue);
+        mem_free(temp);
+        return;
+    }
+
+    while (temp != NULL && strcmp(temp->semaphore.name, name) != 0) {
+        prev = temp;
+        temp = temp->next;
+    }
+
+    if (temp == NULL) {
+        return;
+    }
+
+    prev->next = temp->next;
+
+    while(has_next(temp->semaphore.blockedQueue)){
+        unblock_process_from_queue(temp->semaphore.blockedQueue);   
+    }
+    free_q(temp->semaphore.blockedQueue);
+    mem_free(temp);
+}
+
+
+semaphoreList_t* find_sem(char * sem_name){
+    semaphoreList_t * aux = semList;
+    while(aux != NULL){
+        if(strcmp(aux->semaphore.name, sem_name) == 0)
+            return aux;
+        aux = aux->next;
+    }
+    return NULL;
+}
+
+
+
+
+
+
+
+
+
+
+semaphore_t * sem_open(char *sem_name, uint64_t init_value){
+    semaphoreList_t * aux = find_sem(sem_name);
+    if(aux == NULL)
+        aux = add_sem(&semList, sem_name, init_value);
+    acquire(aux->semaphore.lock);
+    aux->semaphore.value++;
+    release(aux->semaphore.lock);
+    return 0;
+}
+
+void sem_close(char * sem_name){
+    semaphoreList_t * aux = find_sem(sem_name);
+    if(aux != NULL) {
+        acquire(aux->semaphore.lock);
+        if(aux->semaphore.value > 0)
+            aux->semaphore.value--;
+        else
+            remove_sem(&semList, sem_name);
+        release(aux->semaphore.lock);
+    }
+    return 0;
+}
+
+void sem_wait(char *sem_name){
+    semaphoreList_t * sem_node = find_sem(sem_name);
+    if(sem_node == NULL) return;
+    acquire(sem_node->semaphore.lock);
+    if(sem_node->semaphore.value > 0){
+        (sem_node->semaphore.value)--;
+    } else {
+        block_process_to_queue(currentProcess.pid, sem_node->semaphore.blockedQueue);
+    }
+    release(sem_node->semaphore.lock);
+}
+
+void sem_post(char *sem_name){
+    semaphoreList_t * sem_node;
+    if((sem_node = find_sem(sem_name)) == NULL)
+        return 1;
+
+    acquire(sem_node->semaphore.lock);
+    if (sem_node->semaphore.value == 0){
+        unblock_process_from_queue(sem_node->semaphore.blockedQueue);
+    }
+    (sem_node->semaphore.value)++;
+    release(sem_node->semaphore.lock);
+    return 0;
+}
