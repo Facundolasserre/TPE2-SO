@@ -80,13 +80,10 @@ int main()
 	_cli();
 	load_idt();
 
-	setCeroChar();
 
-	
-
-    initScheduler();
 	initPipes();
-
+	init_scheduler();
+	initKeyboard();
 	createProcess(0, sampleCodeModuleAddress, 0, NULL);
 
 	_sti();

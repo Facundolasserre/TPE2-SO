@@ -1,8 +1,8 @@
 #include <scheduler.h>
-#include <semaphore.h>
 #include <memoryManager.h>
 #include <processQueue.h>
 #include <utils.h>
+#include <semaphore.h>
 
 
 typedef struct semaphoreList_t{
@@ -19,7 +19,7 @@ semaphoreList_t * add_semaphore(semaphoreList_t **head, char * name, int initial
     strcpy(newSemaphore->semaphore.name, name, strlen(name));
 
     newSemaphore->semaphore.value = initialValue;
-    newSemaphore->semaphore.lock = 0;
+    newSemaphore->semaphore.lock = 1;
     newSemaphore->semaphore.blockedQueue = newProcessQueue();
 
     if (*head == NULL) {
@@ -81,9 +81,9 @@ int64_t sem_open(char *sem_name, uint64_t init_value){
     semaphoreList_t * aux = find_sem(sem_name);
     if(aux == NULL)
         aux = add_semaphore(&semList, sem_name, init_value);
-    acquire(aux->semaphore.lock);
-    aux->semaphore.value++;
-    release(aux->semaphore.lock);
+    // acquire(aux->semaphore.lock);
+    // aux->semaphore.value++;
+    // release(aux->semaphore.lock);
     return 0;
 }
 

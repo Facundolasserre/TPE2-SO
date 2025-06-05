@@ -42,9 +42,10 @@ uint64_t create_process_state(int priority, program_t program, int state, uint64
         QUANTUM,
         0,
         READY};
-                       // PID,    RSP,  assigned_quantum, used_quantum, state
-    addProcessToQueue(processQueue, newProcess); //TO DO: CHEQUEAR LO DEL AMPERSAND NO ESTOY SEGURO SI VA O NO
+
+    add_priority_queue(newProcess);
     return newProcess.pid;
+
 }
 
 void initProcessWrapper(program_t program, uint64_t argc, char *argv[]) {
@@ -109,6 +110,7 @@ void list_processes(char *buffer){
     //     }
     // }
 
+    return;
 }
 
 // void addProcessToBuffer(processCB process, char * buffer){
@@ -148,17 +150,20 @@ uint64_t kill_process(uint64_t pid){
 
 
 uint64_t block_process(uint64_t){
-    return block_process_to_queue(currentProcess.pid, blockedQueue);
+    currentProcess.state = BLOCKED;
+    __asm__ ("int $0x20"); // timertick para llamar a schedule de nuevo
 }
 
 uint64_t block_current_process_to_queue(processQueueADT blockedQ){
-    return block_process_to_queue(currentProcess.pid, blockedQ);
+    currentProcess.state = BLOCKED;
+    addProcessToQueue(blockedQueue, currentProcess);
+    __asm__ ("int $0x20"); // timertick para llamar a schedule de nuevo
 }
 
 uint64_t block_process_to_queue(uint64_t pid, processQueueADT destination){
     processCB process;
    if(currentProcess.pid == pid){
-        currentProcess.state = BLOCKED;
+        block_current_process_to_queue(destination);
    }else if( (process = find_dequeue_priority(pid)).pid > 0){
         process.state = BLOCKED;
         addProcessToQueue(destination, process);
@@ -166,6 +171,7 @@ uint64_t block_process_to_queue(uint64_t pid, processQueueADT destination){
     } else {
         return -1;
     }
+    return 0;
 }
 
 
@@ -223,7 +229,7 @@ uint64_t schedule(void* rsp){
             if (++currentProcess.usedQuantum < currentProcess.assignedQuantum && currentProcess.assignedQuantum < IO_BOUND_QUANTUM) {
                 currentProcess.assignedQuantum++; // reiniciar quantum para I/O
             } 
-            add_priority_queue(currentProcess); // agregar el proceso actual a la cola
+            addProcessToQueue(allBlockedQueue, currentProcess); // agregar el proceso actual a la cola
     
      }else if (currentProcess.state == READY){ //proceso TERMINATED
         add_priority_queue(currentProcess);

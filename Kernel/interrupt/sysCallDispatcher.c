@@ -20,15 +20,14 @@ extern int _hlt();
 extern Color WHITE;
 extern Color BLACK;
 
-static uint64_t sys_read(uint64_t fd, char *buff)
+static uint64_t sys_read(uint64_t fd)
 {
     if (fd != 0)
     {
         return -1;
     }
 
-    *buff = getCharFromKeyboard();
-    return 0;
+    return readKeyboard();
 }
 
 static int sys_drawCursor()

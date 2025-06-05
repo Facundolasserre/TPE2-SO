@@ -83,9 +83,7 @@ void printsColor(const char *str, int lenght, Color color)
 
 char getChar()
 {
-	char c;
-	sys_read(0, &c);
-	return c;
+	return (char)sys_read(0);
 }
 
 int isChar(char c)

@@ -1,11 +1,8 @@
-#include "keyboard.h"
-#include "time.h"
+#include <keyboard.h>
+#include <pipe.h>
 #include <stdint.h>
 
-unsigned char notChar = 0;
-static char retChar = 0;
-static int shift = 0;
-static int capsLock = 0;
+int keyboardPipeId;
 
 static const char keyMapL[] = {
 
@@ -62,52 +59,43 @@ static const char *const keyMap[] = {keyMapL, keyMapU};
  * Down: 0x50
  */
 
-void keyboard_handler(uint8_t keyPressed)
-{
-    notChar = keyPressed;
+void initKeyboard(){
+    keyboardPipeId  = pipeCreate();
+}
 
-    // shift pressed
-    if (notChar == 0x2A || notChar == 0x36)
-    {
-        shift = 1;
-    }
-    // shift not pressed
-    if (notChar == 0xAA || notChar == 0xB6)
+
+void keyboardHandler(uint8_t keyPressed)
+{
+    unsigned char inputCode = 0;
+    char asciiCode = 0;
+    int shift = 0;
+    int capsLock = 0;
+    inputCode = keyPressed;
+
+    // soltar tecla
+    if (inputCode > 0x2A || inputCode == 0x36)
     {
         shift = 0;
     }
-    // capsLock
-    if (notChar == 0x3A)
+    if (inputCode == 0xAA || inputCode == 0xB6)
     {
-        capsLock = (capsLock + 1) % 2;
+        shift = 0;
     }
+   if(inputCode == 0x3A)
+    {
+        capsLock = (capsLock + 1) % 2; 
+    }
+    if(inputCode > 0x80 || inputCode == 0x0F){
+        asciiCode = 0;
+    }
+    else if(inputCode == 0x48 || inputCode == 0x50){
+        asciiCode = inputCode;
+    } else {
+        asciiCode = keyMap[shift][inputCode];
+    }
+    pipeWrite(keyboardPipeId, asciiCode);
 }
 
-char getCharFromKeyboard()
-{
-    // soltar tecla
-    if (notChar > 0x80 || notChar == 0x0F)
-    {
-        retChar = 0;
-    }
-    else if (notChar == 0x48 || notChar == 0x50)
-    {
-        retChar = notChar;
-    }
-    else
-    {
-        retChar = keyMap[shift][notChar];
-    }
-
-    return retChar;
-}
-
-void setCeroChar()
-{
-    notChar = 0;
-}
-
-unsigned char getNotChar()
-{
-    return notChar;
+char readKeyboard(){
+    return pipeRead(keyboardPipeId);
 }
