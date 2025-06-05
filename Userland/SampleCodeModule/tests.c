@@ -379,7 +379,7 @@ uint64_t test_sync(uint64_t argc, char *argv[]) { //{n, use_sem, 0}
     return -1;
 
   char *argvDec[] = {"5", "-1", "1", NULL};
-  char *argvInc[] = {"5", "-1", "1", NULL};
+  char *argvInc[] = {"5", "1", "1", NULL};
 
   
 

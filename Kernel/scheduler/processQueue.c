@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <memoryManager.h>
 
-typedef struct node * queue_t;
 
 typedef struct node{
     processCB pcb; //puntero al proceso
@@ -10,13 +9,15 @@ typedef struct node{
     //struct node * prev; //puntero al nodo anterior
 } node_t;
 
+typedef struct node * queue_t;
+
 typedef struct processQueueCDT{
     queue_t rear;
     size_t size;
 } processQueueCDT;
 
 processQueueADT newProcessQueue() {
-    processQueueADT queue = mem_alloc(sizeof(processQueueCDT));
+    processQueueADT queue = (processQueueADT)mem_alloc(sizeof(processQueueCDT));
     if (queue == NULL) {
         return NULL; 
     }
@@ -56,7 +57,7 @@ void freeProcessQueue(processQueueADT queue) {
 
 
 void addProcessToQueue(processQueueADT queue, processCB pcb) {
-    queue_t new = mem_alloc(sizeof(node_t));
+    queue_t new = (queue_t)mem_alloc(sizeof(node_t));
     if (new == NULL) {
         return;
     }

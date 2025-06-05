@@ -182,7 +182,7 @@ static int64_t sys_sem_post(char * name){
 
 
 //nuevas syscalls para memorymanager
-static void * sys_mem_init(void *ptr, int size){
+static void sys_mem_init(void *ptr, int size){
     return mem_init(ptr, size);
 }
 
@@ -224,99 +224,146 @@ static void s_unblock_process(uint64_t pid){
 
 
 
-uint64_t syscall_dispatcher(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10, uint64_t r8, uint64_t rax)
-{
-    uint8_t r, g, b;
-    Color color;
-    switch (rax)
-    {
-    case 0:
-        return sys_read(rdi, (char *)rsi);
-    case 1:
-        return sys_write(rdi, (char)rsi);
-    case 2:
-        return sys_clear();
-    case 3:
-        return sys_getHours();
-    case 4:
-        return sys_getMinutes();
-    case 5:
-        return sys_getSeconds();
-    case 6:
-        return sys_getScrHeight();
-    case 7:
-        return sys_getScrWidth();
-    case 8:
-        r = (r8 >> 16) & 0xFF;
-        g = (r8 >> 8) & 0xFF;
-        b = r8 & 0xFF;
-        color.r = r;
-        color.g = g;
-        color.b = b;
-        sys_drawRectangle(rdi, rsi, rdx, r10, color);
-        return 1;
-    case 9:
-        sys_wait(rdi);
-        return 1;
-    case 10:
-        return sys_registerInfo((uint64_t *)rdi);
-    case 11:
-        return sys_printmem((uint64_t *)rdi);
-    case 12:
-        return sys_pixelPlus();
-    case 13:
-        return sys_pixelMinus();
-    case 14:
-        return sys_playSpeaker((uint32_t)rdi, rsi);
-    case 15:
-        return sys_stopSpeaker();
-    case 16:
-        return sys_drawCursor();
-    case 17:
-        r = (rdx >> 16) & 0xFF;
-        g = (rdx >> 8) & 0xFF;
-        b = rdx & 0xFF;
-        color.r = r;
-        color.g = g;
-        color.b = b;
-        return sys_writeColor(rdi, (char)rsi, color);
-    case 18: 
-        return (uint64_t)sys_mem_init((void*)rdi, rsi);
-    case 19: 
-        return (uint64_t)sys_mem_alloc(rdi);
-    case 20:
-        sys_mem_free((void*)rdi);
-    case 21:
-        return s_create_process(rdi, (program_t)rsi, rdx, (char **)r10);
-    case 22:
-        s_kill_process(rdi);
-        return 0;
-    case 23:
-        s_list_processes((char *)rdi);
-        return 0;
-    case 24:
-        return s_getPID();
-    case 25:
-        s_yield();
-        return 0;
-    case 26:
-        s_block_process(rdi);
-        return 0;
-    case 27:
-        s_unblock_process(rdi);
-        return 0;
-    case 28:
-        return (uint64_t)sys_sem_open((char *)rdi, rsi);
-    case 29:
-        sys_sem_close((char *)rdi);
-        return 0;
-    case 30:
-        sys_sem_wait((char *)rdi);
-        return 0;
-    case 31:
-        sys_sem_post((char *)rdi);
-        return 0;
-    default:
-        return 0;
+
+/* Arreglo de punteros a funciones (syscalls) */
+
+static uint64_t (*syscalls[])(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t) = {
+    /* RAX: número de syscall */
+    (void *)sys_read,               // 0
+    (void *)sys_write,              // 1
+    (void *)sys_clear,              // 2
+    (void *)sys_getHours,           // 3
+    (void *)sys_getMinutes,         // 4
+    (void *)sys_getSeconds,         // 5
+    (void *)sys_getScrHeight,       // 6
+    (void *)sys_getScrWidth,        // 7
+    (void *)sys_drawRectangle,      // 8
+    (void *)sys_wait,               // 9
+    (void *)sys_registerInfo,       // 10
+    (void *)sys_printmem,           // 11
+    (void *)sys_pixelPlus,          // 12
+    (void *)sys_pixelMinus,         // 13
+    (void *)sys_playSpeaker,        // 14
+    (void *)sys_stopSpeaker,        // 15
+    (void *)sys_drawCursor,         // 16
+    (void *)sys_writeColor,         // 17
+    (void *)sys_mem_alloc,          // 18
+    (void *)sys_mem_free,           // 19
+    (void *)sys_mem_init,           // 20
+    (void *)s_create_process,   // 21
+    (void *)s_kill_process,     // 22
+    (void *)s_getPID,           // 23
+    (void *)s_list_processes,   // 24
+    (void *)s_block_process,    // 25
+    (void *)s_unblock_process,  // 26
+    (void *)s_yield,            // 27
+    (void *)sys_sem_open,           // 28
+    (void *)sys_sem_close,          // 29
+    (void *)sys_sem_wait,           // 30
+    (void *)sys_sem_post            // 31
+};
+
+uint64_t syscall_dispatcher(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10, uint64_t r8, uint64_t rax) {
+    if (rax < SYS_CALLS_QTY && syscalls[rax] != 0){
+        return syscalls[rax](rdi, rsi, rdx, r10, r8);
     }
+
+    return 0;
 }
+
+// uint64_t syscall_dispatcher(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10, uint64_t r8, uint64_t rax)
+// {
+//     uint8_t r, g, b;
+//     Color color;
+//     switch (rax)
+//     {
+//     case 0:
+//         return sys_read(rdi, (char *)rsi);
+//     case 1:
+//         return sys_write(rdi, (char)rsi);
+//     case 2:
+//         return sys_clear();
+//     case 3:
+//         return sys_getHours();
+//     case 4:
+//         return sys_getMinutes();
+//     case 5:
+//         return sys_getSeconds();
+//     case 6:
+//         return sys_getScrHeight();
+//     case 7:
+//         return sys_getScrWidth();
+//     case 8:
+//         r = (r8 >> 16) & 0xFF;
+//         g = (r8 >> 8) & 0xFF;
+//         b = r8 & 0xFF;
+//         color.r = r;
+//         color.g = g;
+//         color.b = b;
+//         sys_drawRectangle(rdi, rsi, rdx, r10, color);
+//         return 1;
+//     case 9:
+//         sys_wait(rdi);
+//         return 1;
+//     case 10:
+//         return sys_registerInfo((uint64_t *)rdi);
+//     case 11:
+//         return sys_printmem((uint64_t *)rdi);
+//     case 12:
+//         return sys_pixelPlus();
+//     case 13:
+//         return sys_pixelMinus();
+//     case 14:
+//         return sys_playSpeaker((uint32_t)rdi, rsi);
+//     case 15:
+//         return sys_stopSpeaker();
+//     case 16:
+//         return sys_drawCursor();
+//     case 17:
+//         r = (rdx >> 16) & 0xFF;
+//         g = (rdx >> 8) & 0xFF;
+//         b = rdx & 0xFF;
+//         color.r = r;
+//         color.g = g;
+//         color.b = b;
+//         return sys_writeColor(rdi, (char)rsi, color);
+//     case 18: 
+//         return (uint64_t)sys_mem_init((void*)rdi, rsi);
+//     case 19: 
+//         return (uint64_t)sys_mem_alloc(rdi);
+//     case 20:
+//         sys_mem_free((void*)rdi);
+//     case 21:
+//         return s_create_process(rdi, (program_t)rsi, rdx, (char **)r10);
+//     case 22:
+//         s_kill_process(rdi);
+//         return 0;
+//     case 23:
+//         s_list_processes((char *)rdi);
+//         return 0;
+//     case 24:
+//         return s_getPID();
+//     case 25:
+//         s_yield();
+//         return 0;
+//     case 26:
+//         s_block_process(rdi);
+//         return 0;
+//     case 27:
+//         s_unblock_process(rdi);
+//         return 0;
+//     case 28:
+//         return (uint64_t)sys_sem_open((char *)rdi, rsi);
+//     case 29:
+//         sys_sem_close((char *)rdi);
+//         return 0;
+//     case 30:
+//         sys_sem_wait((char *)rdi);
+//         return 0;
+//     case 31:
+//         sys_sem_post((char *)rdi);
+//         return 0;
+//     default:
+//         return 0;
+//     }
+// }

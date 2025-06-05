@@ -32,14 +32,14 @@ void update_state(node_t *node);
 void create_children(node_t *parent);
 static unsigned next_power_of_2(unsigned size);
 
-static unsigned next_power_of_2(unsigned size) {
-    size |= size >> 1;
-    size |= size >> 2;
-    size |= size >> 4;
-    size |= size >> 8;
-    size |= size >> 16;
-    return size + 1;
-}
+// static unsigned next_power_of_2(unsigned size) {
+//     size |= size >> 1;
+//     size |= size >> 2;
+//     size |= size >> 4;
+//     size |= size >> 8;
+//     size |= size >> 16;
+//     return size + 1;
+// }
 
 void create_children(node_t *parent){
     unsigned idx = parent->index * 2 + 1;
@@ -145,8 +145,6 @@ void *rec_alloc(node_t *parent, unsigned s){
             return NULL;
         }
     }
-
-    
 
     if(parent->size / 2 >= s){
         create_children(parent);

@@ -6,11 +6,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct processQueueCDT * processQueueADT;
-
 //process control block (informacion de un proceso)
 typedef struct processCB{ 
-    uint64_t pid; 
+    int pid; 
     void *rsp;
     uint8_t priority;
     uint8_t assignedQuantum;

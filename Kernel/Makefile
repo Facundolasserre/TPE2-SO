@@ -3,9 +3,9 @@ include Makefile.inc
 KERNEL=kernel.bin
 
 ifeq ($(BUDDY), YES)
-SOURCES_ALL=$(wildcard *.c drivers/*.c interrupt/*.c scheduler/*.c memoryManager/buddy/*.c)
+SOURCES_ALL=$(wildcard *.c drivers/*.c interrupt/*.c scheduler/*.c mmu/buddy/*.c)
 else
-SOURCES_ALL=$(wildcard *.c drivers/*.c interrupt/*.c scheduler/*.c memoryManager/standard/*.c)
+SOURCES_ALL=$(wildcard *.c drivers/*.c interrupt/*.c scheduler/*.c mmu/standard/*.c)
 endif
 
 SOURCES=$(SOURCES_ALL)

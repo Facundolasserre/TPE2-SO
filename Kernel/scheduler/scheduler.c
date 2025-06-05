@@ -108,7 +108,7 @@ uint64_t kill_process(uint64_t pid){
     processCB process;
     if(currentProcess.pid == pid){
         currentProcess.state = TERMINATED;
-    } else if( (process = find_pid_dequeue(processQueue, pid)).pid > 0 || (process = find_pid_dequeue(blockedQueue, pid)).pid > 0 ){
+    } else if( (process = find_dequeue_priority(pid)).pid > 0 || (process = find_pid_dequeue(blockedQueue, pid)).pid > 0 ){
         mem_free(process.rsp);
     } else {
         return -1;
@@ -121,17 +121,17 @@ uint64_t block_process(uint64_t){
     return block_process_to_queue(currentProcess.pid, blockedQueue);
 }
 
-uint64_t block_current_process_to_queue(processQueueADT blockedQueue){
-    return block_process_to_queue(currentProcess.pid, blockedQueue);
+uint64_t block_current_process_to_queue(processQueueADT blockedQ){
+    return block_process_to_queue(currentProcess.pid, blockedQ);
 }
 
-uint64_t block_process_to_queue(uint64_t pid, processQueueADT blockedQueue){
+uint64_t block_process_to_queue(uint64_t pid, processQueueADT destination){
     processCB process;
    if(currentProcess.pid == pid){
         currentProcess.state = BLOCKED;
-   }else if( (process = find_pid_dequeue(processQueue, pid)).pid > 0){
+   }else if( (process = find_dequeue_priority(pid)).pid > 0){
         process.state = BLOCKED;
-        addProcessToQueue(blockedQueue, process);
+        addProcessToQueue(destination, process);
         addProcessToQueue(allBlockedQueue, process);
     } else {
         return -1;
@@ -141,9 +141,9 @@ uint64_t block_process_to_queue(uint64_t pid, processQueueADT blockedQueue){
 
 uint64_t unblock_process(uint64_t pid){
     processCB process;
-    if((process = find_pid_dequeue(blockedQueue, pid)).pid > 0){
+    if((process = find_pid_dequeue(allBlockedQueue, pid)).pid > 0){
         process.state = READY;
-        addProcessToQueue(processQueue, process);
+        add_priority_queue(process);
     } else {
         return -1;
     }
@@ -162,7 +162,7 @@ void initScheduler(){
     blockedReadQueue = newProcessQueue();
     blockedSemaphoreQueue = newProcessQueue();
     allBlockedQueue = newProcessQueue();
-    currentProcess = (processCB){0, 0, QUANTUM, 0, TERMINATED};
+    currentProcess = (processCB){0, 0, 0, 0, 0, TERMINATED};
 
 }
 
@@ -187,36 +187,37 @@ uint64_t schedule(void* rsp){
             }
 
             
-            addProcessToQueue(processQueue, currentProcess); // agregar el proceso actual a la cola
+            add_priority_queue(currentProcess); // agregar el proceso actual a la cola
         }
     }else if(currentProcess.state == BLOCKED) {
             if (++currentProcess.usedQuantum < currentProcess.assignedQuantum && currentProcess.assignedQuantum < IO_BOUND_QUANTUM) {
                 currentProcess.assignedQuantum++; // reiniciar quantum para I/O
             } 
-            addProcessToQueue(blockedQueue, currentProcess); // agregar el proceso actual a la cola
+            add_priority_queue(currentProcess); // agregar el proceso actual a la cola
     
-     }else{ //proceso TERMINATED
+     }else if (currentProcess.state == READY){ //proceso TERMINATED
+        add_priority_queue(currentProcess);
+    } else{
         mem_free(currentProcess.rsp);
     }
 
-    if(!hasNextProcess(processQueue)) {
-        //TODO: El halt queda para siempre en la cola
-        cp_halt(); // Si no hay más procesos, crear un proceso de parada
+    //Aca el proceso actual no esta RUNNING basicamente
+    currentProcess = getNextProcess();
+    if(currentProcess.pid == -1){
+        create_process_state(0, &halt, TERMINATED, 0, NULL);
+        currentProcess = getNextProcess();
     }
-
-    currentProcess = dequeueProcess(processQueue); // Obtener el siguiente proceso de la cola
-    currentProcess.state = RUNNING; // Cambiar el estado del proceso a RUNNING
-
-    return currentProcess.rsp; // Retornar el rsp del nuevo proceso
-    
+    currentProcess.state = RUNNING;
+    return currentProcess.rsp;
 }
 
 
 // Desbloquea el primer proceso esperando en la cola recibida por parametro
-uint64_t unblock_process_from_queue(processQueueADT blockedQueue){
-    processCB process = dequeueProcess(blockedQueue);
+uint64_t unblock_process_from_queue(processQueueADT source){
+    processCB process = dequeueProcess(source);
+    find_pid_dequeue(allBlockedQueue, process.pid);
     process.state = READY;
-    addProcessToQueue(processQueue, process);
+    add_priority_queue(process);
 }
 
 uint8_t add_priority_queue(processCB process){

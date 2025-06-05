@@ -18,22 +18,11 @@
 
 typedef uint64_t (*program_t)(uint64_t argc, char *argv[]);
 
-
-// BORRAR
-// typedef struct{
-//     lock_t lock;
-//     char name[SEM_NAME_SIZE];
-//     int value;
-//     processQueueADT blockedQueue;
-// } semaphore_t;
-
 void halt_asm();
 
 void cli_asm();
 
 void sti_asm();
-
-// void scheduling_handler();
 
 void init_scheduler();
 
@@ -42,8 +31,6 @@ uint64_t create_process(int priority, program_t program, uint64_t argc, char *ar
 uint64_t create_process_state(int priority, program_t program, int state, uint64_t argc, char *argv[]);
 
 uint64_t schedule(void* rsp);
-
-// void *fill_stack(uintptr_t sp, void (* initProcessWrapper)(program_t, uint64_t, char**), program_t entryPoint, uint64_t argc, char ** argv);
 
 processCB getNextProcess();
 
@@ -72,13 +59,6 @@ void cp_halt();
 uint64_t createProcess(int priority, program_t program,  uint64_t argc, char *argv[]);
 
 uint64_t create_process_state(int priority, program_t program, int state, uint64_t argc, char *argv[]);
-
-
-// int64_t sem_open(char *sem_id, uint64_t initialValue);
-// int64_t sem_close(char * sem_id);
-// void sem_wait(char * sem_name);
-// int64_t sem_post(char *sem_id);
-
 
 // Queue management
 uint8_t add_priority_queue(processCB process);

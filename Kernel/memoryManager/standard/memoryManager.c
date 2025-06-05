@@ -6,8 +6,8 @@ int size, current;
 
 void * free_ptrs[CHUNK_COUNT];
 
-void * mem_init(void * ptr, int s){
-    start = ((uintptr_t)(ptr) + ((ALIGNMENT) - ((uintptr_t)(ptr) % (ALIGNMENT))));
+void mem_init(void * ptr, int s){
+    start = ALIGN_POINTER(ptr, ALIGNMENT);
     
     size = s;
     current = 0;
