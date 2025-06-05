@@ -60,3 +60,31 @@ char *strcpyForParam(char *dest, const char *src, const char *src2){
 	dest[i] = 0;
 	return dest;
 }
+
+void intToStr(int value, char * str){
+	int i = 0;
+	int isNegative = 0;
+
+	if (value == 0) {
+		str[i++] = '0';
+		str[i] = '\0';
+		return;
+	}
+	if (value < 0) {
+		isNegative = 1;
+		value = -value;	
+	}
+	while (value > 0) {
+		str[i++] = (value % 10) + '0';
+		value /= 10;
+	}
+	if (isNegative) {
+		str[i++] = '-';	
+	}
+	str[i] = '\0';
+	for(int j = 0; j < i / 2; j++) {
+		char temp = str[j];
+		str[j] = str[i - j - 1];
+		str[i - j - 1] = temp;
+	}
+}

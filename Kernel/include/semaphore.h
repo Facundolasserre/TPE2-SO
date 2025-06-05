@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <interrupts.h>
 #include <processQueue.h>
+#include <scheduler.h>
 
 #define SEM_NAME_SIZE 32
 

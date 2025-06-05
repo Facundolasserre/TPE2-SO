@@ -10,6 +10,8 @@
 #include <interrupts.h>
 #include <scheduler.h>
 #include "include/memoryManager.h"
+#include <pipe.h>
+
 #define MEM_SIZE 1024*1024
 
 
@@ -83,6 +85,7 @@ int main()
 	
 
     initScheduler();
+	initPipes();
 
 	createProcess(0, sampleCodeModuleAddress, 0, NULL);
 

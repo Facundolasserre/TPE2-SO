@@ -5,8 +5,7 @@
 #define QUANTUM 5
 #define IO_BOUND_QUANTUM 7
 #define CPU_BOUND_QUANTUM 3
-// #define MAX_SEMAPHORES (CHUNK_SIZE / sizeof(semaphore_t))
-// #define SEM_NAME_SIZE 32
+#define TOTAL_QUEUES 5
 
 
 

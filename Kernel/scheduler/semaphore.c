@@ -1,5 +1,5 @@
 #include <scheduler.h>
-#include "include/semaphore.h"
+#include <semaphore.h>
 #include <memoryManager.h>
 #include <processQueue.h>
 #include <utils.h>

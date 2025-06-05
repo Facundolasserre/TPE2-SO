@@ -91,18 +91,48 @@ processCB getNextProcess(){
 }
 
 void list_processes(char *buffer){
-    // //8 chars para el state, 3 para el pid, 1 para un espacio y 1 para newline
-    // buffer = mem_alloc(10 + (get_size(processQueue) + get_size(blockedQueue)) * 13);
-    // // sprintf(buffer, "PID | STATE\n");
-    // while(hasNextProcess(processQueue)){
-    //     processCB process = dequeueProcess(processQueue);
-    //     // sprintf(buffer, "%s %.8s", "TODO", process.pid, process.state);
+
+    // buffer = mem_alloc();
+
+    // if(currentProcess.pid != -1){
+    //     addProcessToBuffer(currentProcess, buffer);
     // }
-    // while(hasNextProcess(blockedQueue)){
-    //     processCB process = dequeueProcess(processQueue);
-    //     // sprintf(buffer, "%s %.8s", "TODO", process.pid, process.state);
+
+    // processCB process;
+    // processQueueADT queues[] = {processQueue, blockedQueue, blockedReadQueue, blockedSemaphoreQueue, allBlockedQueue};
+
+    // for( int i=0 ; i < TOTAL_QUEUES ; i++ ){
+    //     while(hasNextProcess(currentProcess)){
+    //         process = dequeueProcess(currentProcess);
+    //         addProcessToBuffer(process, buffer);
+    //         addProcessToQueue(currentProcess, process);
+    //     }
     // }
+
 }
+
+// void addProcessToBuffer(processCB process, char * buffer){
+//     char * state = getStateString(process.state);
+
+// }
+
+// char * getStateString(int state){
+//     char * stateString;
+//     switch(state){
+//         case READY:
+//             stateString = "READY";
+//             break;
+//         case RUNNING:
+//             stateString = "RUNNING";
+//             break;
+//         case BLOCKED:
+//             stateString = "BLOCKED";
+//             break;
+//         case TERMINATED:
+//             stateString = "TERMINATED";
+//             break;
+//     }
+// }
 
 uint64_t kill_process(uint64_t pid){
     processCB process;
