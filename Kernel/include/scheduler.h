@@ -38,7 +38,7 @@ void initProcessWrapper(program_t entryPoint, uint64_t argc, char ** argv);
 
 uint64_t kill_process(uint64_t pid);
 
-void list_processes(char * buffer);
+void list_processes();
 
 uint64_t block_process();
 
@@ -54,7 +54,7 @@ uint64_t get_PID();
 
 int addFileDescriptorCurrentProcess(openFile_t * fd);
 
-int removeFileDescriptorCurrentProcess(openFile_t * fd);
+void waitPid(uint64_t pid);
 
 void yield();
 

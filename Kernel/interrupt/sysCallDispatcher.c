@@ -12,7 +12,7 @@
 #define STDIN 0
 #define STDOUT 1
 #define STDERR 2
-#define SYS_CALLS_QTY 25
+#define SYS_CALLS_QTY 34
 
 extern uint8_t hasregisterInfo;
 extern const uint64_t registerInfo[17];
@@ -166,8 +166,8 @@ static uint64_t sys_stopSpeaker()
 }
 
 //syscalls para semaforos
-static int64_t sys_sem_open(char * name, uint64_t init_value){
-    sem_open(name, init_value);
+static int sys_sem_open(char * name, uint64_t init_value){
+    return sem_open(name, init_value);
 }
 static int64_t sys_sem_close(char * name){
     return sem_close(name);
@@ -181,7 +181,10 @@ static int64_t sys_sem_post(char * name){
 
 
 
-//nuevas syscalls para memorymanager
+static void sys_wait_pid(uint64_t pid){
+    wait_pid(pid);
+}
+
 static void sys_mem_init(void *ptr, int size){
     return mem_init(ptr, size);
 }
@@ -202,8 +205,8 @@ static void s_kill_process(uint64_t pid){
     kill_process(pid);
 }
 
-static void s_list_processes(char *buf){
-    list_processes(buf);
+static void s_list_processes(){
+    list_processes();
 }
 
 static uint64_t s_getPID(){
@@ -280,10 +283,11 @@ static uint64_t (*syscalls[])(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t) 
     (void *)sys_sem_close,          // 29
     (void *)sys_sem_wait,           // 30
     (void *)sys_sem_post,            // 31
-    (void *)sys_read_fd,            // 32
-    (void *)sys_write_fd,           // 33
-    (void *)sys_open_fd,            // 34
-    (void *)sys_close_fd           // 35
+    (void *)sys_wait_pid,         // 32
+    (void *)sys_read_fd,            // 33
+    (void *)sys_write_fd,           // 34
+    (void *)sys_open_fd,            // 35
+    (void *)sys_close_fd           // 36
 };
 
 uint64_t syscall_dispatcher(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10, uint64_t r8, uint64_t rax) {

@@ -14,10 +14,10 @@
 void initFileDescriptors();
 
 //devuelve el fd para la entrada estándar
-openFile_t getSTDIN_FD();
+openFile_t * getSTDIN_FD();
 
 //devuelve el fd para la salida estándar
-openFile_t getSTDOUT_FD();
+openFile_t * getSTDOUT_FD();
 
 //abre un fd segun su id, devuelve el indice del fd abierto
 //si no se encuentra el fd devuelve -1

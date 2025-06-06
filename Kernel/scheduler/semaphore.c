@@ -52,15 +52,15 @@ void removeSemaphore(char * name){
     
 }
 
-void semOpen(char *name, uint64_t init_value){
+int semOpen(char *name, uint64_t init_value){
     semaphore_t * aux = (semaphore_t *)listGet(semList, name);
 
     if(aux == NULL){
-        aux = addSemaphore(name, init_value);
+        return addSemaphore(name, init_value);
     }else{
         (aux->processesCount)++;
     }
-    return;
+    return 0;
 }
 
 void semClose(char * name){

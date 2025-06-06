@@ -7,8 +7,10 @@
 #include <stdlib.h>
 #include <fileDescriptor.h>
 #include <openFile.h>
+#include <list.h>
 
 
+typedef struct processQueueCDT * processQueueADT;
 
 //process control block (informacion de un proceso)
 typedef struct processCB{ 
@@ -25,10 +27,9 @@ typedef struct processCB{
         HALT
     } state;
     openFile_t * fdTable[MAX_FD];
-
+    processQueueADT waitingQueue;
 } processCB;
 
-typedef struct processQueueCDT * processQueueADT;
 
 size_t get_size(processQueueADT queue);
 
@@ -52,5 +53,7 @@ int hasNextProcess(processQueueADT queue);//verifica si la cola tiene mas proces
 processCB nextProcess(processQueueADT queue); // devuelve el siguiente proceso de la cola y avanza el iterador
 
 processCB dequeueProcess(processQueueADT queue); // saca el primer proceso de la cola y lo devuelve, si no hay procesos devuelve NULL
+
+processCB returnNullProcess();
 
 #endif 

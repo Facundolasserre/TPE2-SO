@@ -27,7 +27,7 @@ int addSemaphore(char * name, int initialValue);
 
 void removeSemaphore(char * name);
 
-void semOpen(char *sem_name, uint64_t init_value);
+int semOpen(char *sem_name, uint64_t init_value);
 
 void semClose(char * sem_name);
 

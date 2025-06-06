@@ -29,7 +29,7 @@ int isDownArrow(char c);
 
 void printHelp()
 {
-	printsColor("\n\n    >'help' or 'ls'     - displays this shell information", MAX_BUFF, GREEN);
+	printsColor("\n\n    >'help' or 'ls'   - displays this shell information", MAX_BUFF, GREEN);
 	printsColor("\n    >setusername        - set username", MAX_BUFF, GREEN);
 	printsColor("\n    >whoami             - display current username", MAX_BUFF, GREEN);
 	printsColor("\n    >time               - display current time", MAX_BUFF, GREEN);
@@ -40,19 +40,20 @@ void printHelp()
 	printsColor("\n    >zerodiv            - testeo divide by zero exception", MAX_BUFF, GREEN);
 	printsColor("\n    >invopcode          - testeo invalid op code exception", MAX_BUFF, GREEN);
 	printsColor("\n    >eliminator         - launch ELIMINATOR videogame", MAX_BUFF, GREEN);
-	printsColor("\n    >mem_test            - testeo del memory manager", MAX_BUFF, GREEN);
+	printsColor("\n    >mem_test           - testeo del memory manager", MAX_BUFF, GREEN);
 	printsColor("\n    >schetest           - test scheduler", MAX_BUFF, GREEN);
 	printsColor("\n    >priotest           - priority scheduler", MAX_BUFF, GREEN);
 	printsColor("\n    >testschedulerprocesses - test scheduler processes", MAX_BUFF, GREEN);
-	printsColor("\n    >testsync            - test sync processes", MAX_BUFF, GREEN);
+	printsColor("\n    >testsync           - test sync processes", MAX_BUFF, GREEN);
+	printsColor("\n    >ps                 - list all processes", MAX_BUFF, GREEN);
 
 	printsColor("\n    >exit               - exit OS\n", MAX_BUFF, GREEN);
 
 	printc('\n');
 }
 
-const char *commands[] = {"undefined", "help", "ls", "time", "clear", "registersinfo", "zerodiv", "invopcode", "setusername", "whoami", "exit", "ascii", "eliminator", "memtest", "schetest", "priotest", "testschedulerprocesses", "testsync"};
-static void (*commands_ptr[MAX_ARGS])() = {cmd_undefined, cmd_help, cmd_help, cmd_time, cmd_clear, cmd_registersinfo, cmd_zeroDiv, cmd_invOpcode, cmd_setusername, cmd_whoami, cmd_exit, cmd_ascii, cmd_eliminator, cmd_memoryManagerTest, cmd_schetest, cmd_priotest, cmd_testschedulerprocesses, cmd_test_sync};
+const char *commands[] = {"undefined", "help", "ls", "time", "clear", "registersinfo", "zerodiv", "invopcode", "setusername", "whoami", "exit", "ascii", "eliminator", "memtest", "schetest", "priotest", "testschedulerprocesses", "testsync", "ps"};
+static void (*commands_ptr[MAX_ARGS])() = {cmd_undefined, cmd_help, cmd_help, cmd_time, cmd_clear, cmd_registersinfo, cmd_zeroDiv, cmd_invOpcode, cmd_setusername, cmd_whoami, cmd_exit, cmd_ascii, cmd_eliminator, cmd_memoryManagerTest, cmd_schetest, cmd_priotest, cmd_testschedulerprocesses, cmd_test_sync, cmd_ps};
 
 void shell()
 {
@@ -270,9 +271,7 @@ void handleSpecialCommands(char c)
 }
 
 void cmd_ps(){
-	char * buffer;
-	sys_list_processes(buffer);
-	prints(buffer, strlen(buffer));
+	sys_list_processes();
 }
 
 void cmd_eliminator()
@@ -313,14 +312,33 @@ void cmd_memoryManagerTest(){
 }
 
 
-void historyCaller(int direction)
-{
-	cmd_clear();
-	printPrompt();
+void historyCaller(int direction){
+	
+	for(int i=0 ; i<linePos ; i++){
+		printc('\b');
+	}
+
+	for(int i=0 ; i<linePos ; i++){
+		printc(' ');
+	}
+
+	for(int i=0 ; i<linePos ; i++){
+		printc('\b');
+	}
+
 	commandIterator += direction;
-	prints(commandHistory[commandIterator], MAX_BUFF);
+
+	if(commandIterator < 0){
+		commandIterator = 0;
+	}else if(commandIterator >= commandIdxMax){
+		commandIterator = commandIdxMax - 1;
+	}
+
 	strcpy(line, commandHistory[commandIterator]);
 	linePos = strlen(commandHistory[commandIterator]);
+
+	prints(commandHistory[commandIterator], MAX_BUFF);
+
 }
 
 void cmd_ascii()

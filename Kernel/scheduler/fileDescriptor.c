@@ -168,6 +168,11 @@ uint64_t openFD(uint64_t id){
 
 
 int closeFD(uint64_t id){
+
+    if(id < 2){
+        return 0;
+    }
+
     openFile_t *found_fd = (openFile_t *)listGet(openFDList, id);
     
     if(found_fd == NULL){

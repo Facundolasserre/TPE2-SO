@@ -389,19 +389,21 @@ uint64_t test_sync(uint64_t argc, char *argv[]) { //{n, use_sem, 0}
     pids[i + TOTAL_PAIR_PROCESSES] = sys_create_process(0, &my_process_inc, 3, mem_alloc_args(argvDec));
   }
 
-  // for (i = 0; i < TOTAL_PAIR_PROCESSES; i++) {
-  //   my_wait(pids[i]);
-  //   my_wait(pids[i + TOTAL_PAIR_PROCESSES]);
-  // }
+  for(i=0 ; i<TOTAL_PAIR_PROCESSES ; i++){
+    prints("Waiting for process with PID: ", strlen("Waiting for process with PID: "));
+    printDec(pids[i]);
+    prints("\n", strlen("\n"));
+    sys_wait_pid(pids[i]);
 
-  // for (i = 0; i < TOTAL_PAIR_PROCESSES; i++) {
-  //   wait(pids[i]);
-  //   wait(pids[i + TOTAL_PAIR_PROCESSES]);
-  // }
+    prints("Waiting for process with PID: ", strlen("Waiting for process with PID: "));
+    printDec(pids[i + TOTAL_PAIR_PROCESSES]);
+    prints("\n", strlen("\n"));
+    sys_wait_pid(pids[i + TOTAL_PAIR_PROCESSES]);
+  }
 
-  //prints("Final value: ", strlen("Final value: "));
-  //printDec(global);
-  //prints("\n", strlen("\n"));
+  prints("Final value: ", strlen("Final value: "));
+  printDec(global);
+  prints("\n", strlen("\n"));
 
   return 0;
 }

@@ -1,1 +1,27 @@
+#Macos
+.DS_Store
+
+.vscode
+.idea
+
+.bash_history
+.gdb_history
+.gdbinit
+
+#Binary Files
+*.bin
+*.sys
+
+#The images
+*.img
+*.qcow2
+*.vmdk
+*.elf
+
+#Object files
 *.o
+
+#pina
+PDF/
+
+Linux.utm/

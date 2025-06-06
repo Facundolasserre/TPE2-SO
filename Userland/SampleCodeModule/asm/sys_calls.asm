@@ -36,6 +36,7 @@ GLOBAL sys_sem_wait
 GLOBAL sys_sem_post
 
 GLOBAL sys_sem_close
+GLOBAL sys_wait_pid
 
 GLOBAL sys_write_fd
 GLOBAL sys_read_fd
@@ -219,22 +220,27 @@ sys_sem_post:
     int 80h
     ret
 
-sys_read_fd:
+sys_wait_pid:
     mov rax, 0x20
     int 80h
     ret
 
-sys_write_fd:
+sys_read_fd:
     mov rax, 0x21
     int 80h
     ret
 
-sys_open_fd:
+sys_write_fd:
     mov rax, 0x22
     int 80h
     ret
 
-sys_close_fd:
+sys_open_fd:
     mov rax, 0x23
+    int 80h
+    ret
+
+sys_close_fd:
+    mov rax, 0x24
     int 80h
     ret
