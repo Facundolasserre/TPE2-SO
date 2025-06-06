@@ -11,6 +11,7 @@
 #include <scheduler.h>
 #include "include/memoryManager.h"
 #include <pipe.h>
+#include <fileDescriptor.h>
 
 #define MEM_SIZE 1024*1024
 
@@ -81,6 +82,8 @@ int main()
 	load_idt();
 
 
+	initFileDescriptors();
+	initSemaphores();
 	initPipes();
 	init_scheduler();
 	initKeyboard();

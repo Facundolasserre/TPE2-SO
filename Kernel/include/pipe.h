@@ -20,7 +20,7 @@ int initPipes();
 
 int pipeCreate();
 
-int pipeDestroy(uint16_t pipeId);
+void pipeDestroy(uint16_t pipeId);
 
 char pipeRead(uint16_t pipeId);
 

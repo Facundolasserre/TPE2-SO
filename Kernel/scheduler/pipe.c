@@ -25,17 +25,17 @@ int pipeCreate(){
     return newPipe->id;
 }
 
-int pipeDestroy(uint16_t pipeId){
+void pipeDestroy(uint16_t pipeId){
     pipe target = {.id = pipeId};
     pipe * found = (pipe *)listGet(pipesList, &target);
 
     if(found == NULL){
-        return 0;
+        return;
     }
-    int to_return = listRemove(pipesList, found);
+    listRemove(pipesList, found);
     freePipe(found);
 
-    return to_return;
+    return;
 }
 
 char pipeRead(uint16_t pipeId){
@@ -69,8 +69,9 @@ int pipeWrite(uint16_t pipeId, char c){
     found->buffer[found->writeIndex] = c;
     found->writeIndex = (found->writeIndex + 1) % BUFFER_SIZE;
 
-    sem_post(found->sem_name_data_available);
+    
     sem_post(found->sem_name_mutex);
+    sem_post(found->sem_name_data_available);
 
     return 0;
 }
@@ -97,11 +98,11 @@ pipe * pipeInit(){
     newPipe->readIndex = 0;
     newPipe->writeIndex = 0;
 
-    newPipe->sem_name_data_available = mem_alloc(SEMAPHORE_NAME_SIZE * sizeof(char));
+    newPipe->sem_name_data_available = (char *)mem_alloc(SEMAPHORE_NAME_SIZE * sizeof(char));
     getSemaphoreName("pipe_sem", newPipe->id, newPipe->sem_name_data_available);
     sem_open(newPipe->sem_name_data_available, 0);
 
-    newPipe->sem_name_mutex = mem_alloc(SEMAPHORE_NAME_SIZE * sizeof(char));
+    newPipe->sem_name_mutex = (char *)mem_alloc(SEMAPHORE_NAME_SIZE * sizeof(char));
     getSemaphoreName("pipe_mutex", newPipe->id, newPipe->sem_name_mutex);
     sem_open(newPipe->sem_name_mutex, 1);
 

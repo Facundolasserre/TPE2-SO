@@ -2,11 +2,19 @@
 #include <memoryManager.h>
 #include <processQueue.h>
 #include <utils.h>
+#include <fileDescriptor.h>
+
 
 
 
 processCB currentProcess;
+processCB haltProcess;
 uint64_t PID = 0;
+
+processQueueADT process0 = NULL;
+processQueueADT process1 = NULL;
+processQueueADT process2 = NULL;
+processQueueADT process3 = NULL;
 
 processQueueADT processQueue = NULL; 
 processQueueADT blockedQueue = NULL; // Cola de procesos bloqueados para operaciones generales
@@ -24,24 +32,45 @@ processQueueADT semQueue = NULL;
 
 //retorna -1 por error
 uint64_t createProcess(int priority, program_t program, uint64_t argc, char *argv[]) {
-    return create_process_state(priority, program, READY, argc, argv);
+    return create_process_state(priority, program, READY, argc, argv); //agregar nuevos param
 }
 
 //retorna -1 por error
-uint64_t create_process_state(int priority, program_t program, int state, uint64_t argc, char *argv[]){
+uint64_t create_process_state(int priority, program_t program, int state, uint64_t argc, char *argv[], uint8_t isForeground, openFile_t *fds[MAX_FD], uint64_t fdCount) {
+
+    if(isForeground && fdCount < 3){
+        return -1;
+    }
+
+
     void* base_pointer = mem_alloc(STACK_SIZE);
 
     if(base_pointer == NULL) return -1;
-    //base_pointer += STACK_SIZE
+    
 
     void * stackPointer = fill_stack(base_pointer, initProcessWrapper, program, argc, argv);
+
+    openFile_t *fdTable[MAX_FD] = {NULL};
+    uint8_t fd_idx = 0;
+
+    if(isForeground){
+        fdTable[0] = get_stdin();
+        fdTable[1] = get_stdout();
+        fd_idx = 2;
+    }
+
+    for(;fd_idx < fdCount; fd_idx++){
+        fdTable[fd_idx] = fds[fd_idx];
+    }
 
     processCB newProcess = {
         PID++,
         stackPointer,
         QUANTUM,
         0,
-        READY};
+        state,
+        fdTable
+        };
 
     add_priority_queue(newProcess);
     return newProcess.pid;
@@ -67,9 +96,9 @@ void halt(){
     }
 }
 
-void cp_halt(){
-    create_process_state(0, &halt, TERMINATED, 0, NULL);
-}
+// void cp_halt(){
+//     create_process_state(0, &halt, TERMINATED, 0, NULL);
+// }
 
 uint64_t get_PID(){
     return currentProcess.pid;
@@ -77,19 +106,39 @@ uint64_t get_PID(){
 
 processCB getNextProcess(){
     processCB nextProcess;
-    if(hasNextProcess(processQueue)){
-        nextProcess = dequeueProcess(processQueue);
-    } else if(hasNextProcess(blockedQueue)){
-        nextProcess = dequeueProcess(blockedQueue);
-    }else if(hasNextProcess(blockedReadQueue)){
-        nextProcess = dequeueProcess(blockedReadQueue);
-    }else if(hasNextProcess(blockedSemaphoreQueue)){
-        nextProcess = dequeueProcess(blockedSemaphoreQueue);
+    if(hasNextProcess(process0)){
+        nextProcess = dequeueProcess(process0);
+    } else if(hasNextProcess(process1)){
+        nextProcess = dequeueProcess(process1);
+    }else if(hasNextProcess(process2)){
+        nextProcess = dequeueProcess(process2);
+    }else if(hasNextProcess(process3)){
+        nextProcess = dequeueProcess(process3);
     }else{
-        return (processCB){-1, 0, 0, 0, 0, TERMINATED};
+        return (processCB){-1, 0, 0, 0, 0, TERMINATED, NULL};
     }
     return nextProcess;
 }
+
+processCB create_halt_process(){
+    void *base_pointer = mem_alloc(STACK_SIZE);
+    if(base_pointer == NULL){
+         return (processCB){-1, 0, 0, 0, 0, TERMINATED, NULL};
+    }
+    void * stack_pointer = fill_stack(base_pointer, initProcessWrapper, &halt, 0, 0);
+    processCB new_process = {
+                        PID++,                 //pid
+                        stack_pointer,      //rsp
+                        0,                  //priority
+                        QUANTUM,    //assigned_quantum
+                        0,                  //used_quantum
+                        HALT,             //state
+                        NULL
+                        };
+    haltProcess = new_process;
+    return new_process;
+}
+
 
 void list_processes(char *buffer){
 
@@ -193,12 +242,17 @@ void initScheduler(){
 
     currentSemaphore = 0;
 
-    processQueue = newProcessQueue(); // Crear una nueva cola de procesos
-    blockedQueue = newProcessQueue(); // Crear una nueva cola de procesos bloqueados
-    blockedReadQueue = newProcessQueue();
-    blockedSemaphoreQueue = newProcessQueue();
+    process0 = newProcessQueue();
+    process1 = newProcessQueue();
+    process2 = newProcessQueue();
+    process3 = newProcessQueue();
+
+    
     allBlockedQueue = newProcessQueue();
-    currentProcess = (processCB){0, 0, 0, 0, 0, TERMINATED};
+    
+   
+
+    currentProcess = (processCB){0, 0, 0, 0, 0, TERMINATED, NULL};
 
 }
 
@@ -233,25 +287,36 @@ uint64_t schedule(void* rsp){
     
      }else if (currentProcess.state == READY){ //proceso TERMINATED
         add_priority_queue(currentProcess);
-    } else{
+    } else if (currentProcess.state == TERMINATED){
         mem_free(currentProcess.rsp);
     }
 
-    //Aca el proceso actual no esta RUNNING basicamente
+    
     currentProcess = getNextProcess();
-    if(currentProcess.pid == -1){
-        create_process_state(0, &halt, TERMINATED, 0, NULL);
-        currentProcess = getNextProcess();
+    if(currentProcess.state != READY){
+        currentProcess = haltProcess;
+    }else{
+       currentProcess.state = RUNNING; 
     }
-    currentProcess.state = RUNNING;
+    
     return currentProcess.rsp;
 }
 
 
 // Desbloquea el primer proceso esperando en la cola recibida por parametro
 uint64_t unblock_process_from_queue(processQueueADT source){
-    processCB process = dequeueProcess(source);
-    find_pid_dequeue(allBlockedQueue, process.pid);
+    processCB temp = dequeueProcess(source);
+
+    if(temp.pid < 0){
+        return -1;
+    }
+
+    processCB process = find_pid_dequeue(allBlockedQueue, temp.pid);
+
+    if(process.pid < 0){
+        return -1;
+    }
+
     process.state = READY;
     add_priority_queue(process);
 }
@@ -289,5 +354,36 @@ processCB find_dequeue_priority(uint64_t pid){
     process = find_pid_dequeue(blockedSemaphoreQueue, pid);
     if(process.pid > 0) return process;
 
-    return (processCB){-1, 0, 0, 0, 0, TERMINATED};
+    return (processCB){-1, 0, 0, 0, 0, TERMINATED, NULL};
+}
+
+//Agrega un FD al proceso actual
+int addFileDescriptorCurrentProcess(uint64_t fd_id){
+    //ARREGLAR: compare
+    for(int i = 0; i < MAX_FD; i++){
+        if(compare_file_descriptors(currentProcess.fdTable[i], fd_id) == 0){
+            return i;
+        }
+    }
+
+    for(int i = 0; i < MAX_FD; i++){
+        if(currentProcess.fdTable[i] == NULL){
+            currentProcess.fdTable[i] = fd_id;
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+//Elimina un FD de la tabla de FD del proceso actual
+int removeFileDescriptorCurrentProcess(openFile_t *fd){
+    //ARREGLAR: compare
+    for(int i = 0; i < MAX_FD; i++){
+        if(compare_file_descriptors(currentProcess.fdTable[i], fd) == 0){
+            currentProcess.fdTable[i] = NULL;
+            return 1;
+        }
+    }
+    return 0;
 }

@@ -1,3 +1,5 @@
+// Este archivo implementa un administrador de memoria utilizando el algoritmo Buddy System.
+// Permite la asignación y liberación de bloques de memoria de manera eficiente.
 
 #include <memoryManager.h>
 
@@ -26,10 +28,19 @@ node_t *root;
 
 unsigned memory_allocated = 0;
 
+// Función recursiva para asignar memoria a partir de un nodo padre.
 void *rec_alloc(node_t * parent, unsigned s);
+
+// Función recursiva para liberar memoria a partir de un nodo.
 int rec_free(node_t *node, void *ptr);
+
+// Actualiza el estado de un nodo basado en el estado de sus hijos.
 void update_state(node_t *node);
+
+// Crea los nodos hijos para un nodo padre.
 void create_children(node_t *parent);
+
+// Devuelve la siguiente potencia de 2 mayor o igual al tamaño dado.
 static unsigned next_power_of_2(unsigned size);
 
 // static unsigned next_power_of_2(unsigned size) {
@@ -41,6 +52,7 @@ static unsigned next_power_of_2(unsigned size);
 //     return size + 1;
 // }
 
+// Crea los nodos hijos para un nodo padre.
 void create_children(node_t *parent){
     unsigned idx = parent->index * 2 + 1;
 
@@ -62,6 +74,7 @@ void create_children(node_t *parent){
     parent->right->state = FREE;
 }
 
+// Actualiza el estado de un nodo basado en el estado de sus hijos.
 void update_state(node_t *node){
     if (!node->right || !node->left) {
         node->state = FREE;
@@ -77,6 +90,7 @@ void update_state(node_t *node){
     }
 }
 
+// Función recursiva para liberar memoria a partir de un nodo.
 int rec_free(node_t *node, void *ptr){
     if (!node->left && !node->right && node->state == FULL && node->mem_ptr == ptr){
         node->state = FREE;
@@ -100,12 +114,14 @@ int rec_free(node_t *node, void *ptr){
     return to_ret;
 }
 
+// Libera un bloque de memoria dado un puntero.
 void mem_free(void *ptr){
     if(root){
         rec_free(root, ptr);
     }
 }
 
+// Inicializa el administrador de memoria con un puntero y tamaño dados.
 void mem_init(void *ptr, int s){
     root = (node_t *)ptr;
     root->index = 0;
@@ -114,6 +130,7 @@ void mem_init(void *ptr, int s){
     root->mem_ptr = (void *)MEMORY_START;
 }
 
+// Asigna un bloque de memoria de un tamaño dado.
 void * mem_alloc(uint32_t s){
     if(s > root->size){
         return NULL;
@@ -130,6 +147,7 @@ void * mem_alloc(uint32_t s){
     return rec_alloc(root, s);
 }
 
+// Función recursiva para asignar memoria a partir de un nodo padre.
 void *rec_alloc(node_t *parent, unsigned s){
     if(parent->state == FULL) return NULL;
 

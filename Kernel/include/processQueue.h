@@ -5,6 +5,9 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <fileDescriptor.h>
+
+#define MAX_FD 10 // Maximo de file descriptors que puede tener un proceso
 
 //process control block (informacion de un proceso)
 typedef struct processCB{ 
@@ -17,8 +20,10 @@ typedef struct processCB{
         RUNNING,
         READY,
         BLOCKED,
-        TERMINATED
+        TERMINATED,
+        HALT
     } state;
+    openFile_t *fds[MAX_FD]; //puntero a los file descriptors del proceso
 
 } processCB;
 

@@ -1,10 +1,17 @@
+// Este archivo implementa un administrador de memoria básico que gestiona bloques de memoria
+// utilizando un enfoque de lista de punteros libres.
+
 #include <memoryManager.h>
 
+// Puntero al inicio de la memoria.
 void * start;
 
+// Tamaño de la memoria y el índice actual.
 int size, current;
 
+// Lista de punteros libres.
 void * free_ptrs[CHUNK_COUNT];
+
 
 void mem_init(void * ptr, int s){
     start = ALIGN_POINTER(ptr, ALIGNMENT);

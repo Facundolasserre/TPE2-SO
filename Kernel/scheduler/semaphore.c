@@ -3,125 +3,119 @@
 #include <processQueue.h>
 #include <utils.h>
 #include <semaphore.h>
+#include <list.h>
 
 
-typedef struct semaphoreList_t{
-    semaphore_t semaphore;
-    struct semaphoreList_t *next;
-} semaphoreList_t;
+List * semList;
 
-semaphoreList_t * semList = NULL;
+int semCompare(const void *semA, const void *semB) {
+    const semaphore_t * sem_a = (const semaphore_t *)semA;
+    const char *sem_b_name = (char*)semB;
+    return strcmp(sem_a->name, sem_b_name);
+}
 
+int initSemaphores(){
+    semList = listInit(semCompare);
+    if(semList == NULL){
+        return -1;
+    }
+}
 
-semaphoreList_t * add_semaphore(semaphoreList_t **head, char * name, int initialValue) {
-    semaphoreList_t * newSemaphore = (semaphoreList_t*)mem_alloc(sizeof(semaphoreList_t));
+semaphoreList_t * addSemaphore(char * name, int initialValue) {
+    semaphore_t * newSemaphore = (semaphoreList_t*)mem_alloc(sizeof(semaphoreList_t));
 
-    strcpy(newSemaphore->semaphore.name, name, strlen(name));
-
-    newSemaphore->semaphore.value = initialValue;
-    newSemaphore->semaphore.lock = 1;
-    newSemaphore->semaphore.blockedQueue = newProcessQueue();
-
-    if (*head == NULL) {
-        *head = newSemaphore;
-    } else {
-        semaphoreList_t *aux = *head;
-        while (aux->next != NULL) {
-            aux = aux->next;
-        }
-        aux->next = newSemaphore;
+    if(newSemaphore == NULL){
+        return -1;
     }
 
-    return newSemaphore;
+    strcpy(newSemaphore->name, name, strlen(name));
+
+    newSemaphore->value = initialValue;
+    newSemaphore->lock = 1;
+    newSemaphore->blockedQueue = newProcessQueue();
+    newSemaphore->processesCount = 1;
+
+    listAdd(semList, newSemaphore);
+
+    return 0;
 }
 
 
-void remove_sem(semaphoreList_t **head, char * name){
-    semaphoreList_t *temp = *head;
-    semaphoreList_t *prev = NULL;
+void removeSemaphore(char * name){
+    semaphore_t * foundSemaphore = (semaphore_t *)listGet(semList, name);
+    
+    listRemove(semList, name);
 
-    if (temp != NULL && strcmp(temp->semaphore.name, name) == 0) {
-        *head = temp->next;
-        freeProcessQueue(temp->semaphore.blockedQueue);
-        mem_free(temp);
+    mem_free(foundSemaphore);
+    
+}
+
+void sem_open(char *name, uint64_t init_value){
+    semaphore_t * aux = (semaphore_t *)listGet(semList, name);
+
+    if(aux == NULL){
+        aux = addSemaphore(name, init_value);
+    }else{
+        (aux->processesCount)++;
+    }
+    return;
+}
+
+void sem_close(char * name){
+    semaphore_t * aux = (semaphore_t *)listGet(semList, name);
+
+    if(aux == NULL){
         return;
     }
 
-    while (temp != NULL && strcmp(temp->semaphore.name, name) != 0) {
-        prev = temp;
-        temp = temp->next;
-    }
+    acquire(&(aux->lock));
+    (aux->processesCount)--;
+    release(&(aux->lock));
 
-    if (temp == NULL) {
+    if(aux->processesCount == 0){
+        removeSemaphore(name);
         return;
     }
 
-    prev->next = temp->next;
-
-    while(hasNextProcess(temp->semaphore.blockedQueue)){
-        unblock_process_from_queue(temp->semaphore.blockedQueue);   
-    }
-    freeProcessQueue(temp->semaphore.blockedQueue);
-    mem_free(temp);
+    return;
 }
 
 
-semaphoreList_t* find_sem(char * sem_name){
-    semaphoreList_t * aux = semList;
-    while(aux != NULL){
-        if(strcmp(aux->semaphore.name, sem_name) == 0)
-            return aux;
-        aux = aux->next;
+
+void sem_wait(char * name){
+    semaphore_t * aux = (semaphore_t *)listGet(semList, name);
+
+    if(aux == NULL){
+        return;
     }
-    return NULL;
+
+    acquire(&(aux->lock));
+    uint8_t toBlock = aux->value <= 0;
+    (aux->value)--;
+    release(&(aux->lock));
+
+    if(toBlock){
+        block_current_process_to_queue(aux->blockedQueue);
+    }
+    return;
+
 }
 
+int64_t sem_post(char * name){
+    semaphore_t * aux = (semaphore_t *)listGet(semList, name);
 
-int64_t sem_open(char *sem_name, uint64_t init_value){
-    semaphoreList_t * aux = find_sem(sem_name);
-    if(aux == NULL)
-        aux = add_semaphore(&semList, sem_name, init_value);
-    // acquire(aux->semaphore.lock);
-    // aux->semaphore.value++;
-    // release(aux->semaphore.lock);
-    return 0;
-}
-
-int64_t sem_close(char * sem_name){
-    semaphoreList_t * aux = find_sem(sem_name);
-    if(aux != NULL) {
-        acquire(aux->semaphore.lock);
-        if(aux->semaphore.value > 0)
-            aux->semaphore.value--;
-        else
-            remove_sem(&semList, sem_name);
-        release(aux->semaphore.lock);
+    if(aux == NULL){
+        return;
     }
-    return 0;
-}
 
-void sem_wait(char *sem_name){
-    semaphoreList_t * sem_node = find_sem(sem_name);
-    if(sem_node == NULL) return;
-    acquire(sem_node->semaphore.lock);
-    if(sem_node->semaphore.value > 0){
-        (sem_node->semaphore.value)--;
-    } else {
-        block_current_process_to_queue(sem_node->semaphore.blockedQueue);
+    acquire(&(aux->lock));
+    uint8_t toUnblock = aux->value < 0;
+    (aux->value)++;
+    release(&(aux->lock));
+
+    if(toUnblock){
+        unblock_process_from_queue(aux->blockedQueue);
     }
-    release(sem_node->semaphore.lock);
-}
 
-int64_t sem_post(char *sem_name){
-    semaphoreList_t * sem_node;
-    if((sem_node = find_sem(sem_name)) == NULL)
-        return 1;
-
-    acquire(sem_node->semaphore.lock);
-    if (sem_node->semaphore.value == 0){
-        unblock_process_from_queue(sem_node->semaphore.blockedQueue);
-    }
-    (sem_node->semaphore.value)++;
-    release(sem_node->semaphore.lock);
-    return 0;
+    return 1;
 }

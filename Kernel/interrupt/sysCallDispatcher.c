@@ -166,7 +166,7 @@ static uint64_t sys_stopSpeaker()
 
 //syscalls para semaforos
 static int64_t sys_sem_open(char * name, uint64_t init_value){
-    return sem_open(name, init_value);
+    sem_open(name, init_value);
 }
 static int64_t sys_sem_close(char * name){
     return sem_close(name);

@@ -14,6 +14,7 @@
 #include <memoryManager.h>
 #include <interrupts.h>
 #include <processQueue.h>
+#include <fileDescriptor.h>
 
 typedef uint64_t (*program_t)(uint64_t argc, char *argv[]);
 
@@ -28,6 +29,8 @@ void init_scheduler();
 uint64_t create_process(int priority, program_t program, uint64_t argc, char *argv[]);
 
 uint64_t create_process_state(int priority, program_t program, int state, uint64_t argc, char *argv[]);
+
+processCB create_halt_process();
 
 uint64_t schedule(void* rsp);
 
@@ -50,6 +53,10 @@ uint64_t unblock_process_from_queue(processQueueADT blockedQueue);
 uint64_t unblock_process(uint64_t pid);
 
 uint64_t get_PID();
+
+int addFileDescriptorCurrentProcess(openFile_t * fd);
+
+int removeFileDescriptorCurrentProcess(openFile_t * fd);
 
 void yield();
 

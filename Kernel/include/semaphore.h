@@ -5,21 +5,38 @@
 #include <interrupts.h>
 #include <processQueue.h>
 #include <scheduler.h>
+#include <list.h>
 
 #define SEM_NAME_SIZE 32
 
-typedef struct {
+typedef List semaphoreList_t;
+
+typedef struct semaphore_t {
     lock_t lock;
     char name[SEM_NAME_SIZE];
     int value;
     processQueueADT blockedQueue;
+    int processesCount;
 } semaphore_t;
 
 #define MAX_SEMAPHORES (CHUNK_SIZE / sizeof(semaphore_t))
 
-int64_t sem_open(char *sem_id, uint64_t initialValue);
-int64_t sem_close(char * sem_id);
-void sem_wait(char * sem_name);
-int64_t sem_post(char *sem_id);
+int initSemaphores(void); //Inicializa la lista de semaforos
+
+int addSemaphore(char * name, int initialValue);
+
+void removeSemaphore(char * name);
+
+void semOpen(char *sem_name, uint64_t init_value);
+
+void semClose(char * sem_name);
+
+void semWait(char *sem_name);
+
+void semPost(char *sem_name);
+
+int semCompare(const void * sem_a, const void * sem_b);
+
+
 
 #endif
