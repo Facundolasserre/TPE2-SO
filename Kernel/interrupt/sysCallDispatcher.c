@@ -4,9 +4,10 @@
 #include <time.h>
 #include <sound.h>
 #include <memoryManager.h>
-#include <stdint.h>
 #include <scheduler.h>
 #include <semaphore.h>
+#include <stdint.h>
+
 
 #define STDIN 0
 #define STDOUT 1
@@ -194,7 +195,7 @@ static void sys_mem_free(void * ptr){
 }
 
 static uint64_t s_create_process(int priority, program_t program, uint64_t argc, char *argv[]){
-    return createProcess(priority, program, argc, argv);
+    return createProcess(priority, program, argc, argv, NULL, 0);
 }
 
 static void s_kill_process(uint64_t pid){
@@ -220,6 +221,25 @@ static void s_block_process(uint64_t pid){
 static void s_unblock_process(uint64_t pid){
     unblock_process(pid);
 }
+
+static char sys_read_fd(uint64_t fdIndex){
+    return readCurrentProcessFD(fdIndex);
+}
+
+static char sys_write_fd(uint64_t fdIndex, char data){
+    return writeCurrentProcessFD(fdIndex, data);
+}
+
+static uint64_t sys_open_fd(uint64_t fd_id){
+    return openFD(fd_id);
+}
+
+static int sys_close_fd(uint64_t fd_id){
+    return closeFD(fd_id);
+}
+
+
+
 
 
 
@@ -259,7 +279,11 @@ static uint64_t (*syscalls[])(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t) 
     (void *)sys_sem_open,           // 28
     (void *)sys_sem_close,          // 29
     (void *)sys_sem_wait,           // 30
-    (void *)sys_sem_post            // 31
+    (void *)sys_sem_post,            // 31
+    (void *)sys_read_fd,            // 32
+    (void *)sys_write_fd,           // 33
+    (void *)sys_open_fd,            // 34
+    (void *)sys_close_fd           // 35
 };
 
 uint64_t syscall_dispatcher(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10, uint64_t r8, uint64_t rax) {

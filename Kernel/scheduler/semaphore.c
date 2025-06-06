@@ -2,8 +2,10 @@
 #include <memoryManager.h>
 #include <processQueue.h>
 #include <utils.h>
-#include <semaphore.h>
 #include <list.h>
+#include "../include/semaphore.h"
+
+
 
 
 List * semList;
@@ -50,7 +52,7 @@ void removeSemaphore(char * name){
     
 }
 
-void sem_open(char *name, uint64_t init_value){
+void semOpen(char *name, uint64_t init_value){
     semaphore_t * aux = (semaphore_t *)listGet(semList, name);
 
     if(aux == NULL){
@@ -61,7 +63,7 @@ void sem_open(char *name, uint64_t init_value){
     return;
 }
 
-void sem_close(char * name){
+void semClose(char * name){
     semaphore_t * aux = (semaphore_t *)listGet(semList, name);
 
     if(aux == NULL){
@@ -82,7 +84,7 @@ void sem_close(char * name){
 
 
 
-void sem_wait(char * name){
+void semWait(char * name){
     semaphore_t * aux = (semaphore_t *)listGet(semList, name);
 
     if(aux == NULL){
@@ -101,7 +103,7 @@ void sem_wait(char * name){
 
 }
 
-int64_t sem_post(char * name){
+int64_t semPost(char * name){
     semaphore_t * aux = (semaphore_t *)listGet(semList, name);
 
     if(aux == NULL){

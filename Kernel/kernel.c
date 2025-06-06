@@ -81,13 +81,13 @@ int main()
 	_cli();
 	load_idt();
 
-
-	initFileDescriptors();
 	initSemaphores();
-	initPipes();
-	init_scheduler();
+	initPipes();	
+	initFileDescriptors();
 	initKeyboard();
-	createProcess(0, sampleCodeModuleAddress, 0, NULL);
+	init_scheduler();
+	
+	createProcess(0, sampleCodeModuleAddress, 0, NULL, NULL, 0);
 
 	_sti();
 

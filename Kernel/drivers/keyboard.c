@@ -1,8 +1,9 @@
 #include <keyboard.h>
 #include <pipe.h>
 #include <stdint.h>
+#include <openFile.h>
 
-int keyboardPipeId;
+openFile_t * openFileKeyboard;
 
 static const char keyMapL[] = {
 
@@ -60,7 +61,7 @@ static const char *const keyMap[] = {keyMapL, keyMapU};
  */
 
 void initKeyboard(){
-    keyboardPipeId  = pipeCreate();
+    openFileKeyboard = getSTDIN_FD();
 }
 
 
@@ -93,9 +94,10 @@ void keyboardHandler(uint8_t keyPressed)
     } else {
         asciiCode = keyMap[shift][inputCode];
     }
-    pipeWrite(keyboardPipeId, asciiCode);
+    
+    openFileKeyboard->write(openFileKeyboard->resource, asciiCode);
 }
 
 char readKeyboard(){
-    return pipeRead(keyboardPipeId);
+    return openFileKeyboard->read(openFileKeyboard->resource);
 }

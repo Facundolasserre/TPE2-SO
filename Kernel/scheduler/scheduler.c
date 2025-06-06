@@ -3,6 +3,7 @@
 #include <processQueue.h>
 #include <utils.h>
 #include <fileDescriptor.h>
+#include <openFile.h>
 
 
 
@@ -31,17 +32,12 @@ processQueueADT semQueue = NULL;
 
 
 //retorna -1 por error
-uint64_t createProcess(int priority, program_t program, uint64_t argc, char *argv[]) {
-    return create_process_state(priority, program, READY, argc, argv); //agregar nuevos param
+uint64_t createProcess(int priority, program_t program, uint64_t argc, char *argv[], uint64_t * fdIds[MAX_FD], uint64_t fdCount) {
+    return create_process_state(priority, program, READY, argc, argv, fdIds, fdCount); //agregar nuevos param
 }
 
 //retorna -1 por error
-uint64_t create_process_state(int priority, program_t program, int state, uint64_t argc, char *argv[], uint8_t isForeground, openFile_t *fds[MAX_FD], uint64_t fdCount) {
-
-    if(isForeground && fdCount < 3){
-        return -1;
-    }
-
+uint64_t create_process_state(int priority, program_t program, int state, uint64_t argc, char *argv[], openFile_t *fdIds[MAX_FD], uint64_t fdCount) {
 
     void* base_pointer = mem_alloc(STACK_SIZE);
 
@@ -50,18 +46,7 @@ uint64_t create_process_state(int priority, program_t program, int state, uint64
 
     void * stackPointer = fill_stack(base_pointer, initProcessWrapper, program, argc, argv);
 
-    openFile_t *fdTable[MAX_FD] = {NULL};
-    uint8_t fd_idx = 0;
-
-    if(isForeground){
-        fdTable[0] = get_stdin();
-        fdTable[1] = get_stdout();
-        fd_idx = 2;
-    }
-
-    for(;fd_idx < fdCount; fd_idx++){
-        fdTable[fd_idx] = fds[fd_idx];
-    }
+   openFile_t ** fdTable = openFDTable(fdIds, fdCount);
 
     processCB newProcess = {
         PID++,
@@ -288,7 +273,13 @@ uint64_t schedule(void* rsp){
      }else if (currentProcess.state == READY){ //proceso TERMINATED
         add_priority_queue(currentProcess);
     } else if (currentProcess.state == TERMINATED){
-        mem_free(currentProcess.rsp);
+        for(int i=0; i< MAX_FD; i++){
+            if(currentProcess.fdTable[i] != NULL){
+                closeFD(currentProcess.fdTable[i]->id); // cerrar el fd del proceso actual
+            }
+
+        }
+        mem_free(currentProcess.rsp); // liberar la memoria del stack del proceso actual
     }
 
     
@@ -357,33 +348,43 @@ processCB find_dequeue_priority(uint64_t pid){
     return (processCB){-1, 0, 0, 0, 0, TERMINATED, NULL};
 }
 
-//Agrega un FD al proceso actual
-int addFileDescriptorCurrentProcess(uint64_t fd_id){
-    //ARREGLAR: compare
-    for(int i = 0; i < MAX_FD; i++){
-        if(compare_file_descriptors(currentProcess.fdTable[i], fd_id) == 0){
-            return i;
-        }
-    }
+// int closeFDCurrentProcess(uint64_t index){
+//     uint64_t fdId = currentProcess.fdTable[index]->id;
+//     currentProcess.fdTable[index] = NULL;
+//     return closeFD(fdId);
+// }
 
-    for(int i = 0; i < MAX_FD; i++){
-        if(currentProcess.fdTable[i] == NULL){
-            currentProcess.fdTable[i] = fd_id;
-            return i;
-        }
-    }
+// //Agrega un FD al proceso actual
+// int addFileDescriptorCurrentProcess(uint64_t fd_id){
+//     //ARREGLAR: compare
+//     for(int i = 0; i < MAX_FD; i++){
+//         if(compare_file_descriptors(currentProcess.fdTable[i], fd_id) == 0){
+//             return i;
+//         }
+//     }
 
-    return -1;
-}
+//     for(int i = 0; i < MAX_FD; i++){
+//         if(currentProcess.fdTable[i] == NULL){
+//             currentProcess.fdTable[i] = fd_id;
+//             return i;
+//         }
+//     }
 
-//Elimina un FD de la tabla de FD del proceso actual
-int removeFileDescriptorCurrentProcess(openFile_t *fd){
-    //ARREGLAR: compare
-    for(int i = 0; i < MAX_FD; i++){
-        if(compare_file_descriptors(currentProcess.fdTable[i], fd) == 0){
-            currentProcess.fdTable[i] = NULL;
-            return 1;
-        }
-    }
-    return 0;
+//     return -1;
+// }
+
+// //Elimina un FD de la tabla de FD del proceso actual
+// int removeFileDescriptorCurrentProcess(openFile_t *fd){
+//     //ARREGLAR: compare
+//     for(int i = 0; i < MAX_FD; i++){
+//         if(compare_file_descriptors(currentProcess.fdTable[i], fd) == 0){
+//             currentProcess.fdTable[i] = NULL;
+//             return 1;
+//         }
+//     }
+//     return 0;
+// }
+
+processCB getCurrentProcess(){
+    return currentProcess;
 }

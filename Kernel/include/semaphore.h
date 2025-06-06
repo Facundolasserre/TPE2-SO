@@ -17,7 +17,7 @@ typedef struct semaphore_t {
     int value;
     processQueueADT blockedQueue;
     int processesCount;
-} semaphore_t;
+}semaphore_t;
 
 #define MAX_SEMAPHORES (CHUNK_SIZE / sizeof(semaphore_t))
 

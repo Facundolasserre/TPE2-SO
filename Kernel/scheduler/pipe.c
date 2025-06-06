@@ -4,6 +4,7 @@
 #include <pipe.h>
 #include <stdint.h>
 #include <memoryManager.h>
+#include <fileDescriptor.h>
 
 List * pipesList;
 uint16_t currentPipeId = 0;
@@ -16,13 +17,20 @@ int initPipes(){
     return 0;
 }
 
-int pipeCreate(){
+uint64_t pipeCreate(){
     pipe * newPipe = pipeInit();
     if(newPipe == NULL){
         return -1;
     }
+
+    uint64_t pipe_fd_id = fd_add(newPipe->id, pipeRead, pipeWrite, pipeDestroy);
+    if(pipe_fd_id == -1){
+        pipe_free(newPipe);
+        return -1;
+    }
+
     listAdd(pipesList, newPipe);
-    return newPipe->id;
+    return pipe_fd_id;
 }
 
 void pipeDestroy(uint16_t pipeId){
@@ -61,7 +69,7 @@ int pipeWrite(uint16_t pipeId, char c){
     pipe * found = (pipe *)listGet(pipesList, &target);
 
     if(found == NULL){
-        return -1;
+        return 0;
     }
 
     sem_wait(found->sem_name_mutex);
@@ -73,7 +81,7 @@ int pipeWrite(uint16_t pipeId, char c){
     sem_post(found->sem_name_mutex);
     sem_post(found->sem_name_data_available);
 
-    return 0;
+    return 1;
 }
 
 int comparePipes(const void *a, const void *b){
@@ -208,7 +216,7 @@ void pipes_test() {
 
 
     //CHEQUEAR QUE DONDE DICE pipe_writer, DEBERIA IR UN (program_t) PARA CASTEARLO PERO NO ANDA
-    createProcess(0, pipe_writer1, 0, NULL); // Crea el proceso writer1
-    createProcess(0, pipe_writer2, 0, NULL); // Crea el proceso writer2
-    createProcess(0, pipe_reader, 0, NULL);  // Crea el proceso reader
+    createProcess(0, pipe_writer1, 0, NULL, NULL, 0); // Crea el proceso writer1
+    createProcess(0, pipe_writer2, 0, NULL, NULL, 0); // Crea el proceso writer2
+    createProcess(0, pipe_reader, 0, NULL, NULL, 0);  // Crea el proceso reader
 }

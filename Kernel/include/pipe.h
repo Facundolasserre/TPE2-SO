@@ -18,7 +18,7 @@ typedef struct pipe{
 
 int initPipes();
 
-int pipeCreate();
+uint64_t pipeCreate();
 
 void pipeDestroy(uint16_t pipeId);
 

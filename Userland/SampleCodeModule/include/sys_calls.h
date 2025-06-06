@@ -77,4 +77,13 @@ uint64_t sys_sem_wait(void *sem);
 
 uint64_t sys_sem_post(void *sem);
 
+//file descriptors
+uint64_t sys_read_fd(uint64_t process_fd_index);
+
+uint64_t sys_write_fd(uint64_t process_fd_index, char data);
+
+uint64_t sys_open_fd(uint64_t fd_id);
+
+uint64_t sys_close_fd(uint64_t fd_index);
+
 #endif
