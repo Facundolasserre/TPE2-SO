@@ -149,8 +149,6 @@ void getSemaphoreName(const char * baseName, int id, char * dest){
 
 
 
-// TESTING
-
 //////////////////////////// TESTING ////////////////////////////
 #include <videoDriver.h>
 // Variables globales para monitorear el estado en GDB

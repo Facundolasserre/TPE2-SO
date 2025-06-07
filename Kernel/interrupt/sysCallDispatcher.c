@@ -205,7 +205,7 @@ static void s_kill_process(uint64_t pid){
     kill_process(pid);
 }
 
-static void s_list_processes(){
+static char * s_list_processes(){
     list_processes();
 }
 

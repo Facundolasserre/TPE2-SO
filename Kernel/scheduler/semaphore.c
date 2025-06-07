@@ -21,6 +21,7 @@ int initSemaphores(){
     if(semList == NULL){
         return -1;
     }
+    return 0;
 }
 
 semaphoreList_t * addSemaphore(char * name, int initialValue) {
@@ -115,6 +116,7 @@ int64_t semPost(char * name){
     (aux->value)++;
     release(&(aux->lock));
 
+    //desbloqueo el primer proceso bloqueado en la cola del semaforo
     if(toUnblock){
         unblock_process_from_queue(aux->blockedQueue);
     }

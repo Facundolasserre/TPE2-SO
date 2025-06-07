@@ -113,12 +113,13 @@ openFile_t * openFDTable(uint64_t fdIds[MAX_FD], int fdCount){
     }
 
     for(int i=2; i<fdCount ; i++){
-        openFile_t *fd = openFD(fdIds[i]);
+        openFile_t *fd = (openFile_t *)listGet(openFDList, fdIds[i]);
 
         if(fd == NULL){
             goto undo;
         }
 
+        fd->ref_count++;
         fdTable[i] = fd;
     }
 
@@ -176,7 +177,7 @@ int closeFD(uint64_t id){
     openFile_t *found_fd = (openFile_t *)listGet(openFDList, id);
     
     if(found_fd == NULL){
-        return -1;
+        return 0;
     }
 
     found_fd->ref_count--;
@@ -185,7 +186,7 @@ int closeFD(uint64_t id){
         removeFD(id);
     }
 
-    return 0;
+    return 1;
 }
 
 
@@ -238,7 +239,7 @@ int closeFDCurrentProcess(uint64_t index) {
     openFile_t *fdToClose = current.fdTable[index];
 
     if(fdToClose == NULL) {
-        return -1; // No FD at this index
+        return 0; // No FD at this index
     }
     
     uint64_t fdId = fdToClose->id;

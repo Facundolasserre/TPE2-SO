@@ -3,7 +3,7 @@
 
 #include <stdio.h>
 #include "userlib.h"
-#define MAX_BUFF 254
+#define MAX_BUFF 4096
 #define MAX_COMMAND 22
 #define MAX_ARGS 19
 #define USERNAME_SIZE 16

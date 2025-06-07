@@ -38,7 +38,7 @@ void initProcessWrapper(program_t entryPoint, uint64_t argc, char ** argv);
 
 uint64_t kill_process(uint64_t pid);
 
-void list_processes();
+char * list_processes();
 
 uint64_t block_process();
 

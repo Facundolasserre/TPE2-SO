@@ -100,6 +100,7 @@ void newLine()
 {
 	int i = checkLine();
 
+	prints("\n", MAX_BUFF);
 	(*commands_ptr[i])();
 
 	for (int i = 0; line[i] != '\0'; i++)
@@ -271,7 +272,9 @@ void handleSpecialCommands(char c)
 }
 
 void cmd_ps(){
-	sys_list_processes();
+	char * processes = sys_list_processes();
+	prints(processes, MAX_BUFF);
+	sys_mem_free(processes);
 }
 
 void cmd_eliminator()

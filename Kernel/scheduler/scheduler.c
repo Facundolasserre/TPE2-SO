@@ -133,56 +133,99 @@ processCB create_halt_process(){
 }
 
 
-void list_processes(){
+char * list_processes(){
 
-    vDriver_prints("\nPID  STATE     PRIORITY", WHITE, BLACK);
-    vDriver_prints("\n--------------------------\n", WHITE, BLACK);
+    //tamaño aprox de cada linea seria: (pid + priority + state + separadores y \n)
 
-    if(currentProcess.pid != -1){
-        printProcess(currentProcess);
-    }
+    const int LINE_SIZE = 30; //tamaño de cada linea
+    const int HEADER_SIZE = 50; //tamaño aproximado del encabezado
 
+    char * header = "PID   PRIORITY   STATE\n";
+
+    //calculo el tamaño necesario para almacenar todos los procesos
+    int totalProcesses = 1; //1 para incluir el proceso actual
     processCB process;
     processQueueADT queues[] = {process0, process1, process2, process3, allBlockedQueue};
+
+    for(int i = 0; i < TOTAL_QUEUES; i++){
+        totalProcesses += get_size(queues[i]);
+    }
+
+    //asigno memoria para el buffer
+    char * buffer = mem_alloc(HEADER_SIZE + (totalProcesses * LINE_SIZE));
+    int offset = 0;
+
+    //agrego el proceso actual si esta definido
+    if(currentProcess.pid != -1){
+        char line[LINE_SIZE];
+        formatProcessLine(line, &currentProcess);
+        strcpy(buffer + offset, line, LINE_SIZE);
+        offset += strlen(line);
+    }
+
+
+    //proceso cada cola de procesos
     for(int i=0 ; i<TOTAL_QUEUES ; i++){
         processQueueADT current = queues[i];
         int size = get_size(current);
+
+        //agrego cada proceso a la cola del buffer
         for(int j=0 ; j<size ; j++){
             process = dequeueProcess(current);
-            printProcess(process);
+            //formateo cada proceso en una linea
+            char line[LINE_SIZE];
+            formatProcessLine(line, &process);
+
+            //copio la linea al buffer final
+            strcpy(buffer + offset, line, LINE_SIZE);
+            offset += strlen(line);
+
+            //volver a agregar el proceso a la cola original
             addProcessToQueue(current, process);
         }
     }
 
-    return;
+    return buffer;
 }
 
-static void printProcess(processCB process){
-    char * pid_str;
-    char * priority_str;
-    intToString(process.pid, pid_str);
-    intToString(process.priority, priority_str);
-    vDriver_prints(pid_str, WHITE, BLACK);
-    vDriver_prints("  ", WHITE, BLACK);
-    vDriver_prints(get_st(process.state), WHITE, BLACK);
-    vDriver_prints("  ", WHITE, BLACK);
-    vDriver_prints(priority_str, WHITE, BLACK);
-    vDriver_prints("\n", WHITE, BLACK);
-}
+void formatProcessLine(char *line, processCB * process){
+    char pid_str[10];
+    char priority_str[5];
+    char * state_str;
 
-static char * get_st(int state){
-    switch(state){
-        case RUNNING:
-            return "RUNNING";
-        case READY:
-            return "READY";
-        case BLOCKED:
-            return "BLOCKED";
-        case TERMINATED:
-            return "TERMINATED";
-        case HALT:
-            return "HALT";
+    //convierto los enteros a cadena
+    intToString(process->pid, pid_str);
+    intToString(process->priority, priority_str);
+
+    //determio la cadena de estado
+    switch(process->state){
+        case READY: state_str = "READY"; break;
+        case RUNNING: state_str = "RUNNING"; break;
+        case BLOCKED: state_str = "BLOCKED"; break;
+        case TERMINATED: state_str = "TERMINATED"; break;
+        case HALT: state_str = "HALT"; break;
     }
+
+    //construyo la linea en el formato "PID   PRIORITY   STATE\n"
+    int offset = 0;
+
+    //copio el pid en la linea
+    strcpy(line + offset, pid_str, strlen(pid_str));
+    offset += strlen(pid_str);
+    line[offset++] = ' '; // espacio entre pid y priority
+
+    //copio el priority en la linea
+    strcpy(line + offset, priority_str, strlen(priority_str));
+    offset += strlen(priority_str);
+    line[offset++] = ' '; // espacio entre priority y state
+
+    //copio el state en la linea
+    strcpy(line + offset, state_str, strlen(state_str));
+    offset += strlen(state_str);
+
+    //agrego un salto de linea al final
+    line[offset++] = '\n';
+    line[offset] = '\0'; //termino la cadena
 }
 
 // void addProcessToBuffer(processCB process, char * buffer){
@@ -275,7 +318,7 @@ void initScheduler(){
     
    
 
-    currentProcess = returnNullProcess;
+    currentProcess = returnNullProcess();
 
 }
 
