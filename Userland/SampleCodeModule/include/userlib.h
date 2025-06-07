@@ -21,6 +21,8 @@ extern const Color LIGHT_YELLOW;
 extern const Color LIGHT_PINK;
 extern const Color LIGHT_GREEN;
 
+typedef uint64_t (*program_t)(uint64_t argc, char *argv[]);
+
 #define CHUNK_SIZE 10
 #define CHUNK_COUNT 10
 #define MAX_BUFF 254
@@ -31,11 +33,19 @@ typedef struct Note
     int duration;
 } NoteType;
 
+uint64_t create_process(int priority, program_t program, uint64_t argc, char *argv[], uint64_t fd_ids[10], uint64_t fd_count);
+
+uint64_t create_process_foreground(int priority, program_t program, uint64_t argc, char *argv[], uint64_t fd_ids[10], uint64_t fd_count);
+
+void write_char(char c);
+
+void write_string(const char *str, int length);
+
 /* Prints a char in screen */
 void printc(char c);
 
 /* Prints a string in screen */
-void prints(const char *str, int lenght);
+void prints(const char *str, int length);
 
 /* Gets a single char from keyboard */
 char getChar();

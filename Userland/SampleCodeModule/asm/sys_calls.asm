@@ -43,6 +43,9 @@ GLOBAL sys_read_fd
 GLOBAL sys_open_fd
 GLOBAL sys_close_fd
 
+GLOBAL sys_create_process_set_fdAdd commentMore actions
+GLOBAL sys_create_process_foreground
+
 section .text
 
 ; Pasaje de parametros en C:
@@ -242,5 +245,16 @@ sys_open_fd:
 
 sys_close_fd:
     mov rax, 0x24
+    int 80h
+    ret
+
+sys_create_process_foreground:
+    mov rax, 0x25
+    mov r10, rcx        
+    int 80h
+    ret
+
+sys_create_process_set_fd:
+    mov rax, 0x26
     int 80h
     ret

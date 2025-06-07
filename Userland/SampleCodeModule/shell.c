@@ -181,7 +181,7 @@ void cmd_whoami()
 void cmd_schetest()
 {
     char *argv[] = {"3"};
-    sys_create_process(1, &test_processes, 1, argv);
+    create_process(1, &test_processes, 1, argv, 0, 0);
 }
 
 void cmd_priotest(){
@@ -388,7 +388,7 @@ void newLineUsername()
 
 void cmd_test_sync() {
     char *argv[] = {"5", "1", 0};
-	sys_create_process(0, &test_sync, 2, argv);
+	create_process_foreground(0, &test_sync, 2, argv, 0, 0);
 	printsColor("CREATED 'test_sync' PROCESS!\n", MAX_BUFF, RED);
 }
 

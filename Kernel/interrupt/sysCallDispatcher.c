@@ -198,7 +198,15 @@ static void sys_mem_free(void * ptr){
 }
 
 static uint64_t s_create_process(int priority, program_t program, uint64_t argc, char *argv[]){
-    return createProcess(priority, program, argc, argv, NULL, 0);
+    return userspaceCreateProcess(priority, program, argc, argv);
+}
+
+static uint64_t s_create_process_foreground(int priority, program_t program, uint64_t argc, char *argv[]){
+    return userspaceCreateProcessForeground(priority, program, argc, argv);
+}
+
+static void s_create_process_set_fd(uint64_t * fd_ids[MAX_FD], int fd_count){
+    userspaceSetFD(fd_ids, fd_count);
 }
 
 static void s_kill_process(uint64_t pid){
@@ -287,11 +295,13 @@ static uint64_t (*syscalls[])(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t) 
     (void *)sys_read_fd,            // 33
     (void *)sys_write_fd,           // 34
     (void *)sys_open_fd,            // 35
-    (void *)sys_close_fd           // 36
+    (void *)sys_close_fd,        // 36
+    (void *)s_create_process_foreground, // 37
+    (void*)s_create_process_set_fd // 38
 };
 
 uint64_t syscall_dispatcher(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10, uint64_t r8, uint64_t rax) {
-    if (rax < SYS_CALLS_QTY && syscalls[rax] != 0){
+    if (syscalls[rax] != 0){
         return syscalls[rax](rdi, rsi, rdx, r10, r8);
     }
 

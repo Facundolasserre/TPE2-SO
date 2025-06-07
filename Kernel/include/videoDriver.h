@@ -11,6 +11,10 @@ typedef struct {
 extern Color WHITE;
 extern Color BLACK;
 
+int vDriverWrite(void *dest, char data);
+char vDriverRead(void *src);
+int vDriverClose();
+
 void plusScale();
 void minusScale();
 uint16_t getRealCharWidth();

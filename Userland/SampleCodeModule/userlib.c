@@ -95,6 +95,17 @@ int isChar(char c)
 	return 0;
 }
 
+void write_char(char c){
+	sys_write_fd(STDOUT, c);
+}
+
+void write_string(const char *str, int lenght){
+	for (int i = 0; i < lenght && str[i] != 0; i++)
+	{
+		write_char(str[i]);
+	}
+}
+
 int isUpperArrow(char c)
 {
 	return c == 0x48;
@@ -391,4 +402,38 @@ int atoi(const char *str)
 int print_mem(uint64_t mem)
 {
 	return sys_printmem(mem);
+}
+
+uint64_t create_process_foreground(int priority, program_t program, uint64_t argc, char *argv[], uint64_t fd_ids[10], uint64_t fd_count){
+	int *fd_ids_array;
+	if(fd_ids == NULL){
+		fd_ids_array = NULL;
+		fd_count = 0;
+	} else {
+		int *fd_ids_array = sys_mem_alloc(sizeof(int) * 10);
+		for(int i = 0; i < fd_count; i++){
+			fd_ids_array[i] = fd_ids[i];
+		}
+	}
+
+	sys_create_process_set_fd(fd_ids_array, fd_count);
+
+	sys_create_process_foreground(priority, program, argc, argv);
+}
+
+uint64_t create_process(int priority, program_t program, uint64_t argc, char *argv[], uint64_t fd_ids[10], uint64_t fd_count){
+	int *fd_ids_array;
+	if(fd_ids == NULL){
+		fd_ids_array = NULL;
+		fd_count = 0;
+	} else {
+		int *fd_ids_array = sys_mem_alloc(sizeof(int) * 10);
+		for(int i = 0; i < fd_count; i++){
+			fd_ids_array[i] = fd_ids[i];
+		}
+	}
+
+	sys_create_process_set_fd(fd_ids_array, fd_count);
+
+	sys_create_process(priority, program, argc, argv);
 }

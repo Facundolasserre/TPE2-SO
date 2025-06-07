@@ -36,6 +36,12 @@ processCB getNextProcess();
 
 void initProcessWrapper(program_t entryPoint, uint64_t argc, char ** argv);
 
+void userspaceSetFD(uint64_t *fd_ids, int fd_count);
+
+uint64_t userspaceCreateProcessForeground(int priority, program_t program, uint64_t argc, char *argv[]);
+
+uint64_t userspaceCreateProcess(int priority, program_t program, uint64_t argc, char *argv[]);
+
 uint64_t kill_process(uint64_t pid);
 
 char * list_processes();
@@ -65,6 +71,9 @@ uint64_t createProcess(int priority, program_t program, uint64_t argc, char *arg
 uint64_t create_process_state(int priority, program_t program, int state, uint64_t argc, char *argv[], openFile_t *fdIds[MAX_FD], uint64_t fdCount);
 
 processCB getCurrentProcess();
+
+uint64_t createProcessForeground(int priority, program_t program, uint64_t argc, char *argv[], uint64_t * fdIds[MAX_FD], uint64_t fdCount);
+void killProcessForeground();
 
 // Queue management
 uint8_t add_priority_queue(processCB process);

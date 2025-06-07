@@ -161,7 +161,7 @@ int hasNextProcess(processQueueADT queue) {
 }
 
 processCB returnNullProcess(){
-    return (processCB){-1, 0, 0, 0, 0, TERMINATED, NULL, NULL};
+    return (processCB){-1, NULL, NULL, 0, 0, 0, TERMINATED, NULL, NULL};
 }
 
 

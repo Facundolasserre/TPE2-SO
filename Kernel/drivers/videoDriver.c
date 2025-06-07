@@ -60,6 +60,19 @@ static uint32_t* getPixelPtr(uint16_t x, uint16_t y);
 // Establecer un factor de escala predeterminado
 uint8_t pixelScale = 1;
 
+int vDriverWrite(void *dest, char data){
+    return 1;
+}
+
+char vDriverRead(void *src){
+    return -1;
+}
+
+int vDriverClose(){
+    return 1;
+}
+
+
 // Aumentar el factor de escala para aumentar el tamaño de un carácter
 void plusScale() {
     if (pixelScale < 5) {

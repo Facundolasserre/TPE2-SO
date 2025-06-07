@@ -8,7 +8,7 @@
 #include <openFile.h>
 #include <processQueue.h>
 #include <pipe.h>
-
+#include <videoDriver.h>
 
 
 
@@ -37,6 +37,8 @@ void initFileDescriptors(){
     uint64_t stdinFDId = pipeCreate();
     
     openFDList = (openFile_t *)listGet(openFDList, stdinFDId);
+
+    openFileSTDOUT = createFD(0, vDriverRead, vDriverWrite, vDriverClose);
     
 }
 
@@ -84,7 +86,7 @@ openFile_t * openFDTable(uint64_t fdIds[MAX_FD], int fdCount){
         fdTable[i] = NULL;
     }
 
-    if(fdCount < 2){
+    if(fdIds == NULL || fdCount < 2){
         fdTable[0] = getSTDIN_FD();
         fdTable[1] = getSTDOUT_FD();
     }else{
@@ -201,7 +203,7 @@ void removeFD(id){
 
 
 
-uint64_t addFD(void * resource, char (*read)(), char (*write)(char data), int (*close)()){
+uint64_t addFD(void * resource, char (*read)(), int (*write)(char data), int (*close)()){
     openFile_t *new_fd = createFD(resource, read, write, close);
 
     if(new_fd == NULL){
@@ -215,7 +217,7 @@ uint64_t addFD(void * resource, char (*read)(), char (*write)(char data), int (*
 
 
 
-openFile_t * createFD(void * resource, char (*read)(void * src), char (*write)(void * dest, char data), int (*close)()) {
+openFile_t * createFD(void * resource, char (*read)(void * src), int (*write)(void * dest, char data), int (*close)()) {
     openFile_t * new_fd = (openFile_t *)mem_alloc(sizeof(openFile_t));
     
     if(new_fd == NULL){

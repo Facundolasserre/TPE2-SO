@@ -15,6 +15,7 @@ typedef struct processQueueCDT * processQueueADT;
 //process control block (informacion de un proceso)
 typedef struct processCB{ 
     int pid; 
+    void * base_pointer; //puntero a la base del stack
     void *rsp;
     uint8_t priority;
     uint8_t assignedQuantum;
