@@ -135,7 +135,17 @@ interrupt_keyboardHandler:
 
     cmp al, 0x2A  ; Check if left shift is pressed
     jne .check_left_shift_release
-    mov byte [shiftKey], 1
+    mov byte [shiftKey], 
+	
+.check_ctrl_pressed:
+	cmp al, 0x1D
+	jne .check_ctrl_release 
+	mov byte [ctrlKey], 1
+
+.check_ctrl_release:
+	cmp al, 0x9D 
+	jne .handle_keyboard_interrupt
+	mov byte[ctrlKey], 0
 
 .check_left_shift_release:
     cmp al, 0xAA  ; Check if left shift is released
@@ -238,3 +248,4 @@ SECTION .bss
 	registerInfo	resq	17
 	hasregisterInfo 		resb 1
 	shiftKey  	resb 1
+	ctrlKey   	resb 1

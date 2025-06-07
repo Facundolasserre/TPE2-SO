@@ -38,14 +38,10 @@ int compareFD( void *fdA,  void *fdB);
 int compareFDById(openFile_t *fd, uint64_t id);
 
 //crea un nuevo descriptor de archivo con los recursos y funciones especificadas
-openFile_t * createFD(void *resource, char (*read)(void *src), 
-                      int (*write)(void *dest, char data), 
-                      int (*close)());
+openFile_t * createFD(void *resource, char (*read)(void *src), int (*write)(void *dest, char data), int (*close)());
 
 //añade un nuevo descriptor de archivo a la lista de descriptores de archivos
-uint64_t addFD(void *resource, char (*read)(), 
-           int (*write)(char data), 
-           int (*close)());
+uint64_t addFD(void *resource, char (*read)(), int (*write)(char data), int (*close)());
 
 
 //elimina un descriptor de archivo de la lista de descriptores de archivos

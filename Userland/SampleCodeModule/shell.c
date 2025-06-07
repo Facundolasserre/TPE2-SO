@@ -46,32 +46,30 @@ void printHelp()
 	printsColor("\n    >testschedulerprocesses - test scheduler processes", MAX_BUFF, GREEN);
 	printsColor("\n    >testsync           - test sync processes", MAX_BUFF, GREEN);
 	printsColor("\n    >ps                 - list all processes", MAX_BUFF, GREEN);
-
+	printsColor("\n    >cat                -cat file", MAX_BUFF, GREEN);
+	printsColor("\n    .loop               -prints Pid + greeting to the user", MAX_BUFF, GREEN);
 	printsColor("\n    >exit               - exit OS\n", MAX_BUFF, GREEN);
 
 	printc('\n');
 }
 
-const char *commands[] = {"undefined", "help", "ls", "time", "clear", "registersinfo", "zerodiv", "invopcode", "setusername", "whoami", "exit", "ascii", "eliminator", "memtest", "schetest", "priotest", "testschedulerprocesses", "testsync", "ps"};
-static void (*commands_ptr[MAX_ARGS])() = {cmd_undefined, cmd_help, cmd_help, cmd_time, cmd_clear, cmd_registersinfo, cmd_zeroDiv, cmd_invOpcode, cmd_setusername, cmd_whoami, cmd_exit, cmd_ascii, cmd_eliminator, cmd_memoryManagerTest, cmd_schetest, cmd_priotest, cmd_testschedulerprocesses, cmd_test_sync, cmd_ps};
+const char *commands[] = {"undefined", "help", "ls", "time", "clear", "registersinfo", "zerodiv", "invopcode", "setusername", "whoami", "exit", "ascii", "eliminator", "memtest", "schetest", "priotest", "testschedulerprocesses", "testsync", "ps", "cat", "loop"};
+static void (*commands_ptr[MAX_ARGS])() = {cmd_undefined, cmd_help, cmd_help, cmd_time, cmd_clear, cmd_registersinfo, cmd_zeroDiv, cmd_invOpcode, cmd_setusername, cmd_whoami, cmd_exit, cmd_ascii, cmd_eliminator, cmd_memoryManagerTest, cmd_schetest, cmd_priotest, cmd_testschedulerprocesses, cmd_test_sync, cmd_ps, cmd_cat, cmd_loop};
 
-void shell()
-{
+void shell(){
 	welcome();
 
 	char c;
 	printPrompt();
+	s_create_process(0, &drawCursor, 0, NULL);
 
-	while (1 && !terminate)
-	{
-		drawCursor();
+	while (1 && !terminate){
 		c = getChar();
 		printLine(c, strcmp(username, "user"));
 	}
 }
 
-void printLine(char c, int username)
-{
+void printLine(char c, int username){
 	if (linePos >= MAX_BUFF || c == lastc)
 	{
 		return;
@@ -120,6 +118,10 @@ void printPrompt()
 	prints(username, usernameLength);
 	prints(" $", MAX_BUFF);
 	printcColor('>', PINK);
+}
+
+void cmd_loop(){
+	int pid = sys_create_process_foreground(0, &loop_test, 0, NULL);
 }
 
 // separa comando de parametro
@@ -176,6 +178,10 @@ void cmd_whoami()
 {
 	prints("\n", MAX_BUFF);
 	prints(username, usernameLength);
+}
+
+void cmd_cat(){
+	prints(parameter, MAX_BUFF);
 }
 
 void cmd_schetest()
@@ -398,7 +404,6 @@ void welcome()
 	prints("\nPlease enter your username: ", MAX_BUFF);
 	while (!strcmp(username, "user"))
 	{
-		drawCursor();
 		c = getChar();
 		printLine(c, strcmp(username, "user"));
 	}

@@ -43,7 +43,7 @@ GLOBAL sys_read_fd
 GLOBAL sys_open_fd
 GLOBAL sys_close_fd
 
-GLOBAL sys_create_process_set_fdAdd commentMore actions
+GLOBAL sys_create_process_set_fd
 GLOBAL sys_create_process_foreground
 
 section .text

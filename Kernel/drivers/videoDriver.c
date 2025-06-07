@@ -61,6 +61,7 @@ static uint32_t* getPixelPtr(uint16_t x, uint16_t y);
 uint8_t pixelScale = 1;
 
 int vDriverWrite(void *dest, char data){
+    vDriver_print(data, WHITE, BLACK);
     return 1;
 }
 
@@ -152,19 +153,12 @@ void vDriver_backspace(Color fnt, Color bgd){
 
 void vDriver_drawCursor(){
     int cx, cy;
-    Color fntColor = cursorOn ? BLACK : WHITE;
-    Color bgColor = cursorOn ? BLACK : WHITE;
+    Color fntColor = getSeconds() % 2 == 0 ? BLACK : WHITE;
+    Color bgColor = getSeconds() % 2 == 0 ? BLACK : WHITE;
     //mascara de bits para saber que color imprimo a pantalla, si pertenece a caracter o a fondo
     int mask[8] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80};
 
-    const unsigned char *glyph;
-    if (cursorOn){
-        glyph = font_bitmap + 16 * (' ' - 32);
-        cursorOn = 0;
-    } else {
-        glyph = font_bitmap + 16 * (' ' - 32);
-        cursorOn = 1;
-    }
+    const unsigned char * glyph = font_bitmap + 16 * (' ' - 32);
 
 // Chequeo que no sea el final de línea, ni el final de la pantalla
     if (cursorX >= screenInfo->width) {
@@ -177,11 +171,11 @@ void vDriver_drawCursor(){
         }
     }
 
-    for (cy = 0; cy < 16; cy++) {
-        for (cx = 0; cx < 8; cx++) {
+    for(cy = 0 ; cy < 16 ; cy++){
+        for(cx = 0 ; cx < 2 ; cx++){
             // Uso el factor de escala
-            for (int i = 0; i < pixelScale; i++) {
-                for (int j = 0; j < pixelScale; j++) {
+            for(int i = 0 ; i < pixelScale ; i++){
+                for(int j = 0 ; j < pixelScale ; j++){
                     vDriver_setPixel(cursorX + (8 - cx) * pixelScale + i, cursorY + cy * pixelScale + j, glyph[cy] & mask[cx] ? fntColor : bgColor);
                 }
             }

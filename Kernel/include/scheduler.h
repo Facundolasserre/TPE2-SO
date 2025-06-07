@@ -26,8 +26,6 @@ void sti_asm();
 
 void init_scheduler();
 
-
-
 processCB create_halt_process();
 
 uint64_t schedule(void* rsp);
@@ -73,7 +71,8 @@ uint64_t create_process_state(int priority, program_t program, int state, uint64
 processCB getCurrentProcess();
 
 uint64_t createProcessForeground(int priority, program_t program, uint64_t argc, char *argv[], uint64_t * fdIds[MAX_FD], uint64_t fdCount);
-void killProcessForeground();
+
+uint64_t killProcessForeground();
 
 // Queue management
 uint8_t add_priority_queue(processCB process);

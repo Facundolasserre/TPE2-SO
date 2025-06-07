@@ -356,7 +356,6 @@ uint64_t my_process_inc(uint64_t argc, char *argv[]) {
       printDec(global);
     }
 
-
     write_string("\n", strlen("\n"));
     if (use_sem)
       sys_sem_post(SEM_ID);
@@ -406,4 +405,12 @@ uint64_t test_sync(uint64_t argc, char *argv[]) { //{n, use_sem, 0}
   prints("\n", strlen("\n"));
 
   return 0;
+}
+
+void loop_test(){
+  while(1){
+    if(sys_getSeconds() % 1 == 0){
+      write_string("hola", strlen("hola"));
+    }
+  }
 }

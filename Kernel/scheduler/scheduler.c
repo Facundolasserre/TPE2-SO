@@ -14,7 +14,7 @@ processCB currentProcess;
 processCB haltProcess;
 uint64_t PID = 0;
 uint64_t foreGroundPID = -2; 
-uint64_t userspaceProcessCreationFDIds[MAX_FD] = {STDIN, STDOUT}; // FDI de los procesos creados por el usuario
+uint64_t userspaceProcessCreationFDIds[MAX_FD] = {0, 1};
 uint64_t userspaceProcessCreationFDCount = 0; // Cantidad de FDI de los procesos creados por el usuario
 
 processQueueADT process0 = NULL;
@@ -434,11 +434,17 @@ uint64_t userspaceCreateProcessForeground(int priority, program_t program, uint6
     return foreGroundPID;
 }
 
-void killProcessForeground(){
-    if(foreGroundPID == -1){
-        return; // No hay un proceso en primer plano
+uint64_t userspaceCreateProcess(int priority, program_t program, uint64_t argc, char *argv[]){
+    return create_process_state(priority, program, READY, argc, argv, userspaceProcessCreationFDIds, userspaceProcessCreationFDCount);
+}
+
+uint64_t killProcessForeground(){
+    if(foreGroundPID < 0){
+        return -1;
     }
-    kill_process(foreGroundPID);
+    uint64_t pid = kill_process(foreGroundPID);
+    foreGroundPID = -1;
+    return pid;
    
 }
 

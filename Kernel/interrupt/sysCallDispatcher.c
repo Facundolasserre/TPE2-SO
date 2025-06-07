@@ -12,7 +12,6 @@
 #define STDIN 0
 #define STDOUT 1
 #define STDERR 2
-#define SYS_CALLS_QTY 34
 
 extern uint8_t hasregisterInfo;
 extern const uint64_t registerInfo[17];
@@ -205,7 +204,7 @@ static uint64_t s_create_process_foreground(int priority, program_t program, uin
     return userspaceCreateProcessForeground(priority, program, argc, argv);
 }
 
-static void s_create_process_set_fd(uint64_t * fd_ids[MAX_FD], int fd_count){
+static void s_create_process_set_fd(uint64_t * fd_ids, uint64_t fd_count){
     userspaceSetFD(fd_ids, fd_count);
 }
 
@@ -297,7 +296,7 @@ static uint64_t (*syscalls[])(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t) 
     (void *)sys_open_fd,            // 35
     (void *)sys_close_fd,        // 36
     (void *)s_create_process_foreground, // 37
-    (void*)s_create_process_set_fd // 38
+    (void *)s_create_process_set_fd // 38
 };
 
 uint64_t syscall_dispatcher(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10, uint64_t r8, uint64_t rax) {

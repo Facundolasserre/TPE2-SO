@@ -60,9 +60,10 @@ void printcColor(char c, Color color)
 	sys_writeColor(STDOUT, c, color);
 }
 
-void drawCursor()
-{
-	sys_drawCursor();
+void drawCursor(){
+	while(1){
+		sys_drawCursor();
+	}
 }
 
 void prints(const char *str, int lenght)
@@ -73,21 +74,18 @@ void prints(const char *str, int lenght)
 	}
 }
 
-void printsColor(const char *str, int lenght, Color color)
-{
+void printsColor(const char *str, int lenght, Color color){
 	for (int i = 0; i < lenght && str[i] != 0; i++)
 	{
 		printcColor(str[i], color);
 	}
 }
 
-char getChar()
-{
+char getChar(){
 	return (char)sys_read(0);
 }
 
-int isChar(char c)
-{
+int isChar(char c){
 	if ((c >= '!' && c <= '}'))
 	{
 		return 1;
@@ -100,24 +98,20 @@ void write_char(char c){
 }
 
 void write_string(const char *str, int lenght){
-	for (int i = 0; i < lenght && str[i] != 0; i++)
-	{
+	for (int i = 0; i < lenght && str[i] != 0; i++){
 		write_char(str[i]);
 	}
 }
 
-int isUpperArrow(char c)
-{
+int isUpperArrow(char c){
 	return c == 0x48;
 }
 
-int isDownArrow(char c)
-{
+int isDownArrow(char c){
 	return c == 0x50;
 }
 
-int isDigit(char c)
-{
+int isDigit(char c){
 	if (c >= '0' && c <= '9')
 	{
 		return 1;
@@ -125,8 +119,7 @@ int isDigit(char c)
 	return 0;
 }
 
-int strlen(const char *str)
-{
+int strlen(const char *str){
 	int i = 0;
 	while (str[i] != 0)
 	{
@@ -136,8 +129,7 @@ int strlen(const char *str)
 	return i;
 }
 
-char *strcpy(char *dest, const char *src)
-{
+char *strcpy(char *dest, const char *src){
 	int i = 0;
 	while (src[i] != 0)
 	{
@@ -148,8 +140,7 @@ char *strcpy(char *dest, const char *src)
 	return dest;
 }
 
-char *strcpyForParam(char *dest, const char *src, const char *src2)
-{
+char *strcpyForParam(char *dest, const char *src, const char *src2){
 	int i = 0, k = 0;
 	while (src[i] != 0)
 	{
