@@ -60,9 +60,9 @@ void yield();
 
 void cp_halt();
 
-uint64_t createProcess(int priority, program_t program,  uint64_t argc, char *argv[], uint64_t * fdIds, uint64_t fdCount);
+uint64_t createProcess(int priority, program_t program, uint64_t argc, char *argv[], uint64_t * fdIds[MAX_FD], uint64_t fdCount);
 
-uint64_t create_process_state(int priority, program_t program, int state, uint64_t argc, char *argv[], uint64_t * fdIds, uint64_t fdCount);
+uint64_t create_process_state(int priority, program_t program, int state, uint64_t argc, char *argv[], openFile_t *fdIds[MAX_FD], uint64_t fdCount);
 
 processCB getCurrentProcess();
 
@@ -72,5 +72,7 @@ processCB find_dequeue_priority(uint64_t pid);
 
 // Stack management
 void* fill_stack(uintptr_t sp, void (*initProcessWrapper)(program_t, uint64_t, char**), program_t program, uint64_t argc, char** argv);
+
+
 
 #endif
