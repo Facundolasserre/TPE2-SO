@@ -5,12 +5,13 @@
 #include <stdint.h>
 #include <memoryManager.h>
 #include <fileDescriptor.h>
+#include <utils.h>
 
 List * pipesList;
 uint16_t currentPipeId = 0;
 
 int initPipes(){
-    pipesList = listInit(comparePipes);
+    pipesList = listInit((int (*)(void *, void *))comparePipes);
     if (!pipesList) {
         return -1;
     }
@@ -23,7 +24,7 @@ uint64_t pipeCreate(){
         return -1;
     }
 
-    uint64_t pipe_fd_id = fd_add(newPipe->id, pipeRead, pipeWrite, pipeDestroy);
+    uint64_t pipe_fd_id = fd_add((void *)(uintptr_t)newPipe->id, (char (*)(void *))pipeRead, (int (*)(void *, char))pipeWrite, (int (*)())pipeDestroy);
     if(pipe_fd_id == -1){
         pipe_free(newPipe);
         return -1;
@@ -51,7 +52,7 @@ char pipeRead(uint16_t pipeId){
     pipe * found = (pipe *)listGet(pipesList, &target);
 
     if(found == NULL){
-        return NULL;
+        return '\0';
     }
 
     sem_wait(found->sem_name_data_available);

@@ -33,18 +33,14 @@ processQueueADT allBlockedQueue = NULL;
 
 uint8_t mutexLock = 1;
 int currentSemaphore = 0;
-//processQueueADT semQueue = NULL;
-
-
-
 
 //retorna -1 por error
-uint64_t createProcess(int priority, program_t program, uint64_t argc, char *argv[], uint64_t * fdIds[MAX_FD], uint64_t fdCount) {
+uint64_t createProcess(int priority, program_t program, uint64_t argc, char *argv[], uint64_t * fdIds, uint64_t fdCount) {
     return create_process_state(priority, program, READY, argc, argv, fdIds, fdCount); //agregar nuevos param
 }
 
 //retorna -1 por error
-uint64_t create_process_state(int priority, program_t program, int state, uint64_t argc, char *argv[], openFile_t *fdIds[MAX_FD], uint64_t fdCount) {
+uint64_t create_process_state(int priority, program_t program, int state, uint64_t argc, char *argv[], openFile_t *fdIds, uint64_t fdCount) {
 
     void* base_pointer = mem_alloc(STACK_SIZE);
 
@@ -52,7 +48,7 @@ uint64_t create_process_state(int priority, program_t program, int state, uint64
         return -1;
     }
 
-    void * stackPointer = fill_stack(base_pointer, initProcessWrapper, program, argc, argv);
+    void * stackPointer = fill_stack((uintptr_t)base_pointer, initProcessWrapper, program, argc, argv);
 
     processQueueADT waitingQueue = newProcessQueue();
 
@@ -125,7 +121,7 @@ processCB create_halt_process(){
     if(base_pointer == NULL){
          return returnNullProcess();
     }
-    void * stack_pointer = fill_stack(base_pointer, initProcessWrapper, &halt, 0, 0);
+    void * stack_pointer = fill_stack((uintptr_t)base_pointer, initProcessWrapper, (program_t)halt, 0, 0);
     processCB new_process = {
                         PID++,    //pid
                         base_pointer,        //base_pointer
@@ -206,7 +202,7 @@ void formatProcessLine(char *line, processCB * process){
     //convierto los enteros a cadena
     intToStr(process->pid, pid_str);
     intToStr(process->priority, priority_str);
-    intToStr(process->base_pointer, base_pointer_str);
+    intToStr((int)(uintptr_t)process->base_pointer, base_pointer_str);
 
     //determio la cadena de estado
     switch(process->state){
@@ -296,6 +292,7 @@ uint64_t kill_process(uint64_t pid){
     } else {
         return 0;
     }
+    return 0;
 }
 
 void block_process_pid(uint64_t pid){
@@ -309,6 +306,8 @@ void block_process_pid(uint64_t pid){
     }
     process.state = BLOCKED;
     addProcessToQueue(allBlockedQueue, process);
+
+    return 0;
 }
 
 
@@ -321,6 +320,7 @@ uint64_t block_current_process_to_queue(processQueueADT blockedQ){
     currentProcess.state = BLOCKED;
     addProcessToQueue(blockedQ, currentProcess);
     __asm__ ("int $0x20"); // timertick para llamar a schedule de nuevo
+    return 0;
 }
 
 uint64_t block_process_to_queue(uint64_t pid, processQueueADT destination){
@@ -346,6 +346,7 @@ uint64_t unblock_process(uint64_t pid){
     } else {
         return -1;
     }
+    return 0;
 }
 
 void yield(){
@@ -386,7 +387,7 @@ uint64_t schedule(void* rsp){
             currentProcess.usedQuantum++;
 
             if(currentProcess.usedQuantum < currentProcess.assignedQuantum){
-                return currentProcess.rsp;
+                return (uint64_t)currentProcess.rsp;
             } else {
                 currentProcess.state = READY;
                 currentProcess.priority = (currentProcess.priority + 1) > HIGHEST_QUEUE ? HIGHEST_QUEUE : currentProcess.priority + 1;
@@ -453,7 +454,7 @@ uint64_t schedule(void* rsp){
         currentProcess = haltProcess; // Si no hay procesos listos, se ejecuta el proceso de halt
 
     }
-    return currentProcess.rsp;
+    return (uint64_t)currentProcess.rsp;
 
 }
 
@@ -510,6 +511,7 @@ uint64_t unblock_process_from_queue(processQueueADT source){
 
     process.state = READY;
     add_priority_queue(process);
+    return 0;
 }
 
 uint8_t add_priority_queue(processCB process){
@@ -548,6 +550,7 @@ uint64_t set_priority(uint64_t pid, uint8_t priority){
     } else {
         return -1;
     }
+    return 0;
 }
 
 processCB find_dequeue_priority(uint64_t pid){

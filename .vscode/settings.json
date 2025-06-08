@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "semaphore.h": "c",
-        "processqueue.h": "c"
+        "processqueue.h": "c",
+        "userlib.h": "c"
     }
 }

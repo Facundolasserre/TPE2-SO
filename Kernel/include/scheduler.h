@@ -103,6 +103,10 @@ processCB find_dequeue_priority(uint64_t pid);
 // funcion para llenar el stack de un proceso
 void* fill_stack(uintptr_t sp, void (*initProcessWrapper)(program_t, uint64_t, char**), program_t program, uint64_t argc, char** argv);
 
+void applyAging();
+
+void formatProcessLine(char * line, processCB * process);
+
 
 
 #endif

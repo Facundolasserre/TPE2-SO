@@ -10,7 +10,7 @@
 
 List * semList;
 
-int sem_compare(const void *semA, const void *semB) {
+int sem_compare(void *semA, void *semB) {
     const semaphore_t * sem_a = (const semaphore_t *)semA;
     const char *sem_b_name = (char*)semB;
     return strcmp(sem_a->name, sem_b_name);
@@ -34,7 +34,7 @@ semaphoreList_t * addSemaphore(char * name, int initialValue) {
     strcpy(newSemaphore->name, name, strlen(name));
 
     newSemaphore->value = initialValue;
-    newSemaphore->lock = 1;
+    newSemaphore->lock = (lock_t)1;
     newSemaphore->blockedQueue = newProcessQueue();
     newSemaphore->processesCount = 1;
 
@@ -71,9 +71,9 @@ void sem_close(char * name){
         return;
     }
 
-    acquire(&(aux->lock));
+    acquire(aux->lock);
     (aux->processesCount)--;
-    release(&(aux->lock));
+    release(aux->lock);
 
     if(aux->processesCount == 0){
         removeSemaphore(name);
@@ -92,10 +92,10 @@ void sem_wait(char * name){
         return;
     }
 
-    acquire(&(aux->lock));
+    acquire(aux->lock);
     uint8_t toBlock = aux->value <= 0;
     (aux->value)--;
-    release(&(aux->lock));
+    release(aux->lock);
 
     if(toBlock){
         block_current_process_to_queue(aux->blockedQueue);
@@ -111,10 +111,10 @@ int64_t sem_post(char * name){
         return;
     }
 
-    acquire(&(aux->lock));
+    acquire(aux->lock);
     uint8_t toUnblock = aux->value < 0;
     (aux->value)++;
-    release(&(aux->lock));
+    release(aux->lock);
 
     //desbloqueo el primer proceso bloqueado en la cola del semaforo
     if(toUnblock){

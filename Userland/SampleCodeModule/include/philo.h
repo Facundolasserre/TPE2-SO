@@ -14,10 +14,8 @@ typedef struct{
 } Philosopher;
 
 #define MUTEX_ARRAY "accessArray"
-static Philosopher philos[MAX_PHILOS];
 
 #define MUTEX_THINKERS "thinkersMutex"
-static int thinkers;
 
 uint64_t initPhilosophers(uint64_t argc, char *argv[]);
 uint64_t controllersHandler(uint64_t argc, char *argv[]);
