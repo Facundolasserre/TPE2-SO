@@ -33,8 +33,7 @@ int strlen(const char *str){
 
 char *strcpy(char *dest, const char *src, uint64_t size){
 	int i = 0;
-	while (i < size, src[i] != 0)
-	{
+	while (src[i] != 0){
 		dest[i] = src[i];
 		i++;
 	}

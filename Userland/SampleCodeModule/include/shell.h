@@ -5,7 +5,7 @@
 #include "userlib.h"
 #define MAX_BUFF 4096
 #define MAX_COMMAND 25
-#define MAX_ARGS 28
+#define MAX_ARGS 35
 #define USERNAME_SIZE 16
 #define NEW_LINE '\n'
 #define BACKSPACE '\b'
@@ -47,5 +47,9 @@ void cmd_kill();
 void cmd_philo();
 void cmd_filter();
 void cmd_wc();
+void cmd_block();
+void cmd_unblock();
+void cmd_nice();
+void cmd_mem();
 
 #endif

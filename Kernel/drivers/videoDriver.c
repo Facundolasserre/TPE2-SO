@@ -117,16 +117,16 @@ void vDriver_print(const char c, Color fnt, Color bgd){
     switch (c) {
         case '\n':
             vDriver_newline();
-        break;
+            break;
         case '\b':
             vDriver_backspace(fnt, bgd);
-        break;
+            break;
         case '\0':
             /* nada, no imprime nada */
-        break;
+            break;
         default:
             drawChar(cursorX, cursorY , c , fnt , bgd);
-        break;
+            break;
     }
 }
 

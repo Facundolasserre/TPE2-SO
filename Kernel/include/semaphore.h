@@ -27,15 +27,15 @@ int addSemaphore(char * name, int initialValue);
 
 void removeSemaphore(char * name);
 
-int semOpen(char *sem_name, uint64_t init_value);
+int sem_open(char *sem_name, uint64_t init_value);
 
-void semClose(char * sem_name);
+void sem_close(char * sem_name);
 
-void semWait(char *sem_name);
+void sem_wait(char *sem_name);
 
-void semPost(char *sem_name);
+void sem_post(char *sem_name);
 
-int semCompare(const void * sem_a, const void * sem_b);
+int sem_compare(void * sem_a, void * sem_b);
 
 
 

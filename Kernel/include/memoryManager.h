@@ -24,4 +24,6 @@ void * mem_alloc(uint32_t s);
 // Libera un bloque de memoria dado un puntero.
 void mem_free(void *p);
 
+char * mem_state();
+
 #endif 

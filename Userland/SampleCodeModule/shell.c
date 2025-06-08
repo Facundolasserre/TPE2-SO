@@ -55,16 +55,20 @@ void printHelp()
 	printsColor("\n    >cat                -cat file", MAX_BUFF, GREEN);
 	printsColor("\n    >loop               -prints Pid + greeting to the user", MAX_BUFF, GREEN);
 	printsColor("\n    >kill               - kill a process by pid", MAX_BUFF, GREEN);
+	printsColor("\n    >block              - block a process by pid", MAX_BUFF, GREEN);
+	printsColor("\n    >unblock            - unblock a process by pid", MAX_BUFF, GREEN);
+	printsColor("\n    >nice               - change the priority of a given process", MAX_BUFF, GREEN);
 	printsColor("\n    >philo              - launch philosopher process", MAX_BUFF, GREEN);
 	printsColor("\n    >wc					- counts the amount of input lines", MAX_BUFF, GREEN);
 	printsColor("\n    >filter             - filter all input vocals", MAX_BUFF, GREEN);
+	printsColor("\n    >mem			   	   - print memory state", MAX_BUFF, GREEN);
 	printsColor("\n    >exit               - exit OS\n", MAX_BUFF, GREEN);
 
 	printc('\n');
 }
 
-const char *commands[] = {"undefined", "help", "ls", "time", "clear", "registersinfo", "zerodiv", "invopcode", "setusername", "whoami", "exit", "ascii", "eliminator", "memtest", "schetest", "priotest", "testschedulerprocesses", "testsync", "ps", "cat", "loop", "kill", "philo", "wc", "filter"};
-static void (*commands_ptr[MAX_ARGS])() = {cmd_undefined, cmd_help, cmd_help, cmd_time, cmd_clear, cmd_registersinfo, cmd_zeroDiv, cmd_invOpcode, cmd_setusername, cmd_whoami, cmd_exit, cmd_ascii, cmd_eliminator, cmd_memoryManagerTest, cmd_schetest, cmd_priotest, cmd_testschedulerprocesses, cmd_test_sync, cmd_ps, cmd_cat, cmd_loop, cmd_kill, cmd_philo, cmd_wc, cmd_filter};
+const char *commands[] = {"undefined", "help", "ls", "time", "clear", "registersinfo", "zerodiv", "invopcode", "setusername", "whoami", "exit", "ascii", "eliminator", "memtest", "schetest", "priotest", "testschedulerprocesses", "testsync", "ps", "cat", "loop", "kill", "philo", "wc", "filter", "block", "unblock", "nice", "mem"};
+static void (*commands_ptr[MAX_ARGS])() = {cmd_undefined, cmd_help, cmd_help, cmd_time, cmd_clear, cmd_registersinfo, cmd_zeroDiv, cmd_invOpcode, cmd_setusername, cmd_whoami, cmd_exit, cmd_ascii, cmd_eliminator, cmd_memoryManagerTest, cmd_schetest, cmd_priotest, cmd_testschedulerprocesses, cmd_test_sync, cmd_ps, cmd_cat, cmd_loop, cmd_kill, cmd_philo, cmd_wc, cmd_filter, cmd_block, cmd_unblock, cmd_nice, cmd_mem};
 
 void shell(){
 	welcome();
@@ -150,10 +154,6 @@ void printPrompt()
 	printcColor('>', PINK);
 }
 
-void cmd_loop(){
-	int pid = create_process_foreground(0, &loop_test, 0, NULL, NULL, 0);
-	sys_wait_pid(pid);
-}
 
 // separa comando de parametro
 void checkLine(int * commandIdx, int * afterPipeIdx){
@@ -319,7 +319,7 @@ void handleSpecialCommands(char c)
 
 void cmd_ps(){
 	char * processes = sys_list_processes();
-	prints(processes, MAX_BUFF);
+	write_string(processes, MAX_BUFF);
 	sys_mem_free(processes);
 }
 
@@ -439,20 +439,52 @@ void cmd_test_sync() {
 	printsColor("CREATED 'test_sync' PROCESS!\n", MAX_BUFF, RED);
 }
 
-void cmd_kill(){
-	sys_kill(atoi(parameter));
-}
-
 void cmd_philo(){
 	init_philosophers(0, NULL);
 }
 
 void cmd_wc(){
-	create_process_foreground(0, &wc, 0, NULL, NULL, 0);
+	int lines = 0;
+	char c;
+	while((c = sys_read(0)) != -1){
+		write_char(c);
+		if(c == '\n'){
+			lines++;
+		}
+	}
+	write_string("Total lines: ", strlen("Total lines: "));
+	writeInt(lines, MAX_BUFF);
+	write_char('\n');
 }
 
 void cmd_filter(){
-	create_process_foreground(0, &filter, 0, NULL, NULL, 0);
+	int vowels = 0;
+	for(int i = 0; i < strlen(parameter); i++){
+		vowels += isVowel(parameter[i]);
+	}
+	write_string("Total vowels: ", strlen("Total vowels: "));
+	writeInt(vowels, MAX_BUFF);
+}
+
+void cmd_block(){
+	uint64_t pid = strToInt(parameter);
+	sys_block(pid);
+}
+
+void cmd_unblock(){
+	uint64_t pid = strToInt(parameter);
+	sys_unblock(pid);
+}
+
+void cmd_nice(){
+	uint64_t pid = strToInt(parameter);
+	sys_nice(pid, 0);
+}
+
+void cmd_mem(){
+	char * memState = sys_mem_state();
+	write_string(memState, strlen(memState));
+	sys_mem_free(memState);
 }
 
 void welcome()

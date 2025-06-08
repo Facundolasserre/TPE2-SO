@@ -11,7 +11,7 @@ typedef struct Node {
 typedef struct{
     Node * head;
     uint64_t size;
-    int (*compare) (const void *, const void *);
+    int (*compare) (void *, void *);
 }List;
 
 List * listInit(int (*compare) (const void *, const void *));

@@ -23,8 +23,8 @@ openFile_t * openFileNull;
 
 int compareFD(void *fdA,  void *fdB) {
     openFile_t *fileA = (openFile_t *)fdA;
-    uint64_t idB = (uint64_t)fdB;
-    return fileA->id - idB;
+    uint64_t *idB = (uint64_t *)fdB;
+    return fileA->id - *idB;
 }
 
 int compareFDById(openFile_t *fd, uint64_t id) {
@@ -36,18 +36,19 @@ int compareFDById(openFile_t *fd, uint64_t id) {
 void initFileDescriptors(){
     openFDList = list_init(compareFD);
     
-    uint64_t stdinFDId = pipeCreate();
-    
-    openFDList = (openFile_t *)listGet(openFDList, stdinFDId);
+    stdinFDId = pipeCreate();
 
-    openFileSTDOUT = createFD(0, vDriverRead, vDriverWrite, vDriverClose);
+    //ID 0
+    uint64_t * idPtr = &stdinFDId;
+    openFileSTDIN = (openFile_t *)listGet(openFDList, idPtr);
 
-    openFileNull = createFD(0, nullRead, nullWrite, nullClose);
-    
+    openFileSTDOUT = createFD(0, (char(*)(void *))vDriverRead, (int(*)(void *, char))vDriverWrite, (int(*)())vDriverClose);
+
+    //ID 1
+    openFileNull = createFD(0, (char(*)(void *))nullRead, (int (*)(void *, char))nullWrite, (int (*)())nullClose);
+
+    //ID 2
 }
-
-
-
 
 openFile_t *getSTDIN_FD(){
     return openFileSTDIN;
@@ -56,9 +57,6 @@ openFile_t *getSTDIN_FD(){
 openFile_t *getSTDOUT_FD(){
     return openFileSTDOUT;
 }
-
-
-
 
 char readFD(uint64_t fdIndex){
     processCB current = getCurrentProcess();
@@ -86,14 +84,14 @@ int nullClose() {
 
 char nullRead(void *src) {
     block_process(); 
+    return 0;
 }
 
 int nullWrite(void *src, char data) {
     return 1; 
 }
 
-
-openFile_t * openFDTable(uint64_t fdIds[MAX_FD], int fdCount){
+openFile_t ** openFDTable(uint64_t fdIds[MAX_FD], int fdCount){
     openFile_t **fdTable = (openFile_t **)mem_alloc(sizeof(openFile_t*) * MAX_FD);
     
     for(int i=0; i < MAX_FD; i++){
@@ -110,7 +108,8 @@ openFile_t * openFDTable(uint64_t fdIds[MAX_FD], int fdCount){
             fdTable[0] = openFileNull;
 
         }else{
-            openFile_t *fd = (openFile_t *)listGet(openFDList, fdIds[0]);
+            uint64_t * idPtr = &fdIds[0];
+            openFile_t *fd = (openFile_t *)listGet(openFDList, idPtr);
             if(fd == NULL){
                 goto undo;
             }
@@ -124,7 +123,8 @@ openFile_t * openFDTable(uint64_t fdIds[MAX_FD], int fdCount){
             fdTable[1] = openFileNull;
 
         }else{
-            openFile_t * fd = (openFile_t *)listGet(openFDList, fdIds[1]);
+            uint64_t *idPtr = &fdIds[1];
+            openFile_t * fd = (openFile_t *)listGet(openFDList, idPtr);
             if(fd == NULL){
                 goto undo;
             }
@@ -135,7 +135,8 @@ openFile_t * openFDTable(uint64_t fdIds[MAX_FD], int fdCount){
     }
 
     for(int i=2; i<fdCount ; i++){
-        openFile_t *fd = (openFile_t *)listGet(openFDList, fdIds[i]);
+        uint64_t * idPtr = &fdIds[i];
+        openFile_t *fd = (openFile_t *)listGet(openFDList, idPtr);
 
         if(fd == NULL){
             goto undo;
@@ -157,16 +158,15 @@ openFile_t * openFDTable(uint64_t fdIds[MAX_FD], int fdCount){
 
 }
 
-
-
-
 uint64_t openFD(uint64_t id){
     processCB current = getCurrentProcess();
 
-    openFile_t *found_fd = (openFile_t *)listGet(openFDList, id);
+    uint64_t * idPtr = &id;
+
+    openFile_t *found_fd = (openFile_t *)listGet(openFDList, idPtr);
     
     if(found_fd == NULL){
-        return NULL;
+        return -1;
     }
 
     //vemos si ya estaba abierto en la tabla de descriptores del proceso actual
@@ -188,15 +188,14 @@ uint64_t openFD(uint64_t id){
 }
 
 
-
-
 int closeFD(uint64_t id){
 
     if(id < 2 || id == stdinFDId){
         return 0;
     }
 
-    openFile_t *found_fd = (openFile_t *)listGet(openFDList, id);
+    uint64_t * idPtr = &id;
+    openFile_t *found_fd = (openFile_t *)listGet(openFDList, idPtr);
     
     if(found_fd == NULL){
         return 0;
@@ -211,19 +210,15 @@ int closeFD(uint64_t id){
     return 1;
 }
 
-
-
-
 void removeFD(id){
-    openFile_t *found_fd = (openFile_t *)listGet(openFDList, id);
+
+    uint64_t * idPtr = &id;
+    openFile_t *found_fd = (openFile_t *)listGet(openFDList, idPtr);
     listRemove(openFDList, found_fd);
     mem_free(found_fd);
 }
 
-
-
-
-uint64_t addFD(void * resource, char (*read)(), int (*write)(char data), int (*close)()){
+uint64_t addFD(void * resource, char (*read)(void *), int (*write)(void *, char), int (*close)()){
     openFile_t *new_fd = createFD(resource, read, write, close);
 
     if(new_fd == NULL){
@@ -234,8 +229,6 @@ uint64_t addFD(void * resource, char (*read)(), int (*write)(char data), int (*c
     
     return new_fd->id; // Devolver el ID del nuevo FD
 }
-
-
 
 openFile_t * createFD(void * resource, char (*read)(void * src), int (*write)(void * dest, char data), int (*close)()) {
     openFile_t * new_fd = (openFile_t *)mem_alloc(sizeof(openFile_t));

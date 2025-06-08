@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <openFile.h>
 #include <videoDriver.h>
+#include <utils.h>
 
 openFile_t * openFileKeyboard;
 
@@ -36,17 +37,17 @@ static const char keyMapU[] = {
 
 };
 
-static const char keyMapCAPS[] = {
+// static const char keyMapCAPS[] = {
 
-    0, 27, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=',
-    '\b', '\t', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[', ']',
-    '\n', 0, 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', '\'', '`',
-    0, '\\', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/', 0, '*',
-    0, ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, '-', 0, 0, 0, '+', 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0
+//     0, 27, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=',
+//     '\b', '\t', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[', ']',
+//     '\n', 0, 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', '\'', '`',
+//     0, '\\', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/', 0, '*',
+//     0, ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+//     0, 0, 0, 0, '-', 0, 0, 0, '+', 0, 0, 0, 0, 0,
+//     0, 0, 0, 0, 0, 0
 
-};
+// };
 
 static const char *const keyMap[] = {keyMapL, keyMapU};
 
@@ -116,18 +117,12 @@ void keyboardHandler(uint8_t keyPressed)
     }
 
     if(ctrl && inputCode == 0x20){ //0x20 = 32 = 'd'
-        asciiCode = -1;
+        sendEOFForeground();
+        return;
     }
     if(ctrl && inputCode == 0x2E){ //0x2E = 46 = 'c'
-        asciiCode = 0;
         uint64_t pid = killProcessForeground();
-        if(pid > 0){
-            vDriver_prints("Process killed: ", BLACK, WHITE);
-            char buffer[10];
-            intToStr(pid, buffer);
-            vDriver_prints(buffer, BLACK, WHITE);
-            vDriver_prints("\n\n", BLACK, WHITE);
-        }
+        return;
     }
     openFileKeyboard->write(openFileKeyboard->resource, asciiCode);
 }

@@ -10,14 +10,14 @@
 
 List * semList;
 
-int semCompare(const void *semA, const void *semB) {
+int sem_compare(const void *semA, const void *semB) {
     const semaphore_t * sem_a = (const semaphore_t *)semA;
     const char *sem_b_name = (char*)semB;
     return strcmp(sem_a->name, sem_b_name);
 }
 
 int initSemaphores(){
-    semList = listInit(semCompare);
+    semList = listInit(sem_compare);
     if(semList == NULL){
         return -1;
     }
@@ -53,7 +53,7 @@ void removeSemaphore(char * name){
     
 }
 
-int semOpen(char *name, uint64_t init_value){
+int sem_open(char *name, uint64_t init_value){
     semaphore_t * aux = (semaphore_t *)listGet(semList, name);
 
     if(aux == NULL){
@@ -64,7 +64,7 @@ int semOpen(char *name, uint64_t init_value){
     return 0;
 }
 
-void semClose(char * name){
+void sem_close(char * name){
     semaphore_t * aux = (semaphore_t *)listGet(semList, name);
 
     if(aux == NULL){
@@ -85,7 +85,7 @@ void semClose(char * name){
 
 
 
-void semWait(char * name){
+void sem_wait(char * name){
     semaphore_t * aux = (semaphore_t *)listGet(semList, name);
 
     if(aux == NULL){
@@ -104,7 +104,7 @@ void semWait(char * name){
 
 }
 
-int64_t semPost(char * name){
+int64_t sem_post(char * name){
     semaphore_t * aux = (semaphore_t *)listGet(semList, name);
 
     if(aux == NULL){

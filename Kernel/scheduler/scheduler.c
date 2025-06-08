@@ -13,7 +13,7 @@
 processCB currentProcess;
 processCB haltProcess;
 uint64_t PID = 0;
-uint64_t foreGroundPID = -2; 
+int foreGroundPID = -2; 
 uint64_t userspaceProcessCreationFDIds[MAX_FD] = {0, 1};
 uint64_t userspaceProcessCreationFDCount = 0; // Cantidad de FDI de los procesos creados por el usuario
 
@@ -298,11 +298,6 @@ uint64_t kill_process(uint64_t pid){
     }
 }
 
-uint64_t killProcessTerminal(char * pid){
-    return kill_process(atoi(pid));
-}
-
-
 void block_process_pid(uint64_t pid){
     if(currentProcess.pid == pid){
         return;
@@ -475,11 +470,27 @@ uint64_t killProcessForeground(){
     if(foreGroundPID < 0){
         return -1;
     }
+    int aux = foreGroundPID;
     kill_process(foreGroundPID);
-    uint64_t aux = foreGroundPID; // Guardar el pid antes de cambiarlo
-    foreGroundPID = -1;
+    foreGroundPID = 21;
     return aux; // Retornar el pid del proceso que se mató
    
+}
+
+void sendEOFForeground(){
+    if(foreGroundPID < 0){
+        return;
+    }
+    processCB process;
+
+    if(currentProcess.pid == foreGroundPID){
+        process = currentProcess;
+    } else if( (process = get_process_by_pid(foreGroundPID)).pid < 0){
+        return; // No se encontró el proceso
+    }
+
+    process.fdTable[1]->write(process.fdTable[1]->resource, -1);
+    process.fdTable[0]->write(process.fdTable[0]->resource, -1); 
 }
 
 
@@ -530,6 +541,10 @@ uint64_t set_priority(uint64_t pid, uint8_t priority){
     } else if ((process = find_dequeue_priority(pid)).pid > 0){
         process.priority = priority;
         add_priority_queue(process);
+    } else if( (process = findPidDequeue(allBlockedQueue, pid)).pid > 0){
+        process.priority = priority;
+        process.assignedQuantum = ASSIGN_QUANTUM(priority);
+        addProcessToQueue(allBlockedQueue, process);
     } else {
         return -1;
     }
@@ -553,7 +568,7 @@ processCB find_dequeue_priority(uint64_t pid){
 }
 
 int find_process_in_priority_queue(uint64_t pid){
-    processQueueADT queues[] = {process0, process1, process2, process3};
+    processQueueADT queues[] = {process0, process1, process2, process3, allBlockedQueue};
     for(int i=0 ; i<4 ; i++){
         if(find_process_in_queue(queues[i], pid)){
             return 1;

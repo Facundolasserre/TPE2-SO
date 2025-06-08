@@ -6,8 +6,6 @@
 #include <test_util.h>
 #include <shell.h> 
 
-#define MAX_BUFF 256 // or any appropriate size
-
 #define STDIN 0
 #define STDOUT 1
 #define STDERR 2
@@ -62,12 +60,17 @@ void drawCursor(){
 	}
 }
 
-void prints(const char *str, int lenght)
-{
+void prints(const char *str, int lenght){
 	for (int i = 0; i < lenght && str[i] != 0; i++)
 	{
 		printc(str[i]);
 	}
+}
+
+void writeInt(int integer, int length){
+	char buf[20];
+	intToStr(integer, buf);
+	write_string(buf, strlen(buf));
 }
 
 void printsColor(const char *str, int lenght, Color color){
@@ -519,7 +522,7 @@ uint64_t strToInt(char *str){
 
 char * memcpy(char *dest, const char *src, uint64_t size){
 	int i = 0;
-	while(i < size, src[i] != 0){
+	while(i < size && src[i] != 0){
 		dest[i] = src[i];
 		i++;
 	}
@@ -527,7 +530,15 @@ char * memcpy(char *dest, const char *src, uint64_t size){
 	return dest;
 }
 
-static char **memAllocArgs(char **args){
+int StringArrayLength(char **array){
+	int i = 0;
+	while(*(array++) != NULL){
+		i++;
+	}
+	return i;
+}
+
+char **memAllocArgs(char **args){
 	int argc = stringArrayLength(args);
 	int totalArgsLength = 0;
 	int argsLength[argc];
@@ -550,4 +561,12 @@ static char **memAllocArgs(char **args){
 	newArgsArray[argc] = NULL; // Null-terminate the array of strings
 	return newArgsArray;
 
+}
+
+int isVowel(char lett){
+	if(lett == 'a' || lett == 'e' || lett == 'i' || lett == 'o' || lett == 'u' ||
+	   lett == 'A' || lett == 'E' || lett == 'I' || lett == 'O' || lett == 'U'){
+		return 1;
+	}
+	return 0;
 }
