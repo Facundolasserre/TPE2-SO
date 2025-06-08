@@ -225,7 +225,7 @@ static void s_yield(){
 }
 
 static void s_block_process(uint64_t pid){
-    block_process(pid);
+    block_process_pid(pid);
 }
 
 static void s_unblock_process(uint64_t pid){
@@ -246,6 +246,14 @@ static uint64_t sys_open_fd(uint64_t fd_id){
 
 static int sys_close_fd(uint64_t fd_id){
     return closeFD(fd_id);
+}
+
+static uint64_t sys_pipe_create(){
+    return pipeCreate();
+}
+
+static uint64_t sys_set_priority(uint64_t pid, uint64_t priority){
+    return set_priority(pid, priority);
 }
 
 
@@ -296,7 +304,9 @@ static uint64_t (*syscalls[])(uint64_t, uint64_t, uint64_t, uint64_t, uint64_t) 
     (void *)sys_open_fd,            // 35
     (void *)sys_close_fd,        // 36
     (void *)s_create_process_foreground, // 37
-    (void *)s_create_process_set_fd // 38
+    (void *)s_create_process_set_fd, // 38
+    (void *)sys_pipe_create,        // 39
+    (void *)sys_set_priority,       // 40
 };
 
 uint64_t syscall_dispatcher(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t r10, uint64_t r8, uint64_t rax) {

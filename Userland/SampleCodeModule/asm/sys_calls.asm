@@ -46,6 +46,10 @@ GLOBAL sys_close_fd
 GLOBAL sys_create_process_set_fd
 GLOBAL sys_create_process_foreground
 
+GLOBAL sys_pipe_create
+
+GLOBAL sys_nice
+
 section .text
 
 ; Pasaje de parametros en C:
@@ -256,5 +260,15 @@ sys_create_process_foreground:
 
 sys_create_process_set_fd:
     mov rax, 0x26
+    int 80h
+    ret
+
+sys_pipe_create:
+    mov rax, 0x27
+    int 80h
+    ret
+
+sys_nice:
+    mov rax, 0x28
     int 80h
     ret

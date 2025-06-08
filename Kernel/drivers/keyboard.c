@@ -8,8 +8,8 @@ openFile_t * openFileKeyboard;
 
 unsigned char inputCode = 0;
 char asciiCode = 0;
-int ctrl = 0;
 int shift = 0;
+int ctrl = 0;
 int capsLock = 0;
 
 static const char keyMapL[] = {
@@ -72,54 +72,53 @@ void initKeyboard(){
 }
 
 
-void keyboardHandler(uint8_t keyPressed){
+void keyboardHandler(uint8_t keyPressed)
+{
 
     inputCode = keyPressed;
 
     // soltar tecla
-    if(inputCode > 0x2A || inputCode == 0x36){
+    if (inputCode > 0x2A || inputCode == 0x36)
+    {
         shift = 0;
     }
-
-    if(inputCode == 0xAA || inputCode == 0xB6){
+    if (inputCode == 0xAA || inputCode == 0xB6)
+    {
         shift = 0;
     }
-
-    if(inputCode == 0x3A){
+   if(inputCode == 0x3A)
+    {
         capsLock = (capsLock + 1) % 2; 
     }
-
-    if(inputCode == 0x1D){
+    if (inputCode == 0x1D){
         ctrl = 1;
     }
-
-    if(inputCode == 0x9D){
+    if( inputCode == 0x9D){
         ctrl = 0;
     }
-
     if(inputCode > 0x80 || inputCode == 0x0F){
-        asc
-        iiCode = 0;
-    } else if(inputCode == 0x48 || inputCode == 0x50){
+        asciiCode = 0;
+    }
+    else if(inputCode == 0x48 || inputCode == 0x50){
         asciiCode = inputCode;
     } else {
         asciiCode = keyMap[shift][inputCode];
     }
 
-    if(ctrl && inputCode == 0x20){
+    if(ctrl && inputCode == 0x20){ //0x20 = 32 = 'd'
         asciiCode = -1;
     }
-
-    if(ctrl && inputCode == 0x2E){
+    if(ctrl && inputCode == 0x2E){ //0x2E = 46 = 'c'
         asciiCode = 0;
         uint64_t pid = killProcessForeground();
-        vDriver_prints("KILLED PROCESS: ", BLACK, WHITE);
-        char buf[10];
-        intToStr(pid, buf);
-        vDriver_prints(buf, BLACK, WHITE);
-        vDriver_prints("\n\n", BLACK, WHITE);
+        if(pid > 0){
+            vDriver_prints("Process killed: ", BLACK, WHITE);
+            char buffer[10];
+            intToStr(pid, buffer);
+            vDriver_prints(buffer, BLACK, WHITE);
+            vDriver_prints("\n\n", BLACK, WHITE);
+        }
     }
-    
     openFileKeyboard->write(openFileKeyboard->resource, asciiCode);
 }
 

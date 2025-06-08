@@ -17,6 +17,8 @@ uint64_t foreGroundPID = -2;
 uint64_t userspaceProcessCreationFDIds[MAX_FD] = {0, 1};
 uint64_t userspaceProcessCreationFDCount = 0; // Cantidad de FDI de los procesos creados por el usuario
 
+uint64_t agingCounter = 0; // Contador para el envejecimiento de procesos
+
 processQueueADT process0 = NULL;
 processQueueADT process1 = NULL;
 processQueueADT process2 = NULL;
@@ -57,12 +59,14 @@ uint64_t create_process_state(int priority, program_t program, int state, uint64
 
    openFile_t ** fdTable = openFDTable(fdIds, fdCount);
 
+   int assigned_quantum = ASSIGN_QUANTUM(priority);
+
     processCB newProcess = {
         PID++,
         base_pointer,
         stackPointer,
         priority,
-        QUANTUM,
+        assigned_quantum,
         0,
         state,
         fdTable,
@@ -128,7 +132,7 @@ processCB create_halt_process(){
                         base_pointer,        //base_pointer
                         stack_pointer,      //rsp
                         0,                  //priority
-                        QUANTUM,    //assigned_quantum
+                        0,    //assigned_quantum
                         0,                  //used_quantum
                         HALT,             //state
                         NULL, //fdTable
@@ -201,9 +205,9 @@ void formatProcessLine(char *line, processCB * process){
     char * state_str;
 
     //convierto los enteros a cadena
-    intToString(process->pid, pid_str);
-    intToString(process->priority, priority_str);
-    intToString(process->base_pointer, base_pointer_str);
+    intToStr(process->pid, pid_str);
+    intToStr(process->priority, priority_str);
+    intToStr(process->base_pointer, base_pointer_str);
 
     //determio la cadena de estado
     switch(process->state){
@@ -284,6 +288,19 @@ uint64_t kill_process(uint64_t pid){
 }
 
 
+void block_process_pid(uint64_t pid){
+    if(currentProcess.pid == pid){
+        return;
+    }
+    processCB process = find_dequeue_priority(pid);
+
+    if(process.pid < 0){
+        return; // No se encontro el proceso
+    }
+    process.state = BLOCKED;
+    addProcessToQueue(blockedQueue, process);
+}
+
 
 uint64_t block_process(uint64_t){
     currentProcess.state = BLOCKED;
@@ -349,6 +366,11 @@ uint64_t schedule(void* rsp){
 
     currentProcess.rsp = rsp; // Actualizar el rsp del proceso actual
 
+    if(++agingCounter >= AGING_THRESHOLD){
+        agingCounter = 0;
+        applyAging(); // Aplicar envejecimiento a los procesos
+    }
+
     switch(currentProcess.state){
         case RUNNING:
             currentProcess.usedQuantum++;
@@ -357,25 +379,22 @@ uint64_t schedule(void* rsp){
                 return currentProcess.rsp;
             } else {
                 currentProcess.state = READY;
+                currentProcess.priority = (currentProcess.priority + 1) > HIGHEST_QUEUE ? HIGHEST_QUEUE : currentProcess.priority + 1;
+                currentProcess.assignedQuantum = ASSIGN_QUANTUM(currentProcess.priority);
                 currentProcess.usedQuantum = 0;
-                currentProcess.assignedQuantum--;
-
-                if(currentProcess.assignedQuantum <= 0){
-                    //Esto deberia ser decrementar LA PRIORIDAD
-                    currentProcess.assignedQuantum = CPU_BOUND_QUANTUM;
-                }
-
             
-            add_priority_queue(currentProcess); // agregar el proceso actual a la cola
-        }
-        break;
+                add_priority_queue(currentProcess); // agregar el proceso actual a la cola
+            }
+            break;
 
 
     case BLOCKED:
-        if(++currentProcess.usedQuantum < currentProcess.assignedQuantum && currentProcess.assignedQuantum < IO_BOUND_QUANTUM){
-                //Esto deberia ser aumentar LA PRIORIDAD
-                currentProcess.assignedQuantum++;
+        if(++currentProcess.usedQuantum < currentProcess.assignedQuantum){
+            currentProcess.priority = (currentProcess.priority + 1) < 0 ? 0 : currentProcess.priority - 1;
+            currentProcess.assignedQuantum = ASSIGN_QUANTUM(currentProcess.priority);
         }
+
+        currentProcess.usedQuantum = 0;
         add(allBlockedQueue, currentProcess);
         break;
     
@@ -442,9 +461,10 @@ uint64_t killProcessForeground(){
     if(foreGroundPID < 0){
         return -1;
     }
-    uint64_t pid = kill_process(foreGroundPID);
+    kill_process(foreGroundPID);
+    uint64_t aux = foreGroundPID; // Guardar el pid antes de cambiarlo
     foreGroundPID = -1;
-    return pid;
+    return aux; // Retornar el pid del proceso que se mató
    
 }
 
@@ -468,6 +488,7 @@ uint64_t unblock_process_from_queue(processQueueADT source){
 }
 
 uint8_t add_priority_queue(processCB process){
+    process.assignedQuantum = ASSIGN_QUANTUM(process.priority);
     switch(process.priority){
         case(0):
             addProcessToQueue(processQueue, process);
@@ -483,6 +504,20 @@ uint8_t add_priority_queue(processCB process){
             break;
         default:
             return -1;
+    }
+}
+
+uint64_t set_priority(uint64_t pid, uint8_t priority){
+    priority = priority % HIGHEST_QUEUE;
+    processCB process;
+    if(currentProcess.pid == pid){
+        currentProcess.priority = priority;
+        currentProcess.assignedQuantum = ASSIGN_QUANTUM(priority);
+    } else if ((process = find_dequeue_priority(pid)).pid > 0){
+        process.priority = priority;
+        add_priority_queue(process);
+    } else {
+        return -1;
     }
 }
 
@@ -634,4 +669,16 @@ void userspaceSetFD(uint64_t *fd_ids, int fd_count){
         userspaceProcessCreationFDIds[fd_idx] = -1;
     }
     userspaceProcessCreationFDCount = fd_count;
+}
+
+void applyAging(){
+    processQueueADT queues[] = {process0, process1, process2, process3};
+    processCB process;
+    for(int i = 0; i <= HIGHEST_QUEUE; i++){
+        while(hasNextProcess(queues[i])){
+            process = dequeueProcess(queues[i]);
+            process.priority = i - 1;
+            add_priority_queue(process);
+        }
+    }
 }

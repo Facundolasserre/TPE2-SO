@@ -20,6 +20,8 @@ static char commandHistory[MAX_COMMAND][MAX_BUFF] = {0};
 static int commandIterator = 0;
 static int commandIdxMax = 0;
 
+uint64_t cursorPID;
+
 char usernameLength = 4;
 
 // Forward declarations
@@ -47,7 +49,7 @@ void printHelp()
 	printsColor("\n    >testsync           - test sync processes", MAX_BUFF, GREEN);
 	printsColor("\n    >ps                 - list all processes", MAX_BUFF, GREEN);
 	printsColor("\n    >cat                -cat file", MAX_BUFF, GREEN);
-	printsColor("\n    .loop               -prints Pid + greeting to the user", MAX_BUFF, GREEN);
+	printsColor("\n    >loop               -prints Pid + greeting to the user", MAX_BUFF, GREEN);
 	printsColor("\n    >exit               - exit OS\n", MAX_BUFF, GREEN);
 
 	printc('\n');
@@ -61,11 +63,12 @@ void shell(){
 
 	char c;
 	printPrompt();
-	s_create_process(0, &drawCursor, 0, NULL);
 
 	while (1 && !terminate){
+		
 		c = getChar();
 		printLine(c, strcmp(username, "user"));
+
 	}
 }
 
@@ -122,6 +125,7 @@ void printPrompt()
 
 void cmd_loop(){
 	int pid = sys_create_process_foreground(0, &loop_test, 0, NULL);
+	sys_wait_pid(pid);
 }
 
 // separa comando de parametro
@@ -394,7 +398,8 @@ void newLineUsername()
 
 void cmd_test_sync() {
     char *argv[] = {"5", "1", 0};
-	create_process_foreground(0, &test_sync, 2, argv, 0, 0);
+	uint64_t pid = create_process_foreground(0, &test_sync, 2, argv, 0, 0);
+	sys_wait_pid(pid);
 	printsColor("CREATED 'test_sync' PROCESS!\n", MAX_BUFF, RED);
 }
 

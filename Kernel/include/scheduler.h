@@ -2,10 +2,10 @@
 #define _SCHEDULER_H
 
 #define STACK_SIZE 4096
-#define QUANTUM 5
-#define IO_BOUND_QUANTUM 7
-#define CPU_BOUND_QUANTUM 3
 #define TOTAL_QUEUES 5
+#define HIGHEST_QUEUE 3
+#define AGING_THRESHOLD 100
+#define ASSIGN_QUANTUM(priority) ((priority + 1) * 3)
 
 
 
@@ -46,6 +46,8 @@ char * list_processes();
 
 uint64_t block_process();
 
+void block_process_pid(uint64_t pid);
+
 uint64_t block_current_process_to_queue(processQueueADT blockedQueue);
 
 uint64_t block_process_to_queue(uint64_t pid, processQueueADT bloquedQueue);
@@ -67,6 +69,8 @@ void cp_halt();
 uint64_t createProcess(int priority, program_t program, uint64_t argc, char *argv[], uint64_t * fdIds[MAX_FD], uint64_t fdCount);
 
 uint64_t create_process_state(int priority, program_t program, int state, uint64_t argc, char *argv[], openFile_t *fdIds[MAX_FD], uint64_t fdCount);
+
+uint64_t setPriority(uint64_t pid, uint8_t priority);
 
 processCB getCurrentProcess();
 

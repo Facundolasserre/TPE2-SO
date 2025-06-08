@@ -6,7 +6,6 @@ Color WHITE = {255,255,255};
 Color BLACK = {0,0,0};
 const uint16_t WIDTH_FONT = 9;
 const uint16_t HEIGHT_FONT = 16;
-uint16_t cursorOn = 0;
 
 struct vbe_mode_info_structure {
     uint16_t attributes;
@@ -151,32 +150,42 @@ void vDriver_backspace(Color fnt, Color bgd){
     cursorX -= WIDTH_FONT*pixelScale;
 }
 
+uint64_t counter = 0;
+uint8_t color = 0;
+
 void vDriver_drawCursor(){
     int cx, cy;
-    Color fntColor = getSeconds() % 2 == 0 ? BLACK : WHITE;
-    Color bgColor = getSeconds() % 2 == 0 ? BLACK : WHITE;
-    //mascara de bits para saber que color imprimo a pantalla, si pertenece a caracter o a fondo
-    int mask[8] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80};
+    counter++;
 
-    const unsigned char * glyph = font_bitmap + 16 * (' ' - 32);
+    if(counter % 999999 == 0){
+        color = !color;
+        Color fntColor = color == 0 ? BLACK : WHITE;
+        Color bgColor = color == 0 ? WHITE : BLACK;
 
-// Chequeo que no sea el final de línea, ni el final de la pantalla
-    if (cursorX >= screenInfo->width) {
-        cursorX = 0;
-        if (cursorY + getRealCharHeight() > screenInfo->height) {
-            cursorY -= getRealCharHeight();
-            scrollUp();
-        } else {
-            cursorY += getRealCharHeight();
+        //mascara de bits para saber que color imprimo a pantalla
+
+        int mask[8] = {0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80};
+
+        const unsigned char *glyph = font_bitmap + 16 * (' ' - 32); // Usamos el espacio en blanco como cursor
+
+    // Chequeo que no sea el final de línea, ni el final de la pantalla
+        if (cursorX >= screenInfo->width) {
+            cursorX = 0;
+            if (cursorY + getRealCharHeight() > screenInfo->height) {
+                cursorY -= getRealCharHeight();
+                scrollUp();
+            } else {
+                cursorY += getRealCharHeight();
+            }
         }
-    }
 
-    for(cy = 0 ; cy < 16 ; cy++){
-        for(cx = 0 ; cx < 2 ; cx++){
-            // Uso el factor de escala
-            for(int i = 0 ; i < pixelScale ; i++){
-                for(int j = 0 ; j < pixelScale ; j++){
-                    vDriver_setPixel(cursorX + (8 - cx) * pixelScale + i, cursorY + cy * pixelScale + j, glyph[cy] & mask[cx] ? fntColor : bgColor);
+        for(cy = 0 ; cy < 16 ; cy++){
+            for(cx = 0 ; cx < 2 ; cx++){
+                // Uso el factor de escala
+                for(int i = 0 ; i < pixelScale ; i++){
+                    for(int j = 0 ; j < pixelScale ; j++){
+                        vDriver_setPixel(cursorX + (8 - cx) * pixelScale + i, cursorY + cy * pixelScale + j, glyph[cy] & mask[cx] ? fntColor : bgColor);
+                    }
                 }
             }
         }
