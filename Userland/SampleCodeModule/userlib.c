@@ -516,3 +516,38 @@ void cat(){
 uint64_t strToInt(char *str){
 	return charToInt(str);
 }
+
+char * memcpy(char *dest, const char *src, uint64_t size){
+	int i = 0;
+	while(i < size, src[i] != 0){
+		dest[i] = src[i];
+		i++;
+	}
+	dest[i] = 0;
+	return dest;
+}
+
+static char **memAllocArgs(char **args){
+	int argc = stringArrayLength(args);
+	int totalArgsLength = 0;
+	int argsLength[argc];
+
+	for(int i = 0; i < argc; i++){
+		argsLength[i] = strlen(args[i]) + 1;
+		totalArgsLength += argsLength[i];
+	}
+
+	char ** newArgsArray = (char **) sys_mem_alloc(sizeof(char *) * (argc + 1) + totalArgsLength);
+
+	char * charPos = (char *)(newArgsArray + argc + 1);
+
+	for(int i = 0; i < argc; i++){
+		newArgsArray[i] = charPos;
+		memcpy(charPos, args[i], argsLength[i]);
+		charPos += argsLength[i];
+	}
+
+	newArgsArray[argc] = NULL; // Null-terminate the array of strings
+	return newArgsArray;
+
+}

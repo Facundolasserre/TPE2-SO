@@ -56,13 +56,15 @@ void printHelp()
 	printsColor("\n    >loop               -prints Pid + greeting to the user", MAX_BUFF, GREEN);
 	printsColor("\n    >kill               - kill a process by pid", MAX_BUFF, GREEN);
 	printsColor("\n    >philo              - launch philosopher process", MAX_BUFF, GREEN);
+	printsColor("\n    >wc					- counts the amount of input lines", MAX_BUFF, GREEN);
+	printsColor("\n    >filter             - filter all input vocals", MAX_BUFF, GREEN);
 	printsColor("\n    >exit               - exit OS\n", MAX_BUFF, GREEN);
 
 	printc('\n');
 }
 
-const char *commands[] = {"undefined", "help", "ls", "time", "clear", "registersinfo", "zerodiv", "invopcode", "setusername", "whoami", "exit", "ascii", "eliminator", "memtest", "schetest", "priotest", "testschedulerprocesses", "testsync", "ps", "cat", "loop", "kill", "philo"};
-static void (*commands_ptr[MAX_ARGS])() = {cmd_undefined, cmd_help, cmd_help, cmd_time, cmd_clear, cmd_registersinfo, cmd_zeroDiv, cmd_invOpcode, cmd_setusername, cmd_whoami, cmd_exit, cmd_ascii, cmd_eliminator, cmd_memoryManagerTest, cmd_schetest, cmd_priotest, cmd_testschedulerprocesses, cmd_test_sync, cmd_ps, cmd_cat, cmd_loop, cmd_kill, cmd_philo};
+const char *commands[] = {"undefined", "help", "ls", "time", "clear", "registersinfo", "zerodiv", "invopcode", "setusername", "whoami", "exit", "ascii", "eliminator", "memtest", "schetest", "priotest", "testschedulerprocesses", "testsync", "ps", "cat", "loop", "kill", "philo", "wc", "filter"};
+static void (*commands_ptr[MAX_ARGS])() = {cmd_undefined, cmd_help, cmd_help, cmd_time, cmd_clear, cmd_registersinfo, cmd_zeroDiv, cmd_invOpcode, cmd_setusername, cmd_whoami, cmd_exit, cmd_ascii, cmd_eliminator, cmd_memoryManagerTest, cmd_schetest, cmd_priotest, cmd_testschedulerprocesses, cmd_test_sync, cmd_ps, cmd_cat, cmd_loop, cmd_kill, cmd_philo, cmd_wc, cmd_filter};
 
 void shell(){
 	welcome();
@@ -443,6 +445,14 @@ void cmd_kill(){
 
 void cmd_philo(){
 	init_philosophers(0, NULL);
+}
+
+void cmd_wc(){
+	create_process_foreground(0, &wc, 0, NULL, NULL, 0);
+}
+
+void cmd_filter(){
+	create_process_foreground(0, &filter, 0, NULL, NULL, 0);
 }
 
 void welcome()

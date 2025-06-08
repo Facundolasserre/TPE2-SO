@@ -3,37 +3,28 @@
 
 #include <stdint.h>
 
-#define MAX_PHILOS 16
-#define MIN_PHILOS 2
-
-#define LEFT(i) ((i + num_philos - 1) % num_philos)
-#define RIGHT(i) ((i + 1) % num_philos)
-
-
-typedef enum { THINKING, HUNGRY, EATING } PhiloState;
+#define MAX_PHILOS 10
+#define MIN_PHILOS 3
+#define INITIAL_THINKERS 5
 
 typedef struct{
-    int id;
-    PhiloState state;
-    uint64_t pid; 
+    uint64_t pid;
+    char semName[20]; //nombre del semaforo
+    int state; // 0 = thinking, 1 = eating
 } Philosopher;
 
-#define THINKING 0
-#define HUNGRY 1
-#define EATING 2
+#define MUTEX_ARRAY "accessArray"
+static Philosopher philos[MAX_PHILOS];
+
+#define MUTEX_THINKERS "thinkersMutex"
+static int thinkers;
 
 uint64_t initPhilosophers(uint64_t argc, char *argv[]);
-void philosopherLoop(uint64_t argc, char *argv[]);
-void think(int id);
-void eat(int id);
-void pickUpForks(int id);
-void putDownForks(int id);
-void test(int id);
-int randomTime();
-void createPhilosopherProcess(int id);
-void printState();
-void addPhilosopher();
-void removePhilosopher();
-char getNonBlockingChar();
+uint64_t controllersHandler(uint64_t argc, char *argv[]);
+void reprint();
+void eat(int philo);
+void think(int philo);
+void addPhilosopher(int philo);
+void philosopherProcess(uint64_t argc, char *argv[]);
 
 #endif

@@ -34,6 +34,8 @@ typedef struct MM_rq {
   uint32_t size;
 } mm_rq;
 
+static int isVowel(char lett);
+
 int64_t prio[TOTAL_PROCESSES] = {LOWEST, MEDIUM, HIGHEST};
 
 uint64_t test_mm(uint64_t argc, char *argv[]) {
@@ -275,40 +277,6 @@ void test_prio() {
 	return len;
 }
 
-char *memcpy(char *dest, const char *src, uint64_t size){
-	int i = 0;
-	while (i < size, src[i] != 0)
-	{
-		dest[i] = src[i];
-		i++;
-	}
-	dest[i] = 0;
-	return dest;
-}
-
-static char **mem_alloc_args(char **args) {
-  int argc = stringArrayLen(args), totalArgsLen = 0;
-  int argsLen[argc];
-  
-  for (int i = 0; i < argc; i++) {
-    argsLen[i] = strlen(args[i]) + 1;
-    totalArgsLen += argsLen[i];
-  }
-  
-  char **newArgsArray = (char **) sys_mem_alloc(sizeof(char *) * (argc + 1) + totalArgsLen);
-  
-  char *charPosition = (char *) (newArgsArray + argc + 1);
-  
-  for (int i = 0; i < argc; i++) {
-    newArgsArray[i] = charPosition; 
-    memcpy(charPosition, args[i], argsLen[i]);
-    charPosition += argsLen[i];
-  }
-  
-  newArgsArray[argc] = NULL;
-  return newArgsArray;
-}
-
 int64_t global ; // shared memory
 
 void slowInc(int64_t *p, int64_t inc) {
@@ -417,4 +385,22 @@ void loop_test(){
       write_string("Prueba", strlen("Prueba"));
     }
   }
+}
+
+
+void filter(){
+
+}
+
+static int isVowel(char lett){
+  if(lett == 'a' || lett == 'e' || lett == 'i' || lett == 'o' || lett == 'u' ||
+     lett == 'A' || lett == 'E' || lett == 'I' || lett == 'O' || lett == 'U'){
+    return 1;
+  }
+  return 0;
+}
+
+
+void wc(){
+
 }

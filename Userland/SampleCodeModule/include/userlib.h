@@ -70,8 +70,6 @@ char *strcpy(char *dest, const char *src);
 /* copies src's into dest*/
 char *strcpyForParam(char *dest, const char *src, const char *src2);
 
-void intToStr(uint64_t value, char *str);
-
 uint64_t strToInt(const char *str);
 
 /*parses a num string into uint64_t*/
@@ -115,5 +113,9 @@ void cat();
 void intToStr(int value, char *str);
 
 uint64_t test_mm(uint64_t argc, char *argv[]);
+
+char * memcpy(char *dest, const char *src, uint64_t size);
+
+static char ** memAllocArgs(char **args);
 
 #endif /* _USERLIB_H_ */

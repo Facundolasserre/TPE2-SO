@@ -161,14 +161,14 @@ static uint64_t sys_stopSpeaker()
 static int sys_sem_open(char * name, uint64_t init_value){
     return sem_open(name, init_value);
 }
-static int64_t sys_sem_close(char * name){
-    return sem_close(name);
+static void sys_sem_close(char * sem){
+    sem_close(sem);
 }
-static void sys_sem_wait(char * name){
-    sem_wait(name);
+static void sys_sem_wait(char * sem){
+    sem_wait(sem);
 }
-static int64_t sys_sem_post(char * name){
-    return sem_post(name);
+static void sys_sem_post(char * sem){
+    sem_post(sem);
 }
 
 
