@@ -259,6 +259,45 @@ static uint32_t uintToBase(uint64_t value, char *buffer, uint32_t base)
 	return digits;
 }
 
+void intToStr(int value, char *str)
+{
+    int index = 0;
+    int isNegative = 0;
+
+    if (value == 0)
+    {
+        str[index++] = '0';
+        str[index] = '\0';
+        return;
+    }
+
+    if (value < 0)
+    {
+        isNegative = 1;
+        value = -value;
+    }
+
+    while (value > 0)
+    {
+        str[index++] = (value % 10) + '0';
+        value /= 10;
+    }
+
+    if (isNegative)
+    {
+        str[index++] = '-';
+    }
+
+    str[index] = '\0';
+
+    for (int i = 0; i < index / 2; i++)
+    {
+        char temp = str[i];
+        str[i] = str[index - i - 1];
+        str[index - i - 1] = temp;
+    }
+}
+
 void clear_scr()
 {
 	sys_clear();
@@ -401,7 +440,7 @@ uint64_t create_process_foreground(int priority, program_t program, uint64_t arg
 		fd_ids_array = NULL;
 		fd_count = 0;
 	} else {
-		int *fd_ids_array = sys_mem_alloc(sizeof(int) * 10);
+		fd_ids_array = sys_mem_alloc(sizeof(int) * 10);
 		for(int i = 0; i < fd_count; i++){
 			fd_ids_array[i] = fd_ids[i];
 		}
@@ -409,7 +448,11 @@ uint64_t create_process_foreground(int priority, program_t program, uint64_t arg
 
 	sys_create_process_set_fd(fd_ids_array, fd_count);
 
-	sys_create_process_foreground(priority, program, argc, argv);
+	uint64_t pid = sys_create_process_foreground(priority, program, argc, argv);
+
+	sys_mem_free(fd_ids_array);
+
+	return pid;
 }
 
 uint64_t create_process(int priority, program_t program, uint64_t argc, char *argv[], uint64_t fd_ids[10], uint64_t fd_count){
@@ -461,4 +504,15 @@ void intToStr(int value, char * str){
 		str[i] = str[index - i - 1];
 		str[index - i - 1] = aux;
 	}
+}
+
+void cat(){
+	char c;
+	while((c = sys_read_fd(0)) != -1) {
+		write_char(c);
+	}
+}
+
+uint64_t strToInt(char *str){
+	return charToInt(str);
 }

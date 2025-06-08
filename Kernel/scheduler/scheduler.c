@@ -24,17 +24,16 @@ processQueueADT process1 = NULL;
 processQueueADT process2 = NULL;
 processQueueADT process3 = NULL;
 
-processQueueADT processQueue = NULL; 
-processQueueADT blockedQueue = NULL; // Cola de procesos bloqueados para operaciones generales
+//processQueueADT processQueue = NULL; 
+//processQueueADT blockedQueue = NULL; // Cola de procesos bloqueados para operaciones generales
 processQueueADT blockedReadQueue = NULL; // Cola de procesos bloqueados para lectura
 processQueueADT blockedSemaphoreQueue = NULL; // Cola de procesos bloqueados por semáforos
-
 processQueueADT allBlockedQueue = NULL;
 
 
 uint8_t mutexLock = 1;
 int currentSemaphore = 0;
-processQueueADT semQueue = NULL;
+//processQueueADT semQueue = NULL;
 
 
 
@@ -277,10 +276,12 @@ void formatProcessLine(char *line, processCB * process){
 // }
 
 uint64_t kill_process(uint64_t pid){
-    processCB process;
+     processCB process;
     if(currentProcess.pid == pid){
         currentProcess.state = TERMINATED;
-    } else if( (process = find_dequeue_priority(pid)).pid > 0 || (process = find_pid_dequeue(blockedQueue, pid)).pid > 0 ){
+        __asm__ ("int $0x20");                 // TimerTick para llamar a schedule de nuevo
+        return 1;
+    } else if( (process = find_dequeue_priority(pid)).pid > 0 || (process = findPidDequeue(allBlockedQueue, pid)).pid > 0 ){
         mem_free(process.base_pointer);
         if(process.fdTable != NULL){
             for(int i = 0; i < MAX_FD; i++){
@@ -293,7 +294,7 @@ uint64_t kill_process(uint64_t pid){
             unblock_process_from_queue(process.waitingQueue);
         }
     } else {
-        return -1;
+        return 0;
     }
 }
 
@@ -312,7 +313,7 @@ void block_process_pid(uint64_t pid){
         return; // No se encontro el proceso
     }
     process.state = BLOCKED;
-    addProcessToQueue(blockedQueue, process);
+    addProcessToQueue(allBlockedQueue, process);
 }
 
 
@@ -323,7 +324,7 @@ uint64_t block_process(uint64_t){
 
 uint64_t block_current_process_to_queue(processQueueADT blockedQ){
     currentProcess.state = BLOCKED;
-    addProcessToQueue(blockedQueue, currentProcess);
+    addProcessToQueue(blockedQ, currentProcess);
     __asm__ ("int $0x20"); // timertick para llamar a schedule de nuevo
 }
 
@@ -344,7 +345,7 @@ uint64_t block_process_to_queue(uint64_t pid, processQueueADT destination){
 
 uint64_t unblock_process(uint64_t pid){
     processCB process;
-    if((process = find_pid_dequeue(allBlockedQueue, pid)).pid > 0){
+    if((process = findPidDequeue(allBlockedQueue, pid)).pid > 0){
         process.state = READY;
         add_priority_queue(process);
     } else {
@@ -413,38 +414,37 @@ uint64_t schedule(void* rsp){
         break;
     
 
-    case READY:
-        add_priority_queue(currentProcess);
-        break;
+        case READY:
+            add_priority_queue(currentProcess);
+            break;
 
-    case HALT:
-     haltProcess.rsp = rsp;
-     break;
-
-
-    case TERMINATED:
-        if(currentProcess.pid == foreGroundPID){
-            currentProcess.fdTable[1]->write(currentProcess.fdTable[1]->resource, -1);
-            foreGroundPID = -1;
-        }
+        case HALT:
+            haltProcess.rsp = rsp;
+            break;
 
 
-        if(currentProcess.fdTable != NULL){
-            for(int i = 0; i < MAX_FD; i++){
-                if(currentProcess.fdTable[i] != NULL){
-                    fd_close(currentProcess.fdTable[i]->id);
+        case TERMINATED:
+            if(currentProcess.pid == foreGroundPID){
+                currentProcess.fdTable[1]->write(currentProcess.fdTable[1]->resource, -1);
+                foreGroundPID = -1;
+            }
+
+
+            if(currentProcess.fdTable != NULL){
+                for(int i = 0; i < MAX_FD; i++){
+                    if(currentProcess.fdTable[i] != NULL){
+                        fd_close(currentProcess.fdTable[i]->id);
+                    }
                 }
             }
-        }
-        mem_free(currentProcess.base_pointer);
+            mem_free(currentProcess.base_pointer);
 
-        while(hasNextProcess(currentProcess.waitingQueue)){
-            unblock_process_from_queue(currentProcess.waitingQueue);
-        }
-        break;
+            while(hasNextProcess(currentProcess.waitingQueue)){
+                unblock_process_from_queue(currentProcess.waitingQueue);
+            }
+            break;
 
     default:
-        // No deberia llegar aca
         break;
     }
 
@@ -491,7 +491,7 @@ uint64_t unblock_process_from_queue(processQueueADT source){
         return -1;
     }
 
-    processCB process = find_pid_dequeue(allBlockedQueue, temp.pid);
+    processCB process = findPidDequeue(allBlockedQueue, temp.pid);
 
     if(process.pid < 0){
         return -1;
@@ -505,16 +505,16 @@ uint8_t add_priority_queue(processCB process){
     process.assignedQuantum = ASSIGN_QUANTUM(process.priority);
     switch(process.priority){
         case(0):
-            addProcessToQueue(processQueue, process);
+            addProcessToQueue(process0, process);
             break;
         case(1):
-            addProcessToQueue(blockedQueue, process);
+            addProcessToQueue(process1, process);
             break;
         case(2):
-            addProcessToQueue(blockedReadQueue, process);
+            addProcessToQueue(process2, process);
             break;
         case(3):
-            addProcessToQueue(blockedSemaphoreQueue, process);
+            addProcessToQueue(process3, process);
             break;
         default:
             return -1;
@@ -537,23 +537,23 @@ uint64_t set_priority(uint64_t pid, uint8_t priority){
 
 processCB find_dequeue_priority(uint64_t pid){
     processCB process;
-    process = find_pid_dequeue(processQueue, pid);
+    process = findPidDequeue(process0, pid);
     if(process.pid > 0) return process;
 
-    process = find_pid_dequeue(blockedQueue, pid);
+    process = findPidDequeue(process1, pid);
     if(process.pid > 0) return process;
 
-    process = find_pid_dequeue(blockedReadQueue, pid);
+    process = findPidDequeue(process2, pid);
     if(process.pid > 0) return process;
 
-    process = find_pid_dequeue(blockedSemaphoreQueue, pid);
+    process = findPidDequeue(process3, pid);
     if(process.pid > 0) return process;
 
     return returnNullProcess();
 }
 
 int find_process_in_priority_queue(uint64_t pid){
-    processQueueADT queues[] = {processQueue, blockedQueue, blockedReadQueue, blockedSemaphoreQueue};
+    processQueueADT queues[] = {process0, process1, process2, process3};
     for(int i=0 ; i<4 ; i++){
         if(find_process_in_queue(queues[i], pid)){
             return 1;
@@ -603,11 +603,11 @@ int is_pid_valid(uint64_t pid){
 
 processCB get_process_by_pid(uint64_t pid){
 
-    processQueueADT queues[] = {processQueue, blockedQueue, blockedReadQueue, blockedSemaphoreQueue, allBlockedQueue, NULL};
+    processQueueADT queues[] = {process0, process1, process2, process3, allBlockedQueue, NULL};
     processCB process;
 
     for(int i=0 ; queues[i] != NULL ; i++){
-        process = find_pid_dequeue(queues[i], pid);
+        process = findPidDequeue(queues[i], pid);
         if(process.pid > 0){
             addProcessToQueue(queues[i], process);
             return process;
@@ -667,7 +667,7 @@ processCB getCurrentProcess(){
     return currentProcess;
 }
 
-void userspaceSetFD(uint64_t *fd_ids, int fd_count){
+void userspaceSetFD(int *fd_ids, int fd_count){
     if(fd_count < 2){
         userspaceProcessCreationFDIds[0] = 0;
         userspaceProcessCreationFDIds[1] = 1;
@@ -680,7 +680,7 @@ void userspaceSetFD(uint64_t *fd_ids, int fd_count){
         userspaceProcessCreationFDIds[fd_idx] = fd_ids[fd_idx];
     }
     for(; fd_idx < MAX_FD; fd_idx++){
-        userspaceProcessCreationFDIds[fd_idx] = -1;
+        userspaceProcessCreationFDIds[fd_idx] = 2;
     }
     userspaceProcessCreationFDCount = fd_count;
 }

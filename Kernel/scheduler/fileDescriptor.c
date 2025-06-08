@@ -15,8 +15,10 @@
 
 List *openFDList;
 uint64_t currentFDId = 0;
+uint64_t stdinFDId;
 openFile_t *openFileSTDIN = NULL;
 openFile_t *openFileSTDOUT = NULL;
+openFile_t * openFileNull;
 
 
 int compareFD(void *fdA,  void *fdB) {
@@ -39,6 +41,8 @@ void initFileDescriptors(){
     openFDList = (openFile_t *)listGet(openFDList, stdinFDId);
 
     openFileSTDOUT = createFD(0, vDriverRead, vDriverWrite, vDriverClose);
+
+    openFileNull = createFD(0, nullRead, nullWrite, nullClose);
     
 }
 
@@ -76,7 +80,17 @@ int writeFD(uint64_t fdIndex, char data){
     return openFileFD->write(openFileFD->resource, data);
 }
 
+int nullClose() {
+    return 1; 
+}
 
+char nullRead(void *src) {
+    block_process(); 
+}
+
+int nullWrite(void *src, char data) {
+    return 1; 
+}
 
 
 openFile_t * openFDTable(uint64_t fdIds[MAX_FD], int fdCount){
@@ -92,6 +106,9 @@ openFile_t * openFDTable(uint64_t fdIds[MAX_FD], int fdCount){
     }else{
         if(fdIds[0] == STDIN){
             fdTable[0] = getSTDIN_FD();
+        }else if(fdIds[0] == DEVNULL){
+            fdTable[0] = openFileNull;
+
         }else{
             openFile_t *fd = (openFile_t *)listGet(openFDList, fdIds[0]);
             if(fd == NULL){
@@ -103,6 +120,9 @@ openFile_t * openFDTable(uint64_t fdIds[MAX_FD], int fdCount){
         }
         if(fdIds[1] == STDOUT){
             fdTable[1] = getSTDOUT_FD();
+        }else if(fdIds[1] == DEVNULL){
+            fdTable[1] = openFileNull;
+
         }else{
             openFile_t * fd = (openFile_t *)listGet(openFDList, fdIds[1]);
             if(fd == NULL){
@@ -172,7 +192,7 @@ uint64_t openFD(uint64_t id){
 
 int closeFD(uint64_t id){
 
-    if(id < 2){
+    if(id < 2 || id == stdinFDId){
         return 0;
     }
 
@@ -250,3 +270,4 @@ int closeFDCurrentProcess(uint64_t index) {
 
     return closeFD(fdId); // Successfully closed
 }
+

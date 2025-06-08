@@ -89,8 +89,12 @@ void printLine(char c, int username){
 		printc(c);
 		line[--linePos] = 0;
 	}
-	else if (c == NEW_LINE && username){
-		newLine();
+	else if (c == NEW_LINE && username)
+	{
+		processLine();
+		prints("\n", MAX_BUFF);
+		printPrompt();
+		
 	}
 	else if (c == NEW_LINE && !username){
 		newLineUsername();
@@ -98,22 +102,24 @@ void printLine(char c, int username){
 	lastc = c;
 }
 
-void newLine(){
+void processLine()
+{
 	checkLine(&commandIdx, &afterPipeIdx);
 
 	prints("\n", MAX_BUFF);
 
-	if(runInBackground){
+	if (commandIdx && afterPipeIdx){
+		pipe_command();
+	} else if (commandIdx && runInBackground){
 		runInBackground = 0;
-		create_process(0, commands_ptr[commandIdx], 0, NULL, NULL, 0);
-	}else if(afterPipe[0] != '\0'){
-		pipeCommand();
-	} else {
-		(*commands_ptr[commandIdx])();
+		uint64_t fd_table[2] = {2, 2};
+		create_process(0, commands_ptr[commandIdx], 0, NULL, fd_table, 2);
+	} else if (commandIdx){
+		uint64_t pid = create_process_foreground(0, commands_ptr[commandIdx], 0, NULL, NULL, 0);
+		sys_wait_pid(pid);
 	}
 
-	for (int i = 0; line[i] != '\0'; i++)
-	{
+	for (int i = 0; line[i] != '\0'; i++){
 		line[i] = 0;
 		command[i] = 0;
 		parameter[i] = 0;
@@ -122,9 +128,6 @@ void newLine(){
 		afterPipeIdx = 0;
 	}
 	linePos = 0;
-
-	prints("\n", MAX_BUFF);
-	printPrompt();
 }
 
 void pipeCommand(){
@@ -154,25 +157,25 @@ void cmd_loop(){
 void checkLine(int * commandIdx, int * afterPipeIdx){
 	int i = 0;
 	int j = 0;
-	int t = 0;
+	int m = 0;
 	int k = 0;
+
 	for (j = 0; j < linePos && line[j] != ' '; j++){
 		command[j] = line[j];
 	}
-	while(j < linePos){
+
+	while (j < linePos){
 		j++;
-		if(line[j] == '&'){
+		if (line[j] == '&'){
 			runInBackground = 1;
 			break;
-		}
-		if(line[j] == '|'){
-			while(line[j] == ' ' || line[j] == '|'){
-				j++;
+		} else if (line[j] == '|'){
+			while (line[j] == ' ' || line[j] == '|') j++;
+
+			while (j < linePos) {
+				afterPipe[m++] = line[j++];
 			}
-			while(j < linePos){
-				afterPipe[t++] = line[j++];
-			}
-		} else{
+		} else {
 			parameter[k++] = line[j++];
 		}
 	}
@@ -180,15 +183,15 @@ void checkLine(int * commandIdx, int * afterPipeIdx){
 	strcpyForParam(commandHistory[commandIdxMax++], command, parameter);
 	commandIterator = commandIdxMax;
 
-	for (i = 1; i < MAX_ARGS; i++){
-		if (strcmp(command, commands[i]) == 0){
-			*commandIdx = i;
-			if(afterPipe[0] != '\0'){
+	for (i = 1; i < MAX_ARGS; i++) {
+		if (strcmp(command, commands[i]) == 0) {
+			commandIdx = i;
+			if (afterPipe[0] == '\0') {
 				return;
 			}
-			for(int j = 1; j < MAX_ARGS; j++){
-				if(strcmp(afterPipe, commands[j]) == 0){
-					*afterPipeIdx = j;
+			for (int j = 1; j < MAX_ARGS; j++) {
+				if (strcmp(afterPipe, commands[j]) == 0) {
+					afterPipeIdx = j;
 					return;
 				}
 			}
@@ -397,8 +400,8 @@ void cmd_ascii()
 
 	for (int i = 0; i < splash_length; i++)
 	{
-		printsColor(ascii[asciiIdx][i], MAX_BUFF, WHITE);
-		printc('\n');
+		writeString(ascii[asciiIdx][i], MAX_BUFF);
+		write_char('\n');
 	}
 }
 

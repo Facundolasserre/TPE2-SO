@@ -15,7 +15,7 @@
 void shell();
 
 void printHelp();
-void newLine();
+void processLine();
 void printLine(char c, int username);
 void checkLine(int * commandIdx, int * afterPipeIdx);
 void cmd_undefined();

@@ -34,7 +34,7 @@ typedef struct processCB{
 
 size_t get_size(processQueueADT queue);
 
-processCB find_pid_dequeue(processQueueADT queue, uint64_t pid);
+processCB findPidDequeue(processQueueADT queue, uint64_t pid);
 
 //crea una nueva cola de procesos, devuelve la cola inicializada o NULL si no se pudo alocar memoria
 processQueueADT newProcessQueue();

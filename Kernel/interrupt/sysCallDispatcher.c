@@ -197,12 +197,12 @@ static uint64_t s_create_process_foreground(int priority, program_t program, uin
     return userspaceCreateProcessForeground(priority, program, argc, argv);
 }
 
-static void s_create_process_set_fd(uint64_t * fd_ids, uint64_t fd_count){
+static void s_create_process_set_fd(int * fd_ids[MAX_FD], int fd_count){
     userspaceSetFD(fd_ids, fd_count);
 }
 
-static void s_kill_process(uint64_t pid){
-    kill_process(pid);
+static uint64_t s_kill_process(uint64_t pid){
+    return kill_process(pid);
 }
 
 static char * s_list_processes(){

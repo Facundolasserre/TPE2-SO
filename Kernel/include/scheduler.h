@@ -18,12 +18,15 @@
 
 typedef uint64_t (*program_t)(uint64_t argc, char *argv[]);
 
+//funciones de assembler
 void halt_asm();
 
 void cli_asm();
 
 void sti_asm();
 
+
+//funciones del scheduler
 void init_scheduler();
 
 processCB create_halt_process();
@@ -34,7 +37,11 @@ processCB getNextProcess();
 
 void initProcessWrapper(program_t entryPoint, uint64_t argc, char ** argv);
 
-void userspaceSetFD(uint64_t *fd_ids, int fd_count);
+
+//funciones de procesos
+processCB create_halt_process();
+
+void userspaceSetFD(int *fd_ids, int fd_count);
 
 uint64_t userspaceCreateProcessForeground(int priority, program_t program, uint64_t argc, char *argv[]);
 
@@ -80,11 +87,11 @@ uint64_t killProcessForeground();
 
 uint64_t killProcessTerminal(char * pid);
 
-// Queue management
+//funciones de manejo de colas de procesos
 uint8_t add_priority_queue(processCB process);
 processCB find_dequeue_priority(uint64_t pid);
 
-// Stack management
+// funcion para llenar el stack de un proceso
 void* fill_stack(uintptr_t sp, void (*initProcessWrapper)(program_t, uint64_t, char**), program_t program, uint64_t argc, char** argv);
 
 

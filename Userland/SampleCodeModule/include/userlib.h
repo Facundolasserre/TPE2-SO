@@ -70,6 +70,10 @@ char *strcpy(char *dest, const char *src);
 /* copies src's into dest*/
 char *strcpyForParam(char *dest, const char *src, const char *src2);
 
+void intToStr(uint64_t value, char *str);
+
+uint64_t strToInt(const char *str);
+
 /*parses a num string into uint64_t*/
 uint64_t charToInt(char *str);
 

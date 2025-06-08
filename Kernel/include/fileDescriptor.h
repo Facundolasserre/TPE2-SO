@@ -7,8 +7,15 @@
 
 #define STDIN 0
 #define STDOUT 1
-#define STDERR 2
+#define DEVNULL 2
 #define MAX_FD 10
+
+
+int nullClose();
+
+char nullRead(void *src);
+
+int nullWrite(void *src, char data);
 
 //configuración de la lista de descriptores de archivos 
 void initFileDescriptors();

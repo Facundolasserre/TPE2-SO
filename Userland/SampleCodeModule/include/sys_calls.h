@@ -54,7 +54,7 @@ void * sys_mem_alloc(uint64_t size);
 
 void sys_mem_free(void *ptr);
 
-void sys_create_process_set_fd(uint64_t *fd_ids, int fd_count);
+void sys_create_process_set_fd(int *fd_ids, int fd_count);
 
 uint64_t sys_create_process(int priority, program_t program, uint64_t argc, char * argv[]);
 
