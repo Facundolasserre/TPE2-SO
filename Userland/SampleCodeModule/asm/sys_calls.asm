@@ -50,6 +50,8 @@ GLOBAL sys_pipe_create
 
 GLOBAL sys_nice
 
+GLOBAL sys_kill_terminal
+
 section .text
 
 ; Pasaje de parametros en C:

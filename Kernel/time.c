@@ -20,8 +20,7 @@ int seconds_elapsed() {
 
 void sleep(int millis){
 	ellapsed = 0;
-	while (ellapsed<millis)
-	{
+	while (ellapsed<millis){
 		_hlt();
 	}
 }

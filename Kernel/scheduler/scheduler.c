@@ -282,9 +282,23 @@ uint64_t kill_process(uint64_t pid){
         currentProcess.state = TERMINATED;
     } else if( (process = find_dequeue_priority(pid)).pid > 0 || (process = find_pid_dequeue(blockedQueue, pid)).pid > 0 ){
         mem_free(process.base_pointer);
+        if(process.fdTable != NULL){
+            for(int i = 0; i < MAX_FD; i++){
+                if(process.fdTable[i] != NULL){
+                    fd_close(process.fdTable[i]->id);
+                }
+            }
+        }
+        while(hasNextProcess(process.waitingQueue)){
+            unblock_process_from_queue(process.waitingQueue);
+        }
     } else {
         return -1;
     }
+}
+
+uint64_t killProcessTerminal(char * pid){
+    return kill_process(atoi(pid));
 }
 
 
@@ -395,7 +409,7 @@ uint64_t schedule(void* rsp){
         }
 
         currentProcess.usedQuantum = 0;
-        add(allBlockedQueue, currentProcess);
+        addProcessToQueue(allBlockedQueue, currentProcess);
         break;
     
 

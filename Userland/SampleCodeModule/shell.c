@@ -11,7 +11,10 @@
 // initialize all to 0
 char line[MAX_BUFF + 1] = {0};
 char parameter[MAX_BUFF + 1] = {0};
+char afterPipe[MAX_BUFF + 1] = {0};
 char command[MAX_BUFF + 1] = {0};
+int commandIdx = 0;
+int afterPipeIdx = 0;
 int terminate = 0;
 int linePos = 0;
 char lastc;
@@ -19,6 +22,7 @@ static char username[USERNAME_SIZE] = "user";
 static char commandHistory[MAX_COMMAND][MAX_BUFF] = {0};
 static int commandIterator = 0;
 static int commandIdxMax = 0;
+static int runInBackground = 0;
 
 uint64_t cursorPID;
 
@@ -50,13 +54,15 @@ void printHelp()
 	printsColor("\n    >ps                 - list all processes", MAX_BUFF, GREEN);
 	printsColor("\n    >cat                -cat file", MAX_BUFF, GREEN);
 	printsColor("\n    >loop               -prints Pid + greeting to the user", MAX_BUFF, GREEN);
+	printsColor("\n    >kill               - kill a process by pid", MAX_BUFF, GREEN);
+	printsColor("\n    >philo              - launch philosopher process", MAX_BUFF, GREEN);
 	printsColor("\n    >exit               - exit OS\n", MAX_BUFF, GREEN);
 
 	printc('\n');
 }
 
-const char *commands[] = {"undefined", "help", "ls", "time", "clear", "registersinfo", "zerodiv", "invopcode", "setusername", "whoami", "exit", "ascii", "eliminator", "memtest", "schetest", "priotest", "testschedulerprocesses", "testsync", "ps", "cat", "loop"};
-static void (*commands_ptr[MAX_ARGS])() = {cmd_undefined, cmd_help, cmd_help, cmd_time, cmd_clear, cmd_registersinfo, cmd_zeroDiv, cmd_invOpcode, cmd_setusername, cmd_whoami, cmd_exit, cmd_ascii, cmd_eliminator, cmd_memoryManagerTest, cmd_schetest, cmd_priotest, cmd_testschedulerprocesses, cmd_test_sync, cmd_ps, cmd_cat, cmd_loop};
+const char *commands[] = {"undefined", "help", "ls", "time", "clear", "registersinfo", "zerodiv", "invopcode", "setusername", "whoami", "exit", "ascii", "eliminator", "memtest", "schetest", "priotest", "testschedulerprocesses", "testsync", "ps", "cat", "loop", "kill", "philo"};
+static void (*commands_ptr[MAX_ARGS])() = {cmd_undefined, cmd_help, cmd_help, cmd_time, cmd_clear, cmd_registersinfo, cmd_zeroDiv, cmd_invOpcode, cmd_setusername, cmd_whoami, cmd_exit, cmd_ascii, cmd_eliminator, cmd_memoryManagerTest, cmd_schetest, cmd_priotest, cmd_testschedulerprocesses, cmd_test_sync, cmd_ps, cmd_cat, cmd_loop, cmd_kill, cmd_philo};
 
 void shell(){
 	welcome();
@@ -73,47 +79,63 @@ void shell(){
 }
 
 void printLine(char c, int username){
-	if (linePos >= MAX_BUFF || c == lastc)
-	{
+	if (linePos >= MAX_BUFF || c == lastc){
 		return;
 	}
-	if (isChar(c) || c == ' ' || isDigit(c))
-	{
+	if (isChar(c) || c == ' ' || isDigit(c)){
 		handleSpecialCommands(c);
 	}
-	else if (c == BACKSPACE && linePos > 0)
-	{
+	else if (c == BACKSPACE && linePos > 0){
 		printc(c);
 		line[--linePos] = 0;
 	}
-	else if (c == NEW_LINE && username)
-	{
+	else if (c == NEW_LINE && username){
 		newLine();
 	}
-	else if (c == NEW_LINE && !username)
-	{
+	else if (c == NEW_LINE && !username){
 		newLineUsername();
 	}
 	lastc = c;
 }
 
-void newLine()
-{
-	int i = checkLine();
+void newLine(){
+	checkLine(&commandIdx, &afterPipeIdx);
 
 	prints("\n", MAX_BUFF);
-	(*commands_ptr[i])();
+
+	if(runInBackground){
+		runInBackground = 0;
+		create_process(0, commands_ptr[commandIdx], 0, NULL, NULL, 0);
+	}else if(afterPipe[0] != '\0'){
+		pipeCommand();
+	} else {
+		(*commands_ptr[commandIdx])();
+	}
 
 	for (int i = 0; line[i] != '\0'; i++)
 	{
 		line[i] = 0;
 		command[i] = 0;
 		parameter[i] = 0;
+		afterPipe[i] = 0;
+		commandIdx = 0;
+		afterPipeIdx = 0;
 	}
 	linePos = 0;
 
 	prints("\n", MAX_BUFF);
 	printPrompt();
+}
+
+void pipeCommand(){
+	uint64_t fdId = sys_pipe_create();
+	uint64_t firstPipeFds[2] = {0, fdId};
+	uint64_t secondPipeFds[2] = {fdId, 1}; // 1 es STDOUT
+
+	uint64_t pid1 = create_process_foreground(0, commands_ptr[commandIdx], 0, NULL, firstPipeFds, 2);
+	create_process(0, commands_ptr[afterPipeIdx], 0, NULL, secondPipeFds, 2);
+
+	sys_wait_pid(pid1);
 }
 
 void printPrompt()
@@ -124,25 +146,33 @@ void printPrompt()
 }
 
 void cmd_loop(){
-	int pid = sys_create_process_foreground(0, &loop_test, 0, NULL);
+	int pid = create_process_foreground(0, &loop_test, 0, NULL, NULL, 0);
 	sys_wait_pid(pid);
 }
 
 // separa comando de parametro
-int checkLine()
-{
+void checkLine(int * commandIdx, int * afterPipeIdx){
 	int i = 0;
 	int j = 0;
+	int t = 0;
 	int k = 0;
-	for (j = 0; j < linePos && line[j] != ' '; j++)
-	{
+	for (j = 0; j < linePos && line[j] != ' '; j++){
 		command[j] = line[j];
 	}
-	if (j < linePos)
-	{
+	while(j < linePos){
 		j++;
-		while (j < linePos)
-		{
+		if(line[j] == '&'){
+			runInBackground = 1;
+			break;
+		}
+		if(line[j] == '|'){
+			while(line[j] == ' ' || line[j] == '|'){
+				j++;
+			}
+			while(j < linePos){
+				afterPipe[t++] = line[j++];
+			}
+		} else{
 			parameter[k++] = line[j++];
 		}
 	}
@@ -150,46 +180,47 @@ int checkLine()
 	strcpyForParam(commandHistory[commandIdxMax++], command, parameter);
 	commandIterator = commandIdxMax;
 
-	for (i = 1; i < MAX_ARGS; i++)
-	{
-		if (strcmp(command, commands[i]) == 0)
-		{
-			return i;
+	for (i = 1; i < MAX_ARGS; i++){
+		if (strcmp(command, commands[i]) == 0){
+			*commandIdx = i;
+			if(afterPipe[0] != '\0'){
+				return;
+			}
+			for(int j = 1; j < MAX_ARGS; j++){
+				if(strcmp(afterPipe, commands[j]) == 0){
+					*afterPipeIdx = j;
+					return;
+				}
+			}
 		}
 	}
-
-	return 0;
 }
 
-void cmd_setusername()
-{
+void cmd_setusername(){
 	int input_length = strlen(parameter);
-	if (input_length < 3 || input_length > USERNAME_SIZE)
-	{
+	if (input_length < 3 || input_length > USERNAME_SIZE){
 		prints("\nERROR: Username length must be between 3 and 16 characters long! Username not set.", MAX_BUFF);
 		return;
 	}
 	usernameLength = input_length;
-	for (int i = 0; i < input_length; i++)
-	{
+	for (int i = 0; i < input_length; i++){
 		username[i] = parameter[i];
 	}
 	prints("\nUsername set to ", MAX_BUFF);
 	prints(username, usernameLength);
 }
 
-void cmd_whoami()
-{
+void cmd_whoami(){
 	prints("\n", MAX_BUFF);
 	prints(username, usernameLength);
 }
 
 void cmd_cat(){
-	prints(parameter, MAX_BUFF);
+	uint64_t pid = create_process_foreground(0, &cat, 0, NULL, NULL, 0);
+	sys_wait_pid(pid);
 }
 
-void cmd_schetest()
-{
+void cmd_schetest(){
     char *argv[] = {"3"};
     create_process(1, &test_processes, 1, argv, 0, 0);
 }
@@ -401,6 +432,14 @@ void cmd_test_sync() {
 	uint64_t pid = create_process_foreground(0, &test_sync, 2, argv, 0, 0);
 	sys_wait_pid(pid);
 	printsColor("CREATED 'test_sync' PROCESS!\n", MAX_BUFF, RED);
+}
+
+void cmd_kill(){
+	sys_kill(atoi(parameter));
+}
+
+void cmd_philo(){
+	init_philosophers(0, NULL);
 }
 
 void welcome()

@@ -78,6 +78,8 @@ uint64_t createProcessForeground(int priority, program_t program, uint64_t argc,
 
 uint64_t killProcessForeground();
 
+uint64_t killProcessTerminal(char * pid);
+
 // Queue management
 uint8_t add_priority_queue(processCB process);
 processCB find_dequeue_priority(uint64_t pid);

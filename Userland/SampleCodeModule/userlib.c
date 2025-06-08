@@ -37,26 +37,22 @@ int scr_width;
 
 static uint32_t uintToBase(uint64_t value, char *buffer, uint32_t base);
 
-void triggerSpeaker(uint32_t frequence, uint64_t duration)
-{
+void triggerSpeaker(uint32_t frequence, uint64_t duration){
 	sys_playSpeaker(frequence, duration);
 }
 
-void playMelody(NoteType *melody, int length)
-{
+void playMelody(NoteType *melody, int length){
 	for (int i = 0; i < length; i++)
 	{
 		triggerSpeaker(melody[i].tone, melody[i].duration);
 	}
 }
 
-void printc(char c)
-{
+void printc(char c){
 	sys_write(STDOUT, c);
 }
 
-void printcColor(char c, Color color)
-{
+void printcColor(char c, Color color){
 	sys_writeColor(STDOUT, c, color);
 }
 
@@ -358,13 +354,11 @@ void increaseScale()
 	sys_pixelPlus();
 }
 
-void decreaseScale()
-{
+void decreaseScale(){
 	sys_pixelMinus();
 }
 
-int atoi(const char *str)
-{
+int atoi(const char *str){
 	int result = 0;
 	int sign = 1;
 	int i = 0;
@@ -390,9 +384,15 @@ int atoi(const char *str)
 	return sign * result;
 }
 
-int print_mem(uint64_t mem)
-{
+int print_mem(uint64_t mem){
 	return sys_printmem(mem);
+}
+
+void cat(){
+	char c;
+	while((c = sys_read_fd(0) != -1)){
+		write_char(c);
+	}
 }
 
 uint64_t create_process_foreground(int priority, program_t program, uint64_t argc, char *argv[], uint64_t fd_ids[10], uint64_t fd_count){
@@ -418,7 +418,7 @@ uint64_t create_process(int priority, program_t program, uint64_t argc, char *ar
 		fd_ids_array = NULL;
 		fd_count = 0;
 	} else {
-		int *fd_ids_array = sys_mem_alloc(sizeof(int) * 10);
+		fd_ids_array = sys_mem_alloc(sizeof(int) * 10);
 		for(int i = 0; i < fd_count; i++){
 			fd_ids_array[i] = fd_ids[i];
 		}
@@ -427,4 +427,38 @@ uint64_t create_process(int priority, program_t program, uint64_t argc, char *ar
 	sys_create_process_set_fd(fd_ids_array, fd_count);
 
 	sys_create_process(priority, program, argc, argv);
+}
+
+void intToStr(int value, char * str){
+
+	int index = 0;
+	int isNegative = 0;
+
+	if(!value){
+		str[index++] = '0';
+		str[index] = '\0';
+		return;
+	}
+
+	if(value<0){
+		isNegative = 1;
+		value = -value;
+	}
+
+	while(value > 0){
+		str[index++] = (value%10) + '0';
+		value /= 10;
+	}
+
+	if(isNegative){
+		str[index++] = '-';
+	}
+
+	str[index] = '\0';
+
+	for(int i=0 ; i<index/2 ; i++){
+		char aux = str[i];
+		str[i] = str[index - i - 1];
+		str[index - i - 1] = aux;
+	}
 }

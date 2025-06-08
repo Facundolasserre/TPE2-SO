@@ -81,14 +81,7 @@ static void sys_drawRectangle(int x, int y, int x2, int y2, Color color)
 
 static void sys_wait(int ms)
 {
-    if (ms > 0)
-    {
-        int start_ms = ms_elapsed();
-        do
-        {
-            _hlt();
-        } while (ms_elapsed() - start_ms < ms);
-    }
+    timer_wait(ms);
 }
 
 static uint64_t sys_getHours()
