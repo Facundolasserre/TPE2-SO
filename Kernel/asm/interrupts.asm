@@ -135,7 +135,7 @@ interrupt_keyboardHandler:
 
     cmp al, 0x2A  ; Check if left shift is pressed
     jne .check_left_shift_release
-    mov byte [shiftKey], 
+    mov byte [shiftKey], 1
 	
 .check_ctrl_pressed:
 	cmp al, 0x1D

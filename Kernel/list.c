@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <memoryManager.h>
 
-List * listInit(int (*compare) (void *, void *)){
+List * listInit(int (*compare) (const void *, const void *)){
     List * list = (List *)mem_alloc(sizeof(List));
     if (!list) {
         return NULL; // Memory allocation failed

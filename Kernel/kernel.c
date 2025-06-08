@@ -9,7 +9,7 @@
 #include <time.h>
 #include <interrupts.h>
 #include <scheduler.h>
-#include "include/memoryManager.h"
+#include <memoryManager.h>
 #include <pipe.h>
 #include <fileDescriptor.h>
 

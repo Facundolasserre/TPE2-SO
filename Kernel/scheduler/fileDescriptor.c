@@ -210,7 +210,7 @@ int closeFD(uint64_t id){
     return 1;
 }
 
-void removeFD(id){
+void removeFD(uint64_t id){
 
     uint64_t * idPtr = &id;
     openFile_t *found_fd = (openFile_t *)listGet(openFDList, idPtr);

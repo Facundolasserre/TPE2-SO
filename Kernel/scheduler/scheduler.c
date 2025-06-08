@@ -35,12 +35,12 @@ uint8_t mutexLock = 1;
 int currentSemaphore = 0;
 
 //retorna -1 por error
-uint64_t createProcess(int priority, program_t program, uint64_t argc, char *argv[], uint64_t * fdIds, uint64_t fdCount) {
+uint64_t createProcess(int priority, program_t program, uint64_t argc, char *argv[], uint64_t * fdIds, uint64_t fdCount){
     return create_process_state(priority, program, READY, argc, argv, fdIds, fdCount); //agregar nuevos param
 }
 
 //retorna -1 por error
-uint64_t create_process_state(int priority, program_t program, int state, uint64_t argc, char *argv[], openFile_t *fdIds, uint64_t fdCount) {
+uint64_t create_process_state(int priority, program_t program, int state, uint64_t argc, char *argv[], uint64_t *fdIds, uint64_t fdCount) {
 
     void* base_pointer = mem_alloc(STACK_SIZE);
 
@@ -307,13 +307,14 @@ void block_process_pid(uint64_t pid){
     process.state = BLOCKED;
     addProcessToQueue(allBlockedQueue, process);
 
-    return 0;
+    return;
 }
 
 
 uint64_t block_process(uint64_t){
     currentProcess.state = BLOCKED;
     __asm__ ("int $0x20"); // timertick para llamar a schedule de nuevo
+    return 0;
 }
 
 uint64_t block_current_process_to_queue(processQueueADT blockedQ){
@@ -532,6 +533,7 @@ uint8_t add_priority_queue(processCB process){
         default:
             return -1;
     }
+    return 0;
 }
 
 uint64_t set_priority(uint64_t pid, uint8_t priority){

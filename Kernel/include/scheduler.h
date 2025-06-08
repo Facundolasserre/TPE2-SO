@@ -75,9 +75,9 @@ void yield();
 
 void cp_halt();
 
-uint64_t createProcess(int priority, program_t program, uint64_t argc, char *argv[], uint64_t * fdIds[MAX_FD], uint64_t fdCount);
+uint64_t createProcess(int priority, program_t program, uint64_t argc, char *argv[], uint64_t * fdIds, uint64_t fdCount);
 
-uint64_t create_process_state(int priority, program_t program, int state, uint64_t argc, char *argv[], openFile_t *fdIds[MAX_FD], uint64_t fdCount);
+uint64_t create_process_state(int priority, program_t program, int state, uint64_t argc, char *argv[], uint64_t *fdIds, uint64_t fdCount);
 
 int find_process_in_queue(processQueueADT queue, uint64_t pid);
 

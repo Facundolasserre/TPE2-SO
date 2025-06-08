@@ -215,7 +215,7 @@ void pipes_test() {
 
 
     //CHEQUEAR QUE DONDE DICE pipe_writer, DEBERIA IR UN (program_t) PARA CASTEARLO PERO NO ANDA
-    createProcess(0, pipe_writer1, 0, NULL, NULL, 0); // Crea el proceso writer1
-    createProcess(0, pipe_writer2, 0, NULL, NULL, 0); // Crea el proceso writer2
-    createProcess(0, pipe_reader, 0, NULL, NULL, 0);  // Crea el proceso reader
+    createProcess(0, (program_t)pipe_writer1, 0, NULL, NULL, 0); // Crea el proceso writer1
+    createProcess(0, (program_t)pipe_writer2, 0, NULL, NULL, 0); // Crea el proceso writer2
+    createProcess(0, (program_t)pipe_reader, 0, NULL, NULL, 0);  // Crea el proceso reader
 }

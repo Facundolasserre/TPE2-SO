@@ -24,8 +24,8 @@ int initSemaphores(){
     return 0;
 }
 
-semaphoreList_t * addSemaphore(char * name, int initialValue) {
-    semaphore_t * newSemaphore = (semaphoreList_t*)mem_alloc(sizeof(semaphoreList_t));
+int addSemaphore(char * name, int initialValue) {
+    semaphore_t * newSemaphore = (semaphore_t*)mem_alloc(sizeof(semaphore_t));
 
     if(newSemaphore == NULL){
         return -1;
@@ -108,7 +108,7 @@ int64_t sem_post(char * name){
     semaphore_t * aux = (semaphore_t *)listGet(semList, name);
 
     if(aux == NULL){
-        return;
+        return 0;
     }
 
     acquire(aux->lock);
