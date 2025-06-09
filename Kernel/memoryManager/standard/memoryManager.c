@@ -14,7 +14,7 @@ int size, current;
 void * free_ptrs[CHUNK_COUNT];
 
 
-void mem_init(void * ptr, uint32_t s){
+void mem_init(void * ptr, uint64_t s){
     start = (void *)ALIGN_POINTER(ptr, ALIGNMENT);
     
     size = s;

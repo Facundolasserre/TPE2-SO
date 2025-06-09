@@ -166,10 +166,10 @@ char * list_processes(){
 
     //tamaño aprox de cada linea seria: (pid + priority + state + separadores y \n)
 
-    const int line_size = 68; //tamaño de cada linea
-    const int header_size = 68; //tamaño aproximado del encabezado
+    const int line_size = 100; //tamaño de cada linea
+    const int header_size = 100; //tamaño aproximado del encabezado
 
-    char * header = "PID   PRIORITY  STATE  BASE POINTER\n";
+    char * header = "PID   PRIORITY  STATE  BASE POINTER PPID\n";
 
     //calculo el tamaño necesario para almacenar todos los procesos
     int totalProcesses = 1; //1 para incluir el proceso actual
@@ -224,10 +224,12 @@ void formatProcessLine(char *line, processCB * process){
     char pid_str[10];
     char priority_str[5];
     char base_pointer_str[10];
+    char ppid_str[10];
     char * state_str;
 
     //convierto los enteros a cadena
     intToStr(process->pid, pid_str);
+    intToStr(process->parentPid, ppid_str);
     intToStr(process->priority, priority_str);
     intToStr((int)(uintptr_t)process->base_pointer, base_pointer_str);
 
@@ -269,6 +271,10 @@ void formatProcessLine(char *line, processCB * process){
     strcpy(line + offset, base_pointer_str, strlen(base_pointer_str));
     offset += strlen(base_pointer_str);
     line[offset++] = ' '; // espacio al final del base_pointer
+
+    strcpy(line + offset, ppid_str, strlen(ppid_str));
+    offset += strlen(ppid_str);
+    line[offset++] = ' ';
 
     //agrego un salto de linea al final
     line[offset++] = '\n';
@@ -496,11 +502,14 @@ uint64_t schedule(void * rspRunning){
 
 uint64_t userspaceCreateProcessForeground(int priority, program_t program, uint64_t argc, char *argv[]) {
     foreGroundPID = create_process_state(priority, program, READY, argc, argv, userspaceProcessCreationFDIds, userspaceProcessCreationFDCount, currentProcess.pid);
+    addProcessToQueue(currentProcess.childrenList, get_process_by_pid(foreGroundPID));
     return foreGroundPID;
 }
 
 uint64_t userspaceCreateProcess(int priority, program_t program, uint64_t argc, char *argv[]){
-    return create_process_state(priority, program, READY, argc, argv, userspaceProcessCreationFDIds, userspaceProcessCreationFDCount, currentProcess.pid);
+    uint64_t pid = create_process_state(priority, program, READY, argc, argv, userspaceProcessCreationFDIds, userspaceProcessCreationFDCount, currentProcess.pid);
+    addProcessToQueue(currentProcess.childrenList, get_process_by_pid(pid));
+    return pid;
 }
 
 uint64_t killProcessForeground(){
@@ -683,42 +692,7 @@ void waitPid(uint64_t pid){
     block_process();
 }
 
-// int closeFDCurrentProcess(uint64_t index){
-//     uint64_t fdId = currentProcess.fdTable[index]->id;
-//     currentProcess.fdTable[index] = NULL;
-//     return closeFD(fdId);
-// }
 
-// //Agrega un FD al proceso actual
-// int addFileDescriptorCurrentProcess(uint64_t fd_id){
-//     //ARREGLAR: compare
-//     for(int i = 0; i < MAX_FD; i++){
-//         if(compare_file_descriptors(currentProcess.fdTable[i], fd_id) == 0){
-//             return i;
-//         }
-//     }
-
-//     for(int i = 0; i < MAX_FD; i++){
-//         if(currentProcess.fdTable[i] == NULL){
-//             currentProcess.fdTable[i] = fd_id;
-//             return i;
-//         }
-//     }
-
-//     return -1;
-// }
-
-// //Elimina un FD de la tabla de FD del proceso actual
-// int removeFileDescriptorCurrentProcess(openFile_t *fd){
-//     //ARREGLAR: compare
-//     for(int i = 0; i < MAX_FD; i++){
-//         if(compare_file_descriptors(currentProcess.fdTable[i], fd) == 0){
-//             currentProcess.fdTable[i] = NULL;
-//             return 1;
-//         }
-//     }
-//     return 0;
-// }
 
 processCB getCurrentProcess(){
     return currentProcess;

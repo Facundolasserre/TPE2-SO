@@ -37,40 +37,55 @@ void newLineUsername();
 int isUpperArrow(char c);
 int isDownArrow(char c);
 
-void printHelp(){
 
-	printsColor("\n\n    >'help' or 'ls'   - displays this shell information", MAX_BUFF, GREEN);
-	printsColor("\n    >whoami             - display current username", MAX_BUFF, GREEN);
-	printsColor("\n    >time               - display current time", MAX_BUFF, GREEN);
-	printsColor("\n    >clear              - clear the display", MAX_BUFF, GREEN);
-	printsColor("\n    >(+)                - increase font size (scaled)", MAX_BUFF, GREEN);
-	printsColor("\n    >(-)                - decrease font size (scaled)", MAX_BUFF, GREEN);
-	printsColor("\n    >registersinfo      - print current register values", MAX_BUFF, GREEN);
-	printsColor("\n    >zerodiv            - testeo divide by zero exception", MAX_BUFF, GREEN);
-	printsColor("\n    >invopcode          - testeo invalid op code exception", MAX_BUFF, GREEN);
-	printsColor("\n    >mem_test           - testeo del memory manager", MAX_BUFF, GREEN);
-	printsColor("\n    >schetest           - test scheduler", MAX_BUFF, GREEN);
-	printsColor("\n    >priotest           - priority scheduler", MAX_BUFF, GREEN);
-	printsColor("\n    >runtestprocesses - run test processes", MAX_BUFF, GREEN);
-	printsColor("\n    >testsync           - test sync processes", MAX_BUFF, GREEN);
-	printsColor("\n    >ps                 - list all processes", MAX_BUFF, GREEN);
-	printsColor("\n    >cat                -cat file", MAX_BUFF, GREEN);
-	printsColor("\n    >loop               -prints Pid + greeting to the user", MAX_BUFF, GREEN);
-	printsColor("\n    >kill               - kill a process by pid", MAX_BUFF, GREEN);
-	printsColor("\n    >block              - block a process by pid", MAX_BUFF, GREEN);
-	printsColor("\n    >unblock            - unblock a process by pid", MAX_BUFF, GREEN);
-	printsColor("\n    >nice               - change the priority of a given process", MAX_BUFF, GREEN);
-	printsColor("\n    >philo              - launch philosopher process", MAX_BUFF, GREEN);
-	printsColor("\n    >wc					- counts the amount of input lines", MAX_BUFF, GREEN);
-	printsColor("\n    >filter             - filter all input vocals", MAX_BUFF, GREEN);
-	printsColor("\n    >mem			   	   - print memory state", MAX_BUFF, GREEN);
-	printsColor("\n    >exit               - exit OS\n", MAX_BUFF, GREEN);
 
-	printc('\n');
+// void printHelp(){
+
+// 	printsColor("\n\n    >'help' or 'ls'   - displays this shell information", MAX_BUFF, GREEN);
+// 	printsColor("\n    >whoami             - display current username", MAX_BUFF, GREEN);
+// 	printsColor("\n    >time               - display current time", MAX_BUFF, GREEN);
+// 	printsColor("\n    >clear              - clear the display", MAX_BUFF, GREEN);
+// 	printsColor("\n    >(+)                - increase font size (scaled)", MAX_BUFF, GREEN);
+// 	printsColor("\n    >(-)                - decrease font size (scaled)", MAX_BUFF, GREEN);
+// 	printsColor("\n    >registersinfo      - print current register values", MAX_BUFF, GREEN);
+// 	printsColor("\n    >zerodiv            - testeo divide by zero exception", MAX_BUFF, GREEN);
+// 	printsColor("\n    >invopcode          - testeo invalid op code exception", MAX_BUFF, GREEN);
+// 	printsColor("\n    >mem_test           - testeo del memory manager", MAX_BUFF, GREEN);
+// 	printsColor("\n    >schetest           - test scheduler", MAX_BUFF, GREEN);
+// 	printsColor("\n    >priotest           - priority scheduler", MAX_BUFF, GREEN);
+// 	printsColor("\n    >runtestprocesses - run test processes", MAX_BUFF, GREEN);
+// 	printsColor("\n    >testsync           - test sync processes", MAX_BUFF, GREEN);
+// 	printsColor("\n    >ps                 - list all processes", MAX_BUFF, GREEN);
+// 	printsColor("\n    >cat                -cat file", MAX_BUFF, GREEN);
+// 	printsColor("\n    >loop               -prints Pid + greeting to the user", MAX_BUFF, GREEN);
+// 	printsColor("\n    >kill               - kill a process by pid", MAX_BUFF, GREEN);
+// 	printsColor("\n    >block              - block a process by pid", MAX_BUFF, GREEN);
+// 	printsColor("\n    >unblock            - unblock a process by pid", MAX_BUFF, GREEN);
+// 	printsColor("\n    >nice               - change the priority of a given process", MAX_BUFF, GREEN);
+// 	printsColor("\n    >philo              - launch philosopher process", MAX_BUFF, GREEN);
+// 	printsColor("\n    >wc					- counts the amount of input lines", MAX_BUFF, GREEN);
+// 	printsColor("\n    >filter             - filter all input vocals", MAX_BUFF, GREEN);
+// 	printsColor("\n    >mem			   	   - print memory state", MAX_BUFF, GREEN);
+// 	printsColor("\n    >testchildren       - test children processes", MAX_BUFF, GREEN);
+// 	printsColor("\n    >exit               - exit OS\n", MAX_BUFF, GREEN);
+
+// 	printc('\n');
+// }
+
+const char *commands[] = {"undefined", "help", "ls", "time", "clear", "registersinfo", "zerodiv", "invopcode", "setusername", "whoami", "exit", "ascii", "eliminator", "memtest", "schetest", "priotest", "runtestrprocesses", "testsync", "ps", "cat", "loop", "kill", "philo", "wc", "filter", "block", "unblock", "nice", "mem", "testchildren"};
+static program_t commands_ptr[MAX_ARGS] = {cmd_undefined, cmd_help, cmd_time, cmd_clear, cmd_registersinfo, cmd_zeroDiv, cmd_invOpcode, cmd_setusername, cmd_whoami, cmd_exit, cmd_ascii, cmd_eliminator, cmd_memoryManagerTest, cmd_schetest, cmd_priotest, cmd_run_test_processes, cmd_test_sync, cmd_ps, cmd_cat, cmd_loop, cmd_kill, cmd_philo, cmd_wc, cmd_filter, cmd_block, cmd_unblock, cmd_nice, cmd_mem, cmd_test_children};
+
+
+uint64_t cmd_help(uint64_t argc, char *argv[]){
+	
+	char *help = "===== Listing a preview of available commands =====\n\n>'help' or 'ls'  - displays this shell information\n>whoami             - display current username\n>time               - display current time\n>clear              - clear the display\n>(+)                - increase font size (scaled)\n>(-)                - decrease font size (scaled)\n>registersinfo      - print current register values\n>zerodiv            - testeo divide by zero exception\n>invopcode          - testeo invalid op code exception\n>whoami             - prints current username\n>memtest            - test memory manager\n>schetest           - test scheduler\n>priotest           - priority scheduler\n>runtestprocesses   - run test processes\n>testsync           - test synchro\n>ps                 - list all processes\n>cat                - cat file\n>loop               - prints short greeting and process PID\n>kill [PID]         - kill specified process\n>block [PID]        - block specified process\n>unblock [PID]      - unblock specified process\n>nice [PID] [prio]  - change a given's process priority\n>philo              - test philosophers\n>wc                 - counts the total amount of input lines\n>filter             - filt all input vocals\n>mem                - print memory state\n>exit               - exit OS\n";
+	for(int i = 0; i < strlen(help); i++){
+		write_char(help[i]);
+	}
+	write_string("\n    >testchildren                - test children processes\n", MAX_BUFF);
+	return 0;
 }
 
-const char *commands[] = {"undefined", "help", "ls", "time", "clear", "registersinfo", "zerodiv", "invopcode", "setusername", "whoami", "exit", "ascii", "eliminator", "memtest", "schetest", "priotest", "runtestrprocesses", "testsync", "ps", "cat", "loop", "kill", "philo", "wc", "filter", "block", "unblock", "nice", "mem"};
-static program_t commands_ptr[MAX_ARGS] = {cmd_undefined, cmd_help, cmd_help, cmd_time, cmd_clear, cmd_registersinfo, cmd_zeroDiv, cmd_invOpcode, cmd_setusername, cmd_whoami, cmd_exit, cmd_ascii, cmd_eliminator, cmd_memoryManagerTest, cmd_schetest, cmd_priotest, cmd_run_test_processes, cmd_test_sync, cmd_ps, cmd_cat, cmd_loop, cmd_kill, cmd_philo, cmd_wc, cmd_filter, cmd_block, cmd_unblock, cmd_nice, cmd_mem};
 
 void shell(){
 	welcome();
@@ -84,6 +99,7 @@ void shell(){
 		printLine(c, strcmp(username, "user"));
 
 	}
+	write_string("Shell terminando\n", MAX_BUFF); // Mensaje de depuración
 }
 
 void printLine(char c, int username){
@@ -274,11 +290,7 @@ uint64_t cmd_priotest(uint64_t argc, char * argv[]){
 	return 0;
 }
 
-uint64_t cmd_help(uint64_t argc, char * argv[]){
-	printsColor("\n\n===== Listing a preview of available commands =====\n", MAX_BUFF, GREEN);
-	printHelp();
-	return 0;
-}
+
 
 uint64_t cmd_undefined(uint64_t argc, char * argv[]){
 	prints("\n\nbash: command not found: \"", MAX_BUFF);
@@ -546,23 +558,41 @@ void welcome()
 		c = getChar();
 		printLine(c, strcmp(username, "user"));
 	}
-
 	
-
-	// NoteType windowsXPmelody[] = {
-	// 	{622, 300}, // D#5
-	// 	{0, 25},
-	// 	{466, 300}, // A#4
-	// 	{0, 50},
-	// 	{415, 450}, // G#4
-	// 	{0, 25},
-	// 	{622, 250}, // D#5
-	// 	{466, 900}	// A#4
-	// };
-
-	//playMelody(windowsXPmelody, (sizeof(windowsXPmelody) / sizeof(NoteType)));
-
 	printsColor("\n    Welcome to this efficient and simple operating system\n", MAX_BUFF, GREEN);
 	printsColor("    Here's a list of available commands\n", MAX_BUFF, GREEN);
-	printHelp();
+	cmd_help(0, NULL);
+}
+
+uint64_t cmd_test_children(uint64_t argc, char *argv[]){
+	create_process(0, (program_t)child0, 0, NULL, NULL, 0);
+	return 1;
+}
+
+void child0(uint64_t argc, char *argv[]){
+	create_process(0, (program_t)child1, 0, NULL, NULL, 0);
+	//sys_wait(300);
+	//write_string("Child 0 is dead\n", MAX_BUFF);
+	while(1){
+		__asm__("hlt");
+	}
+}
+
+void child1(uint64_t argc, char *argv[]){
+	create_process(0, (program_t)child2, 0, NULL, NULL, 0);
+	//sys_wait(300);
+	//write_string("Child 1 is dead\n", MAX_BUFF);
+	while(1){
+		__asm__("hlt");
+	}
+
+}
+
+void child2(uint64_t argc, char *argv[]){
+	sys_block(sys_getPID());
+	//sys_wait(300);
+	//write_string("Child 2 is dead\n", MAX_BUFF);
+	while(1){
+		__asm__("hlt");
+	}
 }

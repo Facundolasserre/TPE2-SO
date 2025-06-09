@@ -1,9 +1,7 @@
 #include <keyboard.h>
 #include <pipe.h>
 #include <stdint.h>
-#include <openFile.h>
 #include <videoDriver.h>
-#include <utils.h>
 #include <fileDescriptor.h>
 
 openFile_t * openFileKeyboard;
@@ -94,9 +92,11 @@ void keyboard_handler(uint8_t keyPressed){
 
     if(inputCode > 0x80 || inputCode == 0x0F){
         asciiCode = 0;
-    } else if (inputCode == 0x48 || inputCode == 0x50) {
+    } 
+    else if (inputCode == 0x48 || inputCode == 0x50) {
         asciiCode = inputCode;
-    } else {
+    } 
+    else {
         asciiCode = keyMap[shift][inputCode];
     }
 

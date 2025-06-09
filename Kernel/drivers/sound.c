@@ -5,19 +5,16 @@
 uint8_t spkIn(uint16_t port);
 void spkOut(uint16_t port, uint8_t value);
 
-void stopSpeaker()
-{
+void stopSpeaker(){
     uint8_t tmp = spkIn(0x61) & 0xFC;
     spkOut(0x61, tmp);
 }
 
-void triggerSpeaker(uint32_t frequence)
-{
+void triggerSpeaker(uint32_t frequence){
     uint32_t Div;
     uint8_t tmp;
 
-    if (frequence == 0)
-    {
+    if (frequence == 0){
         stopSpeaker();
         return;
     }
@@ -30,14 +27,12 @@ void triggerSpeaker(uint32_t frequence)
 
     // And play the sound using the PC speaker
     tmp = spkIn(0x61);
-    if (tmp != (tmp | 3))
-    {
+    if (tmp != (tmp | 3)){
         spkOut(0x61, tmp | 3);
     }
 }
 
-void beep(uint32_t freq, uint64_t duration)
-{
+void beep(uint32_t freq, uint64_t duration){
     triggerSpeaker(freq);
     sleep(duration);
     stopSpeaker();

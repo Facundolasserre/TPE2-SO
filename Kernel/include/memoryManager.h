@@ -16,7 +16,7 @@
 #define ALIGN_POINTER(ptr, alignment) ((uintptr_t)(ptr) + ((alignment) - ((uintptr_t)(ptr) % (alignment))))
 
 // Inicializa el administrador de memoria con un puntero y tamaño dados.
-void mem_init(void * ptr, uint32_t s);
+void mem_init(void * ptr, uint64_t s);
 
 // Asigna un bloque de memoria de un tamaño dado.
 void * mem_alloc(uint32_t s);

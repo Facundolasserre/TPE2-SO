@@ -147,7 +147,7 @@ processCB findPidDequeue(processQueueADT queue, uint64_t pid){
 }
 
 void freeQueue(processQueueADT queue){
-    if(queue->rear == NULL){
+    if(queue == NULL || queue->rear == NULL){
         mem_free(queue); // si la cola está vacia simlemente la liberamos
         return;
     }
@@ -180,7 +180,7 @@ int hasNextProcess(processQueueADT queue) {
 }
 
 processCB returnNullProcess(){
-    return (processCB){-1, NULL, NULL, 0, 0, 0, TERMINATED, NULL, NULL};
+    return (processCB){-1, NULL, NULL, 0, 0, 0, TERMINATED, NULL, NULL, 0};
 }
 
 

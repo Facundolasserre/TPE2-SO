@@ -1,7 +1,11 @@
 #ifndef _SCHEDULER_H
 #define _SCHEDULER_H
 
-#define STACK_SIZE 4096
+#ifndef STACK_SIZE_VAL
+#define STACK_SIZE_VAL 4096
+#endif
+
+#define STACK_SIZE STACK_SIZE_VAL
 #define TOTAL_QUEUES 5
 #define HIGHEST_QUEUE 3
 #define AGING_THRESHOLD 100

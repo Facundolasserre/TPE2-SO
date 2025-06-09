@@ -137,6 +137,11 @@ interrupt_keyboardHandler:
     jne .check_left_shift_release
     mov byte [shiftKey], 1
 	
+.check_left_shift_release:
+    cmp al, 0xAA  ; Check if left shift is released
+    jne .check_shift_s_pressed
+    mov byte [shiftKey], 0
+	
 .check_ctrl_pressed:
 	cmp al, 0x1D
 	jne .check_ctrl_release 
@@ -147,10 +152,6 @@ interrupt_keyboardHandler:
 	jne .handle_keyboard_interrupt
 	mov byte[ctrlKey], 0
 
-.check_left_shift_release:
-    cmp al, 0xAA  ; Check if left shift is released
-    jne .check_shift_s_pressed
-    mov byte [shiftKey], 0
 
 .check_shift_s_pressed:
     cmp byte [shiftKey], 1

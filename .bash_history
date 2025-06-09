@@ -150,3 +150,161 @@ cd Toolchain/
 make clean al
 cd ..
 make clean all
+cd root
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+make clean all
+cd Toolchain/
+make clean al
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+clear
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean al
+make clean all
+cd ..
+clear
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd too
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Toolchain/
+make clean all
+cd ..
+make clean all
+cd Too
+cd Toolchain/

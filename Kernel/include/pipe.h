@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <semaphore.h>
 
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 4096
 #define SEMAPHORE_NAME_SIZE 32
 
 typedef struct pipe{

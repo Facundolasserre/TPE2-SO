@@ -13,7 +13,7 @@
 #include <pipe.h>
 #include <fileDescriptor.h>
 
-#define MEM_SIZE 108*(1024*8)
+#define MEM_SIZE 128*(1024*8)
 
 
 extern uint8_t text;
@@ -93,7 +93,9 @@ int main()
 
 	_sti();
 
-    while(1) _hlt();
+    while(1) {
+        _hlt();    
+    }
     return 0;
 }
 
