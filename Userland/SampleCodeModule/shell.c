@@ -40,40 +40,6 @@ int isUpperArrow(char c);
 int isDownArrow(char c);
 
 
-
-// void printHelp(){
-
-// 	printsColor("\n\n    >'help' or 'ls'   - displays this shell information", MAX_BUFF, GREEN);
-// 	printsColor("\n    >whoami             - display current username", MAX_BUFF, GREEN);
-// 	printsColor("\n    >time               - display current time", MAX_BUFF, GREEN);
-// 	printsColor("\n    >clear              - clear the display", MAX_BUFF, GREEN);
-// 	printsColor("\n    >(+)                - increase font size (scaled)", MAX_BUFF, GREEN);
-// 	printsColor("\n    >(-)                - decrease font size (scaled)", MAX_BUFF, GREEN);
-// 	printsColor("\n    >registersinfo      - print current register values", MAX_BUFF, GREEN);
-// 	printsColor("\n    >zerodiv            - testeo divide by zero exception", MAX_BUFF, GREEN);
-// 	printsColor("\n    >invopcode          - testeo invalid op code exception", MAX_BUFF, GREEN);
-// 	printsColor("\n    >mem_test           - testeo del memory manager", MAX_BUFF, GREEN);
-// 	printsColor("\n    >schetest           - test scheduler", MAX_BUFF, GREEN);
-// 	printsColor("\n    >priotest           - priority scheduler", MAX_BUFF, GREEN);
-// 	printsColor("\n    >runtestprocesses - run test processes", MAX_BUFF, GREEN);
-// 	printsColor("\n    >testsync           - test sync processes", MAX_BUFF, GREEN);
-// 	printsColor("\n    >ps                 - list all processes", MAX_BUFF, GREEN);
-// 	printsColor("\n    >cat                -cat file", MAX_BUFF, GREEN);
-// 	printsColor("\n    >loop               -prints Pid + greeting to the user", MAX_BUFF, GREEN);
-// 	printsColor("\n    >kill               - kill a process by pid", MAX_BUFF, GREEN);
-// 	printsColor("\n    >block              - block a process by pid", MAX_BUFF, GREEN);
-// 	printsColor("\n    >unblock            - unblock a process by pid", MAX_BUFF, GREEN);
-// 	printsColor("\n    >nice               - change the priority of a given process", MAX_BUFF, GREEN);
-// 	printsColor("\n    >philo              - launch philosopher process", MAX_BUFF, GREEN);
-// 	printsColor("\n    >wc					- counts the amount of input lines", MAX_BUFF, GREEN);
-// 	printsColor("\n    >filter             - filter all input vocals", MAX_BUFF, GREEN);
-// 	printsColor("\n    >mem			   	   - print memory state", MAX_BUFF, GREEN);
-// 	printsColor("\n    >testchildren       - test children processes", MAX_BUFF, GREEN);
-// 	printsColor("\n    >exit               - exit OS\n", MAX_BUFF, GREEN);
-
-// 	printc('\n');
-// }
-
 const char *commands[] = {"undefined", "help", "ls", "time", "clear", "registersinfo", "zerodiv", "invopcode", "setusername", "whoami", "exit", "ascii", "eliminator", "memtest", "schetest", "priotest", "runtestrprocesses", "testsync", "ps", "cat", "loop", "kill", "philo", "wc", "filter", "block", "unblock", "nice", "mem", "testchildren"};
 static program_t commands_ptr[MAX_ARGS] = {cmd_undefined, cmd_help, cmd_help, cmd_time, cmd_clear, cmd_registersinfo, cmd_zeroDiv, cmd_invOpcode, cmd_setusername, cmd_whoami, cmd_exit, cmd_ascii, cmd_eliminator, cmd_memoryManagerTest, cmd_schetest, cmd_priotest, cmd_run_test_processes, cmd_test_sync, cmd_ps, cmd_cat, cmd_loop, cmd_kill, cmd_philo, cmd_wc, cmd_filter, cmd_block, cmd_unblock, cmd_nice, cmd_mem, cmd_test_children};
 
@@ -101,7 +67,6 @@ void shell(){
 		printLine(c, strcmp(username, "user"));
 
 	}
-	write_string("Shell terminando\n", MAX_BUFF); // Mensaje de depuración
 }
 
 void printLine(char c, int username){
@@ -167,9 +132,10 @@ void pipeCommand(){
 	secondPipeFds[1] = 1;
 
 	uint64_t pid1 = create_process_foreground(0, commands_ptr[commandIdx], 0, NULL, firstPipeFds, 2);
-	create_process(0, commands_ptr[afterPipeIdx], 0, NULL, secondPipeFds, 2);
+	uint64_t pid2 = create_process(0, commands_ptr[afterPipeIdx], 0, NULL, secondPipeFds, 2);
 
 	sys_wait_pid(pid1);
+	sys_wait_pid(pid2);
 }
 
 void printPrompt(){
@@ -292,8 +258,6 @@ uint64_t cmd_priotest(uint64_t argc, char * argv[]){
 	return 0;
 }
 
-
-
 uint64_t cmd_undefined(uint64_t argc, char * argv[]){
 	prints("\n\nbash: command not found: \"", MAX_BUFF);
 	prints(command, MAX_BUFF);
@@ -378,23 +342,17 @@ uint64_t cmd_eliminator(uint64_t argc, char * argv[])
 	if (parameter[0] == '\0')
 	{
 		numPlayers = 1;
-	}
-	else
-	{
+	} else {
 		numPlayers = atoi(parameter);
 	}
 
-	if (numPlayers == 1 || numPlayers == 2 || parameter[0] == '\0')
-	{
+	if (numPlayers == 1 || numPlayers == 2 || parameter[0] == '\0'){
 		int playAgain = 1;
-		while (playAgain)
-		{
+		while (playAgain){
 			// playAgain because we need to know if the game should be restarted
 			playAgain = eliminator(numPlayers);
 		}
-	}
-	else
-	{
+	} else {
 		prints("\nERROR: Invalid number of players. Only 1 or 2 players allowed.", MAX_BUFF);
 	}
 	return 0;
@@ -442,20 +400,6 @@ void historyCaller(int direction){
 }
 
 uint64_t cmd_ascii(uint64_t argc, char * argv[]){
-
-	// int asciiIdx = random() % ASCII_ART_COUNT;
-	// size_t splash_length = 0;
-
-	// asciiIdx = asciiIdx % ASCII_ART_COUNT;
-	// while (splash_length < MAX_ASCII_HEIGHT && ascii[asciiIdx][splash_length] != NULL) {
-	// 	splash_length++;
-	// }
-
-	// for (int i = 0; i < splash_length; i++){
-	// 	writeString(ascii[asciiIdx][i], MAX_BUFF);
-	// 	write_char('\n');
-	// }
-	
 	return 0;
 }
 
@@ -474,8 +418,7 @@ void newLineUsername(){
 	username[i] = '\0';
 	usernameLength = i;
 
-	for (int i = 0; line[i] != '\0'; i++)
-	{
+	for (int i = 0; line[i] != '\0'; i++) {
 		line[i] = 0;
 		command[i] = 0;
 		parameter[i] = 0;

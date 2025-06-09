@@ -159,18 +159,17 @@ sys_writeColor:
     int 80h
     ret
 
-
-sys_mem_init:
+sys_mem_alloc:
     mov rax, 0x12
     int 80h
     ret
 
-sys_mem_alloc:
+sys_mem_free:
     mov rax, 0x13
     int 80h
     ret
 
-sys_mem_free:
+sys_mem_init:
     mov rax, 0x14
     int 80h
     ret

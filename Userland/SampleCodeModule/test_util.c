@@ -2,8 +2,6 @@
 // PVS-Studio Static Code Analyzer for C, C++, C#, and Java: https://pvs-studio.com
 //test de la catedra
 #include <stdint.h>
-#include <stdio.h>
-#include "test_util.h"
 
 // Random
 static uint32_t m_z = 362436069;
@@ -32,7 +30,7 @@ uint8_t memcheck(void *start, uint8_t value, uint32_t size) {
 
 
 // Dummies
-void bussy_wait(uint64_t n) {
+void busy_wait(uint64_t n) {
   uint64_t i;
   for (i = 0; i < n; i++)
     ;
@@ -48,6 +46,6 @@ void endless_loop() {
 
 //   while (1) {
 //     printf("%d ", pid);
-//     bussy_wait(wait);
+//     busy_wait(wait);
 //   }
 // }

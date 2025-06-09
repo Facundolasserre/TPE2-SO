@@ -35,28 +35,6 @@ size_t getQueueSize(processQueueADT queue) {
 
 
 
-void freeProcessQueue(processQueueADT queue) {
-    if(queue->rear == NULL){
-        mem_free(queue); // si la cola está vacia simlemente liberamos la memoria del objeto cola
-        return;
-    }
-
-    queue_t current = queue->rear->next;
-    queue_t next;
-
-    while (current != queue->rear) {
-        next = current->next; // guardamos el siguiente nodo
-        mem_free(current); // liberamos el nodo actual
-        current = next; // pasamos al siguiente nodo
-    }
-
-    mem_free(queue->rear); // liberamos el último nodo
-    mem_free(queue); // liberamos la memoria del objeto cola
-    
-}
-
-
-
 
 void addProcessToQueue(processQueueADT queue, processCB pcb) {
     queue_t new = (queue_t)mem_alloc(sizeof(node_t));

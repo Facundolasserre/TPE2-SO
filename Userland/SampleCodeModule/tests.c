@@ -248,13 +248,13 @@ void test_prio() {
   for (i = 0; i < TOTAL_PROCESSES; i++)
     pids[i] = create_process(0, (program_t)&endless_loop, 0, argv, 0, 0);
 
-  bussy_wait(WAIT);
+  busy_wait(WAIT);
   prints("\nCHANGING PRIORITIES...\n", MAX_BUFF);
 
   for (i = 0; i < TOTAL_PROCESSES; i++)
     sys_nice(pids[i], prio[i]);
 
-  bussy_wait(WAIT);
+  busy_wait(WAIT);
   prints("\nBLOCKING...\n" ,MAX_BUFF);
 
   for (i = 0; i < TOTAL_PROCESSES; i++)
@@ -270,7 +270,7 @@ void test_prio() {
   for (i = 0; i < TOTAL_PROCESSES; i++)
     sys_unblock(pids[i]);
 
-  bussy_wait(WAIT);
+  busy_wait(WAIT);
   prints("\nKILLING...\n",MAX_BUFF);
 
   for (i = 0; i < TOTAL_PROCESSES; i++)

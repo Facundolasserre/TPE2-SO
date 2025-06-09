@@ -1,8 +1,8 @@
-global loader
-global reset
+GLOBAL loader
+GLOBAL reset
 
-extern main
-extern initializeKernelBinary
+EXTERN main
+EXTERN initializeKernelBinary
 EXTERN getStackBase
 
 loader:

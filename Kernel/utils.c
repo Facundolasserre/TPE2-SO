@@ -101,7 +101,7 @@ int atoi(const char *str){
 
 	//primero el signo
 	if(str[i] == '-' || str[i] == '+'){
-		sign = (str[i] == '-') ? -1 : 1;
+		sign = (str[i++] == '-') ? -1 : 1;
 	}
 
 	//char a int

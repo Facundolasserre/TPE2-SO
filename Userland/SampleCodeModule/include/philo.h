@@ -23,14 +23,8 @@ typedef struct{
 
 
 void philoSimulation();
-
 void printPhiloState();
-
-
-
 uint64_t initPhilosophers(uint64_t argc, char *argv[]);
-
-
 void eat(int philo);
 void think(int philo);
 void addPhilosopher(int philo);
