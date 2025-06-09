@@ -27,6 +27,9 @@ static int runInBackground = 0;
 
 uint64_t cursorPID;
 
+#define ASCII_ART_COUNT 10
+#define MAX_ASCII_HEIGHT 10
+
 char usernameLength = 4;
 
 // Forward declarations
@@ -37,7 +40,6 @@ int isDownArrow(char c);
 void printHelp(){
 
 	printsColor("\n\n    >'help' or 'ls'   - displays this shell information", MAX_BUFF, GREEN);
-	printsColor("\n    >setusername        - set username", MAX_BUFF, GREEN);
 	printsColor("\n    >whoami             - display current username", MAX_BUFF, GREEN);
 	printsColor("\n    >time               - display current time", MAX_BUFF, GREEN);
 	printsColor("\n    >clear              - clear the display", MAX_BUFF, GREEN);
@@ -46,7 +48,6 @@ void printHelp(){
 	printsColor("\n    >registersinfo      - print current register values", MAX_BUFF, GREEN);
 	printsColor("\n    >zerodiv            - testeo divide by zero exception", MAX_BUFF, GREEN);
 	printsColor("\n    >invopcode          - testeo invalid op code exception", MAX_BUFF, GREEN);
-	printsColor("\n    >eliminator         - launch ELIMINATOR videogame", MAX_BUFF, GREEN);
 	printsColor("\n    >mem_test           - testeo del memory manager", MAX_BUFF, GREEN);
 	printsColor("\n    >schetest           - test scheduler", MAX_BUFF, GREEN);
 	printsColor("\n    >priotest           - priority scheduler", MAX_BUFF, GREEN);
@@ -116,7 +117,7 @@ void processLine(){
 	prints("\n", MAX_BUFF);
 
 	if (commandIdx && afterPipeIdx){
-		pipe_command();
+		pipeCommand();
 	} else if (commandIdx && runInBackground){
 		runInBackground = 0;
 		uint64_t fd_table[10] = {0};
@@ -143,7 +144,6 @@ void pipeCommand(){
 	uint64_t fdId = sys_pipe_create();
 	uint64_t firstPipeFds[10] = {0};
 	uint64_t secondPipeFds[10] = {0};
-	firstPipeFds[0] = 0;
 	firstPipeFds[1] = fdId;
 	secondPipeFds[0] = fdId;
 	secondPipeFds[1] = 1;
@@ -191,15 +191,15 @@ void checkLine(int * commandIdx, int * afterPipeIdx){
 	strcpyForParam(commandHistory[commandIdxMax++], command, parameter);
 	commandIterator = commandIdxMax;
 
-	for (i = 1; i < MAX_ARGS; i++) {
+	for (i = 1 ; i < MAX_ARGS ; i++) {
 		if (strcmp(command, commands[i]) == 0) {
-			commandIdx = i;
+			*commandIdx = i;
 			if (afterPipe[0] == '\0') {
 				return;
 			}
-			for (int j = 1; j < MAX_ARGS; j++) {
+			for (int j = 1 ; j < MAX_ARGS ; j++) {
 				if (strcmp(afterPipe, commands[j]) == 0) {
-					afterPipeIdx = j;
+					*afterPipeIdx = j;
 					return;
 				}
 			}
@@ -264,8 +264,8 @@ uint64_t cmd_cat(uint64_t argc, char * argv[]){
 }
 
 uint64_t cmd_schetest(uint64_t argc, char * argv[]){
-    char *argv[] = {"3"};
-    create_process(1, &test_processes, 1, argv, 0, 0);
+    char *local_argv[] = {"3"};
+    create_process(1, (program_t)test_processes, 1, local_argv, 0, 0);
 	return 0;
 }
 
@@ -280,7 +280,7 @@ uint64_t cmd_help(uint64_t argc, char * argv[]){
 	return 0;
 }
 
-void cmd_undefined(uint64_t argc, char * argv[]){
+uint64_t cmd_undefined(uint64_t argc, char * argv[]){
 	prints("\n\nbash: command not found: \"", MAX_BUFF);
 	prints(command, MAX_BUFF);
 	prints("\" Use 'help' or 'ls' to display available commands", MAX_BUFF);
@@ -427,21 +427,21 @@ void historyCaller(int direction){
 
 }
 
-uint64_t cmd_ascii(uint64_t argc, char * argv[])
-{
+uint64_t cmd_ascii(uint64_t argc, char * argv[]){
 
-	int asciiIdx = random();
-	size_t splash_length = 0;
-	while (ascii[asciiIdx][splash_length] != NULL)
-	{
-		splash_length++;
-	}
+	// int asciiIdx = random() % ASCII_ART_COUNT;
+	// size_t splash_length = 0;
 
-	for (int i = 0; i < splash_length; i++)
-	{
-		writeString(ascii[asciiIdx][i], MAX_BUFF);
-		write_char('\n');
-	}
+	// asciiIdx = asciiIdx % ASCII_ART_COUNT;
+	// while (splash_length < MAX_ASCII_HEIGHT && ascii[asciiIdx][splash_length] != NULL) {
+	// 	splash_length++;
+	// }
+
+	// for (int i = 0; i < splash_length; i++){
+	// 	writeString(ascii[asciiIdx][i], MAX_BUFF);
+	// 	write_char('\n');
+	// }
+	
 	return 0;
 }
 
@@ -454,10 +454,14 @@ uint64_t cmd_testschedulerprocesses(uint64_t argc, char * argv[])
 	return 0;
 }
 
-void newLineUsername()
-{
-	strcpy(username, line);
-	usernameLength = strlen(username);
+void newLineUsername(){
+
+	int i;
+	for(i=0 ; i < USERNAME_SIZE -1 && line[i] != '\0' ; i++){
+		username[i] = line[i];
+	}
+	username[i] = '\0';
+	usernameLength = i;
 
 	for (int i = 0; line[i] != '\0'; i++)
 	{
@@ -480,7 +484,7 @@ uint64_t cmd_test_sync(uint64_t argc, char * argv[]) {
 }
 
 uint64_t cmd_philo(uint64_t argc, char * argv[]){
-	init_philosophers(0, NULL);
+	initPhilosophers(0, NULL);
 	return 0;
 }
 

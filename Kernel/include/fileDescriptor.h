@@ -40,7 +40,7 @@ int closeFDCurrentProcess(uint64_t index);
 openFile_t ** openFDTable(uint64_t fdIds[MAX_FD], int fdCount);
 
 //compara dos fd segun sus id, devuelve la diferencia entre los id
-int compareFD( void *fdA,  void *fdB);
+int compareFD(void *fdA, void *fdB);
 
 int compareFDById(openFile_t *fd, uint64_t id);
 
@@ -55,10 +55,10 @@ uint64_t addFD(void *resource, char (*read)(void *), int (*write)(void *, char),
 void removeFD(uint64_t id);
 
 //lee datos de un fd del proceso actual 
-char readCurrentProcessFD(uint64_t fdIndex);
+char readFD(uint64_t fdIndex);
 
 //escribe un caracter en el archivo asociado al fd del proceso actual
-int writeCurrentProcessFD(uint64_t fdIndex, char data);
+int writeFD(uint64_t fdIndex, char data);
 
 
 #endif //FILE_DESCRIPTOR_H

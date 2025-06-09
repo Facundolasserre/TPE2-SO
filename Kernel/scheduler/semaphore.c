@@ -10,7 +10,7 @@
 
 List * semList;
 
-int sem_compare(void *semA, void *semB) {
+int sem_compare( void *semA,  void *semB) {
     const semaphore_t * sem_a = (const semaphore_t *)semA;
     const char *sem_b_name = (char*)semB;
     return strcmp(sem_a->name, sem_b_name);

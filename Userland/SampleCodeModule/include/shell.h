@@ -3,8 +3,8 @@
 
 #include <stdio.h>
 #include "userlib.h"
-#define MAX_COMMAND 25
-#define MAX_ARGS 35
+#define MAX_COMMAND 256
+#define MAX_ARGS 29
 #define USERNAME_SIZE 16
 #define NEW_LINE '\n'
 #define BACKSPACE '\b'
@@ -50,6 +50,6 @@ uint64_t cmd_block(uint64_t argc, char * argv[]);
 uint64_t cmd_unblock(uint64_t argc, char * argv[]);
 uint64_t cmd_nice(uint64_t argc, char * argv[]);
 uint64_t cmd_mem(uint64_t argc, char * argv[]);
-void pipe_command();
+void pipeCommand();
 
 #endif

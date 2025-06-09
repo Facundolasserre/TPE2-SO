@@ -27,7 +27,7 @@ void sti_asm();
 
 
 //funciones del scheduler
-void init_scheduler();
+void initScheduler();
 
 processCB create_halt_process();
 
@@ -48,6 +48,8 @@ uint64_t userspaceCreateProcessForeground(int priority, program_t program, uint6
 uint64_t userspaceCreateProcess(int priority, program_t program, uint64_t argc, char *argv[]);
 
 uint64_t kill_process(uint64_t pid);
+
+void terminate_process(processCB process);
 
 char * list_processes();
 
@@ -77,7 +79,7 @@ void cp_halt();
 
 uint64_t createProcess(int priority, program_t program, uint64_t argc, char *argv[], uint64_t * fdIds, uint64_t fdCount);
 
-uint64_t create_process_state(int priority, program_t program, int state, uint64_t argc, char *argv[], uint64_t *fdIds, uint64_t fdCount);
+uint64_t create_process_state(int priority, program_t program, int state, uint64_t argc, char *argv[], uint64_t *fdIds, uint64_t fdCount, int parentPid);
 
 int find_process_in_queue(processQueueADT queue, uint64_t pid);
 

@@ -17,17 +17,17 @@ typedef struct processQueueCDT{
 } processQueueCDT;
 
 processQueueADT newProcessQueue() {
-    processQueueADT queue = (processQueueADT)mem_alloc(sizeof(processQueueCDT));
-    if (queue == NULL) {
+    processQueueADT newQueue = (processQueueADT)mem_alloc(sizeof(processQueueCDT));
+    if (newQueue == NULL) {
         return NULL; 
     }
-    queue->size = 0;
-    queue->rear = NULL;
+    newQueue->size = 0;
+    newQueue->rear = NULL;
     
-    return queue;
+    return newQueue;
 }
 
-size_t get_size(processQueueADT queue) {
+size_t getQueueSize(processQueueADT queue) {
     return queue->size;
 }
 
@@ -101,7 +101,7 @@ processCB dequeueProcess(processQueueADT queue) {
 
 
 
-processCB find_pid_dequeue(processQueueADT queue, uint64_t pid){
+processCB findPidDequeue(processQueueADT queue, uint64_t pid){
 
     if(queue->rear == NULL){
         return returnNullProcess(); //si esta vacia devuelve un pcb null
@@ -146,6 +146,25 @@ processCB find_pid_dequeue(processQueueADT queue, uint64_t pid){
     
 }
 
+void freeQueue(processQueueADT queue){
+    if(queue->rear == NULL){
+        mem_free(queue); // si la cola está vacia simlemente la liberamos
+        return;
+    }
+
+    queue_t current = queue->rear->next; // Empezamos desde el primer nodo
+    queue_t next;
+
+    while(current != queue->rear) { // Recorremos hasta el último nodo
+        next = current->next; // Guardamos el siguiente nodo
+        mem_free(current); // Liberamos el nodo actual
+        current = next; // Pasamos al siguiente nodo
+    }
+
+    mem_free(queue->rear); // Liberamos el último nodo
+    mem_free(queue); // Liberamos la memoria del objeto cola
+}
+
 
 
 
@@ -165,18 +184,3 @@ processCB returnNullProcess(){
 }
 
 
-// void to_begin(processQueueADT queue) {
-//     queue->iterator = queue->first;
-// }
-
-
-// char * next(processQueueADT queue) {
-//     if (hasNext(queue)) {
-       
-//         queue->iterator = queue->iterator->next;
-//     }else{
-//         fprintf(stderr, "No existe el path\n");
-//         exit(1);
-//     }
-    
-// }

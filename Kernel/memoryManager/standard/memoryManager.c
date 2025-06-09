@@ -31,10 +31,10 @@ void * mem_alloc(uint32_t s){
     return free_ptrs[current++];
 
     //alineamos direccion del bloque actual
-    void * alignedPtr = (void *) ((uintptr_t)(free_ptrs[current]) + ((ALIGNMENT) - ((uintptr_t)(free_ptrs[current]) % (ALIGNMENT))));
+    void * alignedPtr = (void *) ALIGN_POINTER(free_ptrs[current], ALIGNMENT);
 
     //verificamos que la lineacion del bloque tenga espacio suficiente
-    if((uintptr_t)(alignedPtr) + s > (uintptr_t)(free_ptrs[current]) + CHUNK_SIZE){
+    if((uintptr_t)alignedPtr + s > (uintptr_t)free_ptrs[current] + CHUNK_SIZE){
         current++;
         if(current >= CHUNK_COUNT){
             return NULL;

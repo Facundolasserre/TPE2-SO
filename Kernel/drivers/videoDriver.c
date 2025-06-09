@@ -104,7 +104,7 @@ uint16_t getRealCharHeight() {
 uint16_t cursorX = 0;
 uint16_t cursorY = 0;
 
-static char buffer[64] = { '0' };
+static char buffer[64] = {'0', 0};
 
 
 void vDriver_prints(const char *str, Color fnt, Color bgd){
@@ -123,6 +123,8 @@ void vDriver_print(const char c, Color fnt, Color bgd){
             break;
         case '\0':
             /* nada, no imprime nada */
+            break;
+        case -1:
             break;
         default:
             drawChar(cursorX, cursorY , c , fnt , bgd);
@@ -160,7 +162,7 @@ void vDriver_drawCursor(){
     if(counter % 999999 == 0){
         color = !color;
         Color fntColor = color == 0 ? BLACK : WHITE;
-        Color bgColor = color == 0 ? WHITE : BLACK;
+        Color bgColor = color == 0 ? BLACK : WHITE;
 
         //mascara de bits para saber que color imprimo a pantalla
 

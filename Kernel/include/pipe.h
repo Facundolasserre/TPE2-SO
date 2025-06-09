@@ -26,7 +26,7 @@ char pipeRead(uint16_t pipeId);
 
 int pipeWrite(uint16_t pipeId, char c);
 
-int comparePipes(const void *a, const void *b);
+int comparePipes(void *a, void *b);
 
 pipe * pipeInit();
 

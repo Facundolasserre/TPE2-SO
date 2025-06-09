@@ -23,7 +23,7 @@ extern Color BLACK;
 
 static uint64_t sys_read(uint64_t fd)
 {
-    if (fd != 0)
+    if (fd != STDIN)
     {
         return -1;
     }
@@ -31,7 +31,7 @@ static uint64_t sys_read(uint64_t fd)
     return readKeyboard();
 }
 
-static int sys_drawCursor()
+static uint64_t sys_drawCursor()
 {
     vDriver_drawCursor();
     return 1;
@@ -39,7 +39,7 @@ static int sys_drawCursor()
 
 static uint64_t sys_write(uint64_t fd, char buffer)
 {
-    if (fd != 1)
+    if (fd !=  STDOUT)
     {
         return -1;
     }
@@ -50,7 +50,7 @@ static uint64_t sys_write(uint64_t fd, char buffer)
 
 static uint64_t sys_writeColor(uint64_t fd, char buffer, Color color)
 {
-    if (fd != 1)
+    if (fd != STDOUT)
     {
         return -1;
     }
@@ -175,7 +175,7 @@ static void sys_sem_post(char * sem){
 
 
 static void sys_wait_pid(uint64_t pid){
-    wait_pid(pid);
+    waitPid(pid);
 }
 
 static void sys_mem_init(void *ptr, int size){
@@ -198,7 +198,7 @@ static uint64_t s_create_process_foreground(int priority, program_t program, uin
     return userspaceCreateProcessForeground(priority, program, argc, argv);
 }
 
-static void s_create_process_set_fd(int * fd_ids[MAX_FD], int fd_count){
+static void s_create_process_set_fd(int * fd_ids, int fd_count){
     userspaceSetFD(fd_ids, fd_count);
 }
 
@@ -231,11 +231,11 @@ static char * sys_mem_state(){
 }
 
 static char sys_read_fd(uint64_t fdIndex){
-    return readCurrentProcessFD(fdIndex);
+    return readFD(fdIndex);
 }
 
 static char sys_write_fd(uint64_t fdIndex, char data){
-    return writeCurrentProcessFD(fdIndex, data);
+    return writeFD(fdIndex, data);
 }
 
 static uint64_t sys_open_fd(uint64_t fd_id){
@@ -251,7 +251,7 @@ static uint64_t sys_pipe_create(){
 }
 
 static uint64_t sys_set_priority(uint64_t pid, uint64_t priority){
-    return set_priority(pid, priority);
+    return setPriority(pid, priority);
 }
 
 

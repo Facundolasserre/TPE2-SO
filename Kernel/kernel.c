@@ -13,7 +13,7 @@
 #include <pipe.h>
 #include <fileDescriptor.h>
 
-#define MEM_SIZE 1024*1024
+#define MEM_SIZE 108*(1024*8)
 
 
 extern uint8_t text;
@@ -29,7 +29,7 @@ static const uint64_t PageSize = 0x1000;
 
 static void * const sampleCodeModuleAddress = (void*)0x400000;
 static void * const sampleDataModuleAddress = (void*)0x500000;
-static void * const memoryManagerModuleAdress = (void*)0x700000; //definimos direccion donde trabajara el memorymanager
+static void * const memoryManagerModuleAddress = (void*)0x300000; //definimos direccion donde trabajara el memorymanager
 
 typedef int (*EntryPoint)();
 
@@ -55,7 +55,7 @@ void * initializeKernelBinary(){
 	loadModules(&endOfKernelBinary, moduleAddresses);
 
 	clearBSS(&bss, &endOfKernel - &bss);
-	mem_init(memoryManagerModuleAdress, MEM_SIZE);
+	
 	return getStackBase();
 }
 
@@ -81,11 +81,13 @@ int main()
 	_cli();
 	load_idt();
 
+	mem_init(memoryManagerModuleAddress, MEM_SIZE);
+
 	initSemaphores();
 	initPipes();	
 	initFileDescriptors();
 	initKeyboard();
-	init_scheduler();
+	initScheduler();
 	
 	createProcess(0, sampleCodeModuleAddress, 0, NULL, NULL, 0);
 

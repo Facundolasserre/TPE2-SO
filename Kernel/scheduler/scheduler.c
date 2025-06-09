@@ -19,10 +19,10 @@ uint64_t userspaceProcessCreationFDCount = 0; // Cantidad de FDI de los procesos
 
 uint64_t agingCounter = 0; // Contador para el envejecimiento de procesos
 
-processQueueADT process0 = NULL;
-processQueueADT process1 = NULL;
-processQueueADT process2 = NULL;
-processQueueADT process3 = NULL;
+processQueueADT priority0 = NULL;
+processQueueADT priority1 = NULL;
+processQueueADT priority2 = NULL;
+processQueueADT priority3 = NULL;
 
 //processQueueADT processQueue = NULL; 
 //processQueueADT blockedQueue = NULL; // Cola de procesos bloqueados para operaciones generales
@@ -34,13 +34,33 @@ processQueueADT allBlockedQueue = NULL;
 uint8_t mutexLock = 1;
 int currentSemaphore = 0;
 
-//retorna -1 por error
-uint64_t createProcess(int priority, program_t program, uint64_t argc, char *argv[], uint64_t * fdIds, uint64_t fdCount){
-    return create_process_state(priority, program, READY, argc, argv, fdIds, fdCount); //agregar nuevos param
+
+void initScheduler(){
+
+    currentSemaphore = 0;
+
+    priority0 = newProcessQueue();
+    priority1 = newProcessQueue();
+    priority2 = newProcessQueue();
+    priority3 = newProcessQueue();
+
+    
+    allBlockedQueue = newProcessQueue();
+    
+   
+
+    currentProcess = returnNullProcess();
+    haltProcess = create_halt_process();
+
 }
 
 //retorna -1 por error
-uint64_t create_process_state(int priority, program_t program, int state, uint64_t argc, char *argv[], uint64_t *fdIds, uint64_t fdCount) {
+uint64_t createProcess(int priority, program_t program, uint64_t argc, char *argv[], uint64_t * fdIds, uint64_t fdCount) {
+    return create_process_state(priority, program, READY, argc, argv, fdIds, fdCount, 0); //agregar nuevos param
+}
+
+//retorna -1 por error
+uint64_t create_process_state(int priority, program_t program, int state, uint64_t argc, char *argv[], uint64_t *fdIds, uint64_t fdCount, int parentPid) {
 
     void* base_pointer = mem_alloc(STACK_SIZE);
 
@@ -50,23 +70,24 @@ uint64_t create_process_state(int priority, program_t program, int state, uint64
 
     void * stackPointer = fill_stack((uintptr_t)base_pointer, initProcessWrapper, program, argc, argv);
 
-    processQueueADT waitingQueue = newProcessQueue();
+    processQueueADT childrenList = newProcessQueue();
 
    openFile_t ** fdTable = openFDTable(fdIds, fdCount);
 
    int assigned_quantum = ASSIGN_QUANTUM(priority);
 
     processCB newProcess = {
-        PID++,
-        base_pointer,
-        stackPointer,
-        priority,
-        assigned_quantum,
-        0,
-        state,
-        fdTable,
-        waitingQueue
-        };
+                        PID++,       //pid
+                        base_pointer,       //base_sp
+                        stackPointer,      //rsp
+                        priority,           //priority
+                        assigned_quantum,   //assigned_quantum
+                        0,                  //used_quantum
+                        state,              //state
+                        fdTable,           //fd_table
+                        childrenList,      //children_list
+                        parentPid               //p_pid
+                        };
 
     add_priority_queue(newProcess);
     return newProcess.pid;
@@ -102,14 +123,14 @@ uint64_t get_PID(){
 
 processCB getNextProcess(){
     processCB nextProcess;
-    if(hasNextProcess(process0)){
-        nextProcess = dequeueProcess(process0);
-    } else if(hasNextProcess(process1)){
-        nextProcess = dequeueProcess(process1);
-    }else if(hasNextProcess(process2)){
-        nextProcess = dequeueProcess(process2);
-    }else if(hasNextProcess(process3)){
-        nextProcess = dequeueProcess(process3);
+    if(hasNextProcess(priority0)){
+        nextProcess = dequeueProcess(priority0);
+    } else if(hasNextProcess(priority1)){
+        nextProcess = dequeueProcess(priority1);
+    }else if(hasNextProcess(priority2)){
+        nextProcess = dequeueProcess(priority2);
+    }else if(hasNextProcess(priority3)){
+        nextProcess = dequeueProcess(priority3);
     }else{
         return returnNullProcess();
     }
@@ -121,19 +142,22 @@ processCB create_halt_process(){
     if(base_pointer == NULL){
          return returnNullProcess();
     }
-    void * stack_pointer = fill_stack((uintptr_t)base_pointer, initProcessWrapper, (program_t)halt, 0, 0);
+    //Y ESTO
+    void * stack_pointer = fill_stack((uintptr_t)base_pointer, initProcessWrapper, (program_t)halt, 0, NULL);
+    
     processCB new_process = {
-                        PID++,    //pid
-                        base_pointer,        //base_pointer
+                        PID++,       //pid
+                        base_pointer,       //base_sp
                         stack_pointer,      //rsp
                         0,                  //priority
-                        0,    //assigned_quantum
+                        0,                  //assigned_quantum
                         0,                  //used_quantum
-                        HALT,             //state
-                        NULL, //fdTable
-                        NULL //waitingQueue
+                        HALT,               //state
+                        NULL,               //fd_table
+                        NULL,               //children_list
+                        0                   //p_pid
                         };
-    haltProcess = new_process;
+      
     return new_process;
 }
 
@@ -142,29 +166,32 @@ char * list_processes(){
 
     //tamaño aprox de cada linea seria: (pid + priority + state + separadores y \n)
 
-    const int LINE_SIZE = 68; //tamaño de cada linea
-    const int HEADER_SIZE = 68; //tamaño aproximado del encabezado
+    const int line_size = 68; //tamaño de cada linea
+    const int header_size = 68; //tamaño aproximado del encabezado
 
     char * header = "PID   PRIORITY  STATE  BASE POINTER\n";
 
     //calculo el tamaño necesario para almacenar todos los procesos
     int totalProcesses = 1; //1 para incluir el proceso actual
     processCB process;
-    processQueueADT queues[] = {process0, process1, process2, process3, allBlockedQueue};
+    processQueueADT queues[] = {priority0, priority1, priority2, priority3, allBlockedQueue};
 
     for(int i = 0; i < TOTAL_QUEUES; i++){
-        totalProcesses += get_size(queues[i]);
+        totalProcesses += getQueueSize(queues[i]);
     }
 
     //asigno memoria para el buffer
-    char * buffer = mem_alloc(HEADER_SIZE + (totalProcesses * LINE_SIZE));
+    char * buffer = mem_alloc(header_size + (totalProcesses * line_size));
     int offset = 0;
+
+    strcpy(buffer, header, header_size); //copio el encabezado al buffer
+    offset += strlen(header); //actualizo el offset
 
     //agrego el proceso actual si esta definido
     if(currentProcess.pid != -1){
-        char line[LINE_SIZE];
+        char line[line_size];
         formatProcessLine(line, &currentProcess);
-        strcpy(buffer + offset, line, LINE_SIZE);
+        strcpy(buffer + offset, line, line_size);
         offset += strlen(line);
     }
 
@@ -172,17 +199,17 @@ char * list_processes(){
     //proceso cada cola de procesos
     for(int i=0 ; i<TOTAL_QUEUES ; i++){
         processQueueADT current = queues[i];
-        int size = get_size(current);
+        int size = getQueueSize(current);
 
         //agrego cada proceso a la cola del buffer
         for(int j=0 ; j<size ; j++){
             process = dequeueProcess(current);
             //formateo cada proceso en una linea
-            char line[LINE_SIZE];
+            char line[line_size];
             formatProcessLine(line, &process);
 
             //copio la linea al buffer final
-            strcpy(buffer + offset, line, LINE_SIZE);
+            strcpy(buffer + offset, line, line_size);
             offset += strlen(line);
 
             //volver a agregar el proceso a la cola original
@@ -272,28 +299,72 @@ void formatProcessLine(char *line, processCB * process){
 // }
 
 uint64_t kill_process(uint64_t pid){
-     processCB process;
+    processCB process;
     if(currentProcess.pid == pid){
         currentProcess.state = TERMINATED;
         __asm__ ("int $0x20");                 // TimerTick para llamar a schedule de nuevo
         return 1;
     } else if( (process = find_dequeue_priority(pid)).pid > 0 || (process = findPidDequeue(allBlockedQueue, pid)).pid > 0 ){
-        mem_free(process.base_pointer);
-        if(process.fdTable != NULL){
-            for(int i = 0; i < MAX_FD; i++){
-                if(process.fdTable[i] != NULL){
-                    fd_close(process.fdTable[i]->id);
-                }
-            }
-        }
-        while(hasNextProcess(process.waitingQueue)){
-            unblock_process_from_queue(process.waitingQueue);
-        }
+        terminate_process(process);
+        return 1;
     } else {
         return 0;
     }
     return 0;
 }
+
+void terminate_process(processCB process){
+    if(process.pid == foreGroundPID && process.fdTable != NULL){  
+        process.fdTable[1]->write(process.fdTable[1]->resource, -1);
+        foreGroundPID  = -1;
+    }
+      
+    if(process.fdTable != NULL){
+        for(int i = 0; i < MAX_FD; i++){
+            if(process.fdTable[i] != NULL){
+                closeFD(process.fdTable[i]->id);
+            }
+        }
+    }
+            
+    processCB parent = get_process_by_pid(process.parentPid);
+
+    // Establezco al padre de mis hijos como MI padre.
+    if(parent.pid >= 0){
+        size_t size = getQueueSize(process.childrenList);
+        for(int i = 0; i < size; i++){
+            processCB aux = dequeueProcess(process.childrenList);
+            
+            processCB child = find_dequeue_priority(aux.pid);
+
+            if (child.pid > 0){
+                child.parentPid = process.parentPid;
+                add_priority_queue(child);
+            } else {
+                child = findPidDequeue(allBlockedQueue, aux.pid);
+                if (child.pid > 0){
+                    child.parentPid = process.parentPid;
+                    addProcessToQueue(allBlockedQueue, child);
+                }
+            }
+
+            if (parent.pid != 0){
+                addProcessToQueue(parent.childrenList, aux);
+            }
+        }
+    }
+
+    // Me quito de la lista de hijos de mi padre, desbloqueo a mi padre.
+    if(parent.pid > 0){
+        findPidDequeue(parent.childrenList, process.pid);
+        unblock_process(process.parentPid);
+    }
+    
+    mem_free(process.base_pointer);
+    freeQueue(process.childrenList);
+}
+
+
 
 void block_process_pid(uint64_t pid){
     if(currentProcess.pid == pid){
@@ -311,7 +382,7 @@ void block_process_pid(uint64_t pid){
 }
 
 
-uint64_t block_process(uint64_t){
+uint64_t block_process(){
     currentProcess.state = BLOCKED;
     __asm__ ("int $0x20"); // timertick para llamar a schedule de nuevo
     return 0;
@@ -354,33 +425,16 @@ void yield(){
     currentProcess.state = READY;
 }
 
-void initScheduler(){
-
-    currentSemaphore = 0;
-
-    process0 = newProcessQueue();
-    process1 = newProcessQueue();
-    process2 = newProcessQueue();
-    process3 = newProcessQueue();
-
-    
-    allBlockedQueue = newProcessQueue();
-    
-   
-
-    currentProcess = returnNullProcess();
-    haltProcess = create_halt_process();
-
-}
 
 
-uint64_t schedule(void* rsp){
 
-    currentProcess.rsp = rsp; // Actualizar el rsp del proceso actual
+uint64_t schedule(void * rspRunning){
+
+    currentProcess.rsp = rspRunning;
 
     if(++agingCounter >= AGING_THRESHOLD){
         agingCounter = 0;
-        applyAging(); // Aplicar envejecimiento a los procesos
+        applyAging();
     }
 
     switch(currentProcess.state){
@@ -394,78 +448,59 @@ uint64_t schedule(void* rsp){
                 currentProcess.priority = (currentProcess.priority + 1) > HIGHEST_QUEUE ? HIGHEST_QUEUE : currentProcess.priority + 1;
                 currentProcess.assignedQuantum = ASSIGN_QUANTUM(currentProcess.priority);
                 currentProcess.usedQuantum = 0;
-            
-                add_priority_queue(currentProcess); // agregar el proceso actual a la cola
+                add_priority_queue(currentProcess);
             }
             break;
 
+        case BLOCKED:
+            // Si el proceso se bloquea antes de usar sus quantums, lo paso a una cola de mejor prioridad
+            if(++currentProcess.usedQuantum < currentProcess.assignedQuantum){
+                currentProcess.priority = (currentProcess.priority - 1) < 0 ? 0 : currentProcess.priority - 1;
+                currentProcess.assignedQuantum = ASSIGN_QUANTUM(currentProcess.priority);
+            }
 
-    case BLOCKED:
-        if(++currentProcess.usedQuantum < currentProcess.assignedQuantum){
-            currentProcess.priority = (currentProcess.priority + 1) < 0 ? 0 : currentProcess.priority - 1;
-            currentProcess.assignedQuantum = ASSIGN_QUANTUM(currentProcess.priority);
-        }
+            currentProcess.usedQuantum = 0;
 
-        currentProcess.usedQuantum = 0;
-        addProcessToQueue(allBlockedQueue, currentProcess);
-        break;
-    
+            addProcessToQueue(allBlockedQueue, currentProcess);
+            break;
 
         case READY:
             add_priority_queue(currentProcess);
             break;
 
         case HALT:
-            haltProcess.rsp = rsp;
+            haltProcess.rsp = rspRunning;
             break;
-
 
         case TERMINATED:
-            if(currentProcess.pid == foreGroundPID){
-                currentProcess.fdTable[1]->write(currentProcess.fdTable[1]->resource, -1);
-                foreGroundPID = -1;
-            }
-
-
-            if(currentProcess.fdTable != NULL){
-                for(int i = 0; i < MAX_FD; i++){
-                    if(currentProcess.fdTable[i] != NULL){
-                        fd_close(currentProcess.fdTable[i]->id);
-                    }
-                }
-            }
-            mem_free(currentProcess.base_pointer);
-
-            while(hasNextProcess(currentProcess.waitingQueue)){
-                unblock_process_from_queue(currentProcess.waitingQueue);
-            }
+            terminate_process(currentProcess);
             break;
 
-    default:
-        break;
+        default:            // se estaba ejecutando el proceso halt
+            break;
     }
 
-    processCB nextProcess = getNextProcess();
-
-    if(nextProcess.state == READY){
-        
-        currentProcess = nextProcess;
+    processCB next_process = getNextProcess();
+    
+    if(next_process.state == READY){
+        currentProcess = next_process;
         currentProcess.state = RUNNING;
-    }else{
-        currentProcess = haltProcess; // Si no hay procesos listos, se ejecuta el proceso de halt
-
+    } else {
+        currentProcess = haltProcess;
     }
-    return (uint64_t)currentProcess.rsp;
 
+    return (uint64_t)currentProcess.rsp;
 }
 
+
+
 uint64_t userspaceCreateProcessForeground(int priority, program_t program, uint64_t argc, char *argv[]) {
-    foreGroundPID = create_process_state(priority, program, READY, argc, argv, userspaceProcessCreationFDIds, userspaceProcessCreationFDCount);
+    foreGroundPID = create_process_state(priority, program, READY, argc, argv, userspaceProcessCreationFDIds, userspaceProcessCreationFDCount, currentProcess.pid);
     return foreGroundPID;
 }
 
 uint64_t userspaceCreateProcess(int priority, program_t program, uint64_t argc, char *argv[]){
-    return create_process_state(priority, program, READY, argc, argv, userspaceProcessCreationFDIds, userspaceProcessCreationFDCount);
+    return create_process_state(priority, program, READY, argc, argv, userspaceProcessCreationFDIds, userspaceProcessCreationFDCount, currentProcess.pid);
 }
 
 uint64_t killProcessForeground(){
@@ -474,7 +509,7 @@ uint64_t killProcessForeground(){
     }
     int aux = foreGroundPID;
     kill_process(foreGroundPID);
-    foreGroundPID = 21;
+    foreGroundPID = -2;
     return aux; // Retornar el pid del proceso que se mató
    
 }
@@ -519,16 +554,16 @@ uint8_t add_priority_queue(processCB process){
     process.assignedQuantum = ASSIGN_QUANTUM(process.priority);
     switch(process.priority){
         case(0):
-            addProcessToQueue(process0, process);
+            addProcessToQueue(priority0, process);
             break;
         case(1):
-            addProcessToQueue(process1, process);
+            addProcessToQueue(priority1, process);
             break;
         case(2):
-            addProcessToQueue(process2, process);
+            addProcessToQueue(priority2, process);
             break;
         case(3):
-            addProcessToQueue(process3, process);
+            addProcessToQueue(priority3, process);
             break;
         default:
             return -1;
@@ -536,7 +571,7 @@ uint8_t add_priority_queue(processCB process){
     return 0;
 }
 
-uint64_t set_priority(uint64_t pid, uint8_t priority){
+uint64_t setPriority(uint64_t pid, uint8_t priority){
     priority = priority % HIGHEST_QUEUE;
     processCB process;
     if(currentProcess.pid == pid){
@@ -557,23 +592,23 @@ uint64_t set_priority(uint64_t pid, uint8_t priority){
 
 processCB find_dequeue_priority(uint64_t pid){
     processCB process;
-    process = findPidDequeue(process0, pid);
+    process = findPidDequeue(priority0, pid);
     if(process.pid > 0) return process;
 
-    process = findPidDequeue(process1, pid);
+    process = findPidDequeue(priority1, pid);
     if(process.pid > 0) return process;
 
-    process = findPidDequeue(process2, pid);
+    process = findPidDequeue(priority2, pid);
     if(process.pid > 0) return process;
 
-    process = findPidDequeue(process3, pid);
+    process = findPidDequeue(priority3, pid);
     if(process.pid > 0) return process;
 
     return returnNullProcess();
 }
 
 int find_process_in_priority_queue(uint64_t pid){
-    processQueueADT queues[] = {process0, process1, process2, process3, allBlockedQueue};
+    processQueueADT queues[] = {priority0, priority1, priority2, priority3, allBlockedQueue};
     for(int i=0 ; i<4 ; i++){
         if(find_process_in_queue(queues[i], pid)){
             return 1;
@@ -584,7 +619,7 @@ int find_process_in_priority_queue(uint64_t pid){
 
 int find_process_in_queue(processQueueADT queue, uint64_t pid){
 
-    size_t size = get_size(queue);
+    size_t size = getQueueSize(queue);
     int found = 0;
     processCB process;
 
@@ -623,7 +658,7 @@ int is_pid_valid(uint64_t pid){
 
 processCB get_process_by_pid(uint64_t pid){
 
-    processQueueADT queues[] = {process0, process1, process2, process3, allBlockedQueue, NULL};
+    processQueueADT queues[] = {priority0, priority1, priority2, priority3, allBlockedQueue, NULL};
     processCB process;
 
     for(int i=0 ; queues[i] != NULL ; i++){
@@ -638,12 +673,11 @@ processCB get_process_by_pid(uint64_t pid){
     
 }
 
-void wait_pid(uint64_t pid){
-    if(!is_pid_valid(pid)){
-        return; // No es un pid valido
+void waitPid(uint64_t pid){
+    if(!is_pid_valid(pid) || !find_process_in_queue(currentProcess.childrenList, pid)){
+        return;
     }
-    processCB process = get_process_by_pid(pid);
-    block_current_process_to_queue(process.waitingQueue);
+    block_process();
 }
 
 // int closeFDCurrentProcess(uint64_t index){
@@ -706,9 +740,9 @@ void userspaceSetFD(int *fd_ids, int fd_count){
 }
 
 void applyAging(){
-    processQueueADT queues[] = {process0, process1, process2, process3};
+    processQueueADT queues[] = {priority0, priority1, priority2, priority3};
     processCB process;
-    for(int i = 0; i <= HIGHEST_QUEUE; i++){
+    for(int i = 1 ; i <= HIGHEST_QUEUE ; i++){
         while(hasNextProcess(queues[i])){
             process = dequeueProcess(queues[i]);
             process.priority = i - 1;

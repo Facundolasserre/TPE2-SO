@@ -16,12 +16,12 @@
 List *openFDList;
 uint64_t currentFDId = 0;
 uint64_t stdinFDId;
-openFile_t *openFileSTDIN = NULL;
-openFile_t *openFileSTDOUT = NULL;
+openFile_t *openFileSTDIN;
+openFile_t *openFileSTDOUT;
 openFile_t * openFileNull;
 
 
-int compareFD(void *fdA,  void *fdB) {
+int compareFD( void *fdA, void *fdB) {
     openFile_t *fileA = (openFile_t *)fdA;
     uint64_t *idB = (uint64_t *)fdB;
     return fileA->id - *idB;
@@ -34,7 +34,7 @@ int compareFDById(openFile_t *fd, uint64_t id) {
 
 
 void initFileDescriptors(){
-    openFDList = list_init(compareFD);
+    openFDList = listInit(compareFD);
     
     stdinFDId = pipeCreate();
 

@@ -11,7 +11,7 @@ void sleep(uint64_t ms){
     sys_wait(ms);
 }
 
-void initPhilosophers(uint64_t argc, char *argv[]){
+uint64_t initPhilosophers(uint64_t argc, char *argv[]){
     sys_sem_open(MUTEX_ARRAY, 1); //crear semaforo para seccion critica
     sys_sem_open(MUTEX_THINKERS, 1); //crear semaforo para controlar el numero de pensadores
 
@@ -28,6 +28,8 @@ void initPhilosophers(uint64_t argc, char *argv[]){
     }
     sys_sem_close(MUTEX_ARRAY);
     sys_sem_close(MUTEX_THINKERS); 
+
+    return 0;
     
 }
 

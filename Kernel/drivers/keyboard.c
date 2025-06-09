@@ -4,6 +4,7 @@
 #include <openFile.h>
 #include <videoDriver.h>
 #include <utils.h>
+#include <fileDescriptor.h>
 
 openFile_t * openFileKeyboard;
 
@@ -37,17 +38,6 @@ static const char keyMapU[] = {
 
 };
 
-// static const char keyMapCAPS[] = {
-
-//     0, 27, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=',
-//     '\b', '\t', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[', ']',
-//     '\n', 0, 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', '\'', '`',
-//     0, '\\', 'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/', 0, '*',
-//     0, ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-//     0, 0, 0, 0, '-', 0, 0, 0, '+', 0, 0, 0, 0, 0,
-//     0, 0, 0, 0, 0, 0
-
-// };
 
 static const char *const keyMap[] = {keyMapL, keyMapU};
 
@@ -73,13 +63,8 @@ void initKeyboard(){
 }
 
 
-void keyboardHandler(uint8_t keyPressed)
-{
-    unsigned char inputCode = 0;
-    char asciiCode = 0;
-    int shift = 0;
-    int ctrl = 0;
-    int capsLock = 0;
+void keyboard_handler(uint8_t keyPressed){
+
     inputCode = keyPressed;
 
     
@@ -106,13 +91,12 @@ void keyboardHandler(uint8_t keyPressed)
     if( inputCode == 0x9D){
         ctrl = 0;
     }
+
     if(inputCode > 0x80 || inputCode == 0x0F){
         asciiCode = 0;
-    }
-    else if (inputCode == 0x48 || inputCode == 0x50) {
+    } else if (inputCode == 0x48 || inputCode == 0x50) {
         asciiCode = inputCode;
-    }
-    else {
+    } else {
         asciiCode = keyMap[shift][inputCode];
     }
 
@@ -120,10 +104,12 @@ void keyboardHandler(uint8_t keyPressed)
         sendEOFForeground();
         return;
     }
+
     if(ctrl && inputCode == 0x2E){ //0x2E = 46 = 'c'
-        uint64_t pid = killProcessForeground();
+        killProcessForeground();
         return;
     }
+
     openFileKeyboard->write(openFileKeyboard->resource, asciiCode);
 }
 

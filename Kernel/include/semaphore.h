@@ -35,7 +35,7 @@ void sem_wait(char *sem_name);
 
 int64_t sem_post(char *sem_name);
 
-int sem_compare(void * sem_a, void * sem_b);
+int sem_compare(void * sem_a,  void * sem_b);
 
 
 

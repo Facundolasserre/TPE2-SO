@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <memoryManager.h>
 
-List * listInit(int (*compare) (const void *, const void *)){
+List * listInit(int (*compare) (void *,  void *)){
     List * list = (List *)mem_alloc(sizeof(List));
     if (!list) {
         return NULL; // Memory allocation failed
@@ -69,7 +69,7 @@ void * listGet(List * list, void * data){
     return NULL; // Data not found
 }
 
-void * listFree(List * list){
+void listFree(List * list){
     Node * current = list->head;
 
     while (current != NULL) {

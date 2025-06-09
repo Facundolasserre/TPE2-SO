@@ -7,8 +7,7 @@
 #pragma pack(1)    /* Alinear las siguiente estructuras a 1 byte */
 
 /* Descriptor de interrupcion */
-typedef struct
-{
+typedef struct{
   uint16_t offset_l, selector;
   uint8_t cero, access;
   uint16_t offset_m;
@@ -21,8 +20,7 @@ DESCR_INT *idt = (DESCR_INT *)0; // IDT de 255 entradas
 
 static void setup_IDT_entry(int index, uint64_t offset);
 
-void load_idt()
-{
+void load_idt(){
   // Clear Interruptions
   //_cli();
 
@@ -45,8 +43,7 @@ void load_idt()
   //_sti();
 }
 
-static void setup_IDT_entry(int index, uint64_t offset)
-{
+static void setup_IDT_entry(int index, uint64_t offset){
   idt[index].selector = 0x08;
   idt[index].offset_l = offset & 0xFFFF;
   idt[index].offset_m = (offset >> 16) & 0xFFFF;

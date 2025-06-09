@@ -342,8 +342,8 @@ uint64_t test_sync(uint64_t argc, char *argv[]) { //{n, use_sem, 0}
 
   uint64_t i;
   for (i = 0; i < TOTAL_PAIR_PROCESSES; i++) {
-    pids[i] = create_process(0, &my_process_inc, 3, mem_alloc_args(argvDec), NULL, 0);
-    pids[i + TOTAL_PAIR_PROCESSES] = create_process(0, &my_process_inc, 3, mem_alloc_args(argvDec), NULL, 0);
+    pids[i] = create_process(0, &my_process_inc, 3, memAllocArgs(argvDec), NULL, 0);
+    pids[i + TOTAL_PAIR_PROCESSES] = create_process(0, &my_process_inc, 3, memAllocArgs(argvInc), NULL, 0);
   }
 
   for(i=0 ; i<TOTAL_PAIR_PROCESSES ; i++){

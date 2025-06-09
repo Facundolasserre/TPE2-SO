@@ -224,7 +224,7 @@ int checkCollision(PlayerType *players, int gameStatus[HEIGHT][WIDTH])
             return i + 1;
             // si no, chequear que no se choque con el otro
         }
-        else if (PLAYERCOUNT > 1 && players[0].currentX == players[1].currentX && players[0].currentY == players[1].currentY)
+        else if (players[0].currentX == players[1].currentX && players[0].currentY == players[1].currentY)
         {
             return 3;
         }

@@ -28,7 +28,7 @@ const Color LIGHT_YELLOW = {0, 224, 255};
 const Color LIGHT_PINK = {0, 100, 244};
 const Color LIGHT_GREEN = {0, 255, 0};
 
-static char buffer[64] = {'0'};
+static char buffer[64] = {'0', 0};
 
 int scr_height;
 int scr_width;
@@ -158,47 +158,37 @@ char *strcpyForParam(char *dest, const char *src, const char *src2){
 	return dest;
 }
 
-int strcmp(const char *str1, const char *str2)
-{
+int strcmp(const char *str1, const char *str2){
 	int i = 0;
 	int ret = 0;
 
-	while (str1[i] != 0 && str2[i] != 0)
-	{
-		if (str1[i] - str2[i] != 0)
-		{
+	while (str1[i] != 0 && str2[i] != 0){
+		if (str1[i] - str2[i] != 0){
 			return str1[i] - str2[i];
 		}
 		i++;
 	}
 
-	if (str1[i] != 0 || str2[i] != 0)
-	{
+	if (str1[i] != 0 || str2[i] != 0){
 		return str1[i] - str2[i];
 	}
 
 	return ret;
 }
 
-int random()
-{
+int random(){
 	return getSeconds() % 3;
 }
 
-uint64_t charToInt(char *str)
-{
+uint64_t charToInt(char *str){
 	uint64_t ret = 0;
 
-	if (!isDigit(str[0]))
-	{
-		ret += str[0] - '0';
+	if (!isDigit(str[0])){
 		return -1;
 	}
 
-	for (int i = 0; str[i] != 0; i++)
-	{
-		if (!isDigit(str[i]))
-		{
+	for (int i = 0; str[i] != 0; i++){
+		if (!isDigit(str[i])){
 			return -1;
 		}
 		ret *= 10;
@@ -207,17 +197,14 @@ uint64_t charToInt(char *str)
 	return ret;
 }
 
-void printBase(uint64_t value, uint32_t base)
-{
+void printBase(uint64_t value, uint32_t base){
 	uintToBase(value, buffer, base);
-	for (int i = 0; buffer[i] != '\0'; i++)
-	{
+	for (int i = 0; buffer[i] != '\0'; i++){
 		printc(buffer[i]);
 	}
 }
 
-void printDec(uint64_t value)
-{
+void printDec(uint64_t value){
 	printBase(value, (uint32_t)10);
 }
 
@@ -473,48 +460,10 @@ uint64_t create_process(int priority, program_t program, uint64_t argc, char *ar
 	sys_create_process_set_fd(fd_ids_array, fd_count);
 
 	sys_create_process(priority, program, argc, argv);
+	return 0;
 }
 
-void intToStr(int value, char * str){
 
-	int index = 0;
-	int isNegative = 0;
-
-	if(!value){
-		str[index++] = '0';
-		str[index] = '\0';
-		return;
-	}
-
-	if(value<0){
-		isNegative = 1;
-		value = -value;
-	}
-
-	while(value > 0){
-		str[index++] = (value%10) + '0';
-		value /= 10;
-	}
-
-	if(isNegative){
-		str[index++] = '-';
-	}
-
-	str[index] = '\0';
-
-	for(int i=0 ; i<index/2 ; i++){
-		char aux = str[i];
-		str[i] = str[index - i - 1];
-		str[index - i - 1] = aux;
-	}
-}
-
-void cat(){
-	char c;
-	while((c = sys_read_fd(0)) != -1) {
-		write_char(c);
-	}
-}
 
 uint64_t strToInt(char *str){
 	return charToInt(str);
@@ -530,7 +479,7 @@ char * memcpy(char *dest, const char *src, uint64_t size){
 	return dest;
 }
 
-int StringArrayLength(char **array){
+int stringArrayLength(char **array){
 	int i = 0;
 	while(*(array++) != NULL){
 		i++;

@@ -6,13 +6,14 @@
 #include <memoryManager.h>
 #include <fileDescriptor.h>
 #include <utils.h>
+#include <scheduler.h>
 
 List * pipesList;
 uint16_t currentPipeId = 0;
 
 int initPipes(){
     pipesList = listInit((int (*)(void *, void *))comparePipes);
-    if (!pipesList) {
+    if (pipesList == NULL) {
         return -1;
     }
     return 0;
@@ -24,9 +25,9 @@ uint64_t pipeCreate(){
         return -1;
     }
 
-    uint64_t pipe_fd_id = fd_add((void *)(uintptr_t)newPipe->id, (char (*)(void *))pipeRead, (int (*)(void *, char))pipeWrite, (int (*)())pipeDestroy);
+    uint64_t pipe_fd_id = addFD((void *)(uintptr_t)newPipe->id, (char (*)(void *))pipeRead, (int (*)(void *, char))pipeWrite, (int (*)())pipeDestroy);
     if(pipe_fd_id == -1){
-        pipe_free(newPipe);
+        freePipe(newPipe);
         return -1;
     }
 
@@ -85,7 +86,7 @@ int pipeWrite(uint16_t pipeId, char c){
     return 1;
 }
 
-int comparePipes(const void *a, const void *b){
+int comparePipes(void *a, void *b){
     const pipe *pipeA = (const pipe *)a;
     const pipe *pipeB = (const pipe *)b;
 
@@ -152,7 +153,7 @@ void getSemaphoreName(const char * baseName, int id, char * dest){
 
 //////////////////////////// TESTING ////////////////////////////
 #include <videoDriver.h>
-// Variables globales para monitorear el estado en GDB
+
 int status_writer1 = 0;
 int status_writer2 = 0;
 int status_reader = 0;
@@ -190,7 +191,7 @@ void pipe_writer2() {
 void pipe_reader() {
     while (1) {
         char c = pipeRead(PIPE_ID);
-        vDriver_print(c, WHITE, BLACK); // Imprime el char leído en pantalla\
+        vDriver_print(c, WHITE, BLACK); // Imprime el char leído en pantalla
 
         if (c != -1) { // -1 indica que la lectura falló o que el pipe no existe
             status_reader = 1; // Lectura exitosa
@@ -215,7 +216,7 @@ void pipes_test() {
 
 
     //CHEQUEAR QUE DONDE DICE pipe_writer, DEBERIA IR UN (program_t) PARA CASTEARLO PERO NO ANDA
-    createProcess(0, (program_t)pipe_writer1, 0, NULL, NULL, 0); // Crea el proceso writer1
+    createProcess(0, (program_t)(pipe_writer1), 0, NULL, NULL, 0); // Crea el proceso writer1
     createProcess(0, (program_t)pipe_writer2, 0, NULL, NULL, 0); // Crea el proceso writer2
     createProcess(0, (program_t)pipe_reader, 0, NULL, NULL, 0);  // Crea el proceso reader
 }

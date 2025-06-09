@@ -27,12 +27,13 @@ typedef struct processCB{
         TERMINATED,
         HALT
     } state;
-    openFile_t * fdTable[MAX_FD];
-    processQueueADT waitingQueue;
+    openFile_t ** fdTable;
+    processQueueADT childrenList;
+    int parentPid;
 } processCB;
 
 
-size_t get_size(processQueueADT queue);
+size_t getQueueSize(processQueueADT queue);
 
 processCB findPidDequeue(processQueueADT queue, uint64_t pid);
 
@@ -40,7 +41,7 @@ processCB findPidDequeue(processQueueADT queue, uint64_t pid);
 processQueueADT newProcessQueue();
 
 //libera la memoria de la cola y de sus nodos
-void freeProcessQueue(processQueueADT queue);
+void freeQueue(processQueueADT queue);
 
 
 
@@ -49,9 +50,9 @@ void addProcessToQueue(processQueueADT queue, processCB pcb);
 
 
 
-void toBeginProcess(processQueueADT queue); //coloca el iterador al principio de la cola
+//void toBeginProcess(processQueueADT queue); //coloca el iterador al principio de la cola
 int hasNextProcess(processQueueADT queue);//verifica si la cola tiene mas procesos y devuelve 1 si tiene, 0 si no tiene
-processCB nextProcess(processQueueADT queue); // devuelve el siguiente proceso de la cola y avanza el iterador
+//processCB nextProcess(processQueueADT queue); // devuelve el siguiente proceso de la cola y avanza el iterador
 
 processCB dequeueProcess(processQueueADT queue); // saca el primer proceso de la cola y lo devuelve, si no hay procesos devuelve NULL
 
