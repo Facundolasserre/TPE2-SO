@@ -1,4 +1,5 @@
-#include <scheduler.h>
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: https://pvs-studio.com#include <scheduler.h>
 #include <memoryManager.h>
 #include <processQueue.h>
 #include <utils.h>

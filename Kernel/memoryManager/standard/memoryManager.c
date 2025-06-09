@@ -1,3 +1,5 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: https://pvs-studio.com
 // Este archivo implementa un administrador de memoria básico que gestiona bloques de memoria
 // utilizando un enfoque de lista de punteros libres.
 
@@ -28,7 +30,6 @@ void * mem_alloc(uint32_t s){
     if(current >= CHUNK_COUNT || s > CHUNK_SIZE){
         return NULL;
     }
-    return free_ptrs[current++];
 
     //alineamos direccion del bloque actual
     void * alignedPtr = (void *) ALIGN_POINTER(free_ptrs[current], ALIGNMENT);

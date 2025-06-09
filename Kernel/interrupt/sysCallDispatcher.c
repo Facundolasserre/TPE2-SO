@@ -1,3 +1,5 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: https://pvs-studio.com
 #include <videoDriver.h>
 #include <keyboard.h>
 #include <lib.h>
@@ -250,7 +252,7 @@ static uint64_t sys_pipe_create(){
     return pipeCreate();
 }
 
-static uint64_t sys_set_priority(uint64_t pid, uint64_t priority){
+static uint64_t sys_set_priority(uint64_t pid, uint8_t priority){
     return setPriority(pid, priority);
 }
 

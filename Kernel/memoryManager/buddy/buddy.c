@@ -1,3 +1,5 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++, C#, and Java: https://pvs-studio.com
 // Este archivo implementa un administrador de memoria utilizando el algoritmo Buddy System.
 // Permite la asignación y liberación de bloques de memoria de manera eficiente.
 
