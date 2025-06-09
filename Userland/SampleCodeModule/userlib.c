@@ -519,3 +519,30 @@ int isVowel(char lett){
 	}
 	return 0;
 }
+
+uint32_t GetUniform(uint32_t max) {
+	uint32_t u = GetUint();
+	return (u + 1.0) * 2.328306435454494e-10 * max;
+}
+
+int64_t satoi(char *str) {
+	uint64_t i = 0;
+	int64_t res = 0;
+	int8_t sign = 1;
+
+	if (!str)
+		return 0;
+
+	if (str[i] == '-') {
+		i++;
+		sign = -1;
+	}
+
+	for (; str[i] != '\0'; ++i) {
+		if (str[i] < '0' || str[i] > '9')
+		return 0;
+		res = res * 10 + str[i] - '0';
+	}
+
+	return res * sign;
+}

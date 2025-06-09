@@ -165,9 +165,15 @@ int64_t test_processes(uint64_t argc, char *argv[]) {
   }
 }
 
-void test_process(int n){
+void test_process(uint64_t argc, char *argv[]) {
+  if (argc != 1) {
+    prints("test_process: ERROR: Invalid number of arguments\n", MAX_BUFF);
+    return;
+  }
+  uint64_t n = satoi(argv[0]);
+
   while(1){
-    sys_clear();
+    
     switch(n){
       case 0:
         prints("++++++++++++++++++++++++++++++\n", MAX_BUFF);
@@ -363,4 +369,69 @@ uint64_t test_sync(uint64_t argc, char *argv[]) { //{n, use_sem, 0}
   prints("\n", strlen("\n"));
 
   return 0;
+}
+
+void first_test_process(){
+  while(1){
+    write_char('A');
+  }
+}
+
+void second_test_process(){
+  while(1){
+    write_char('-');
+  }
+}
+
+void run_test_processes(){
+  write_string("Running test_processes\n Press 1 or 2 to change process priorities or C to stop.", strlen("Running test_processes\n Press 1 or 2 to change process priorities or C to stop."));
+  wait(99);
+  uint64_t pid1 = create_process(0, (program_t)first_test_process, 0, NULL, NULL, 0);     // PID 1 == 'A'
+	uint64_t pid2 = create_process(0, (program_t)second_test_process, 0, NULL, NULL, 0);    // PID 2 == '-'
+  char c;
+	while(1){
+    c = getChar();
+    if(c == '1' || c == '2'){
+      sys_block(pid1);
+      sys_block(pid2);
+    }
+   if(c == '1'){
+      sys_nice(pid1, 0);
+      sys_nice(pid2, 3);
+      write_string("Process A now has lowest priority and process - has highest priority\n", strlen("Process A now has lowest priority and process + has highest priority\n"));
+      char *processes = sys_list_processes();
+      write_string(processes, MAX_BUFF);
+      sys_mem_free(processes);
+      wait(99);
+      sys_unblock(pid1);
+      sys_unblock(pid2);
+      wait(5);
+      sys_nice(pid1, 0);
+      sys_nice(pid2, 3);
+      wait(5);
+      sys_nice(pid1, 0);
+      sys_nice(pid2, 3);
+    } else if(c == '2'){
+      sys_nice(pid1, 3);
+      sys_nice(pid2, 0);
+      write_string("Process - now has lowest priority and process A has highest priority\n", strlen("Process + now has lowest priority and process A has highest priority\n"));
+      char *processes = sys_list_processes();
+      write_string(processes, MAX_BUFF);
+      sys_mem_free(processes);
+      wait(99);
+      sys_unblock(pid1);
+      sys_unblock(pid2);
+      wait(5);
+      sys_nice(pid1, 3);
+      sys_nice(pid2, 0);
+      wait(5);
+      sys_nice(pid1, 3);
+      sys_nice(pid2, 0);
+    } else if(c == 'C' || c == 'c'|| c == 'q' || c == 'Q'){
+      sys_kill(pid1);
+      sys_kill(pid2);
+      write_string("Test_processes finished\n", strlen("Test_processes finished\n"));
+      break;
+    }
+	}
 }

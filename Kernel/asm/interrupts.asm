@@ -200,6 +200,8 @@ interrupt_timerHandler:
 	call schedule 
 	mov rsp, rax 
 
+	call timer_handler
+
 	endOfHardwareInterrupt
 	popState
 	iretq

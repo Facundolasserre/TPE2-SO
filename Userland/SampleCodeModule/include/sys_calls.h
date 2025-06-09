@@ -75,11 +75,11 @@ uint64_t sys_yield();
 
 //semaphores
 int sys_sem_open(char* sem_name, int init_value);
-uint64_t sys_sem_close(void *sem);
+uint64_t sys_sem_close(char *sem);
 
-uint64_t sys_sem_wait(void *sem);
+uint64_t sys_sem_wait(char *sem);
 
-uint64_t sys_sem_post(void *sem);
+uint64_t sys_sem_post(char *sem);
 
 void sys_wait_pid(uint64_t pid);
 

@@ -37,7 +37,7 @@ void historyCaller(int direction);
 void handleSpecialCommands(char c);
 uint64_t cmd_schetest(uint64_t argc, char * argv[]);
 uint64_t cmd_priotest(uint64_t argc, char * argv[]);
-uint64_t cmd_testschedulerprocesses(uint64_t argc, char * argv[]);
+uint64_t cmd_run_test_processes(uint64_t argc, char * argv[]);
 uint64_t cmd_test_sync(uint64_t argc, char * argv[]);
 uint64_t cmd_ps(uint64_t argc, char * argv[]);
 uint64_t cmd_cat(uint64_t argc, char * argv[]);

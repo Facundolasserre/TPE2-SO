@@ -51,7 +51,7 @@ void printHelp(){
 	printsColor("\n    >mem_test           - testeo del memory manager", MAX_BUFF, GREEN);
 	printsColor("\n    >schetest           - test scheduler", MAX_BUFF, GREEN);
 	printsColor("\n    >priotest           - priority scheduler", MAX_BUFF, GREEN);
-	printsColor("\n    >testschedulerprocesses - test scheduler processes", MAX_BUFF, GREEN);
+	printsColor("\n    >runtestprocesses - run test processes", MAX_BUFF, GREEN);
 	printsColor("\n    >testsync           - test sync processes", MAX_BUFF, GREEN);
 	printsColor("\n    >ps                 - list all processes", MAX_BUFF, GREEN);
 	printsColor("\n    >cat                -cat file", MAX_BUFF, GREEN);
@@ -69,8 +69,8 @@ void printHelp(){
 	printc('\n');
 }
 
-const char *commands[] = {"undefined", "help", "ls", "time", "clear", "registersinfo", "zerodiv", "invopcode", "setusername", "whoami", "exit", "ascii", "eliminator", "memtest", "schetest", "priotest", "testschedulerprocesses", "testsync", "ps", "cat", "loop", "kill", "philo", "wc", "filter", "block", "unblock", "nice", "mem"};
-static program_t commands_ptr[MAX_ARGS] = {cmd_undefined, cmd_help, cmd_help, cmd_time, cmd_clear, cmd_registersinfo, cmd_zeroDiv, cmd_invOpcode, cmd_setusername, cmd_whoami, cmd_exit, cmd_ascii, cmd_eliminator, cmd_memoryManagerTest, cmd_schetest, cmd_priotest, cmd_testschedulerprocesses, cmd_test_sync, cmd_ps, cmd_cat, cmd_loop, cmd_kill, cmd_philo, cmd_wc, cmd_filter, cmd_block, cmd_unblock, cmd_nice, cmd_mem};
+const char *commands[] = {"undefined", "help", "ls", "time", "clear", "registersinfo", "zerodiv", "invopcode", "setusername", "whoami", "exit", "ascii", "eliminator", "memtest", "schetest", "priotest", "runtestrprocesses", "testsync", "ps", "cat", "loop", "kill", "philo", "wc", "filter", "block", "unblock", "nice", "mem"};
+static program_t commands_ptr[MAX_ARGS] = {cmd_undefined, cmd_help, cmd_help, cmd_time, cmd_clear, cmd_registersinfo, cmd_zeroDiv, cmd_invOpcode, cmd_setusername, cmd_whoami, cmd_exit, cmd_ascii, cmd_eliminator, cmd_memoryManagerTest, cmd_schetest, cmd_priotest, cmd_run_test_processes, cmd_test_sync, cmd_ps, cmd_cat, cmd_loop, cmd_kill, cmd_philo, cmd_wc, cmd_filter, cmd_block, cmd_unblock, cmd_nice, cmd_mem};
 
 void shell(){
 	welcome();
@@ -445,12 +445,9 @@ uint64_t cmd_ascii(uint64_t argc, char * argv[]){
 	return 0;
 }
 
-uint64_t cmd_testschedulerprocesses(uint64_t argc, char * argv[])
+uint64_t cmd_run_test_processes(uint64_t argc, char * argv[])
 {
-	if (test_scheduler_processes() == -1)
-	{
-		printsColor("test_scheduler_processes ERROR\n", MAX_BUFF, RED);
-	}
+	run_test_processes();
 	return 0;
 }
 
@@ -484,7 +481,7 @@ uint64_t cmd_test_sync(uint64_t argc, char * argv[]) {
 }
 
 uint64_t cmd_philo(uint64_t argc, char * argv[]){
-	initPhilosophers(0, NULL);
+	philoSimulation();
 	return 0;
 }
 

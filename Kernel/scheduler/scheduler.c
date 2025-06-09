@@ -572,16 +572,19 @@ uint8_t add_priority_queue(processCB process){
 }
 
 uint64_t setPriority(uint64_t pid, uint8_t priority){
-    priority = priority % HIGHEST_QUEUE;
+    priority = priority % (HIGHEST_QUEUE+1);
     processCB process;
     if(currentProcess.pid == pid){
         currentProcess.priority = priority;
+        currentProcess.usedQuantum = 0;
         currentProcess.assignedQuantum = ASSIGN_QUANTUM(priority);
     } else if ((process = find_dequeue_priority(pid)).pid > 0){
+        process.usedQuantum = 0;
         process.priority = priority;
         add_priority_queue(process);
     } else if( (process = findPidDequeue(allBlockedQueue, pid)).pid > 0){
         process.priority = priority;
+        process.usedQuantum = 0;
         process.assignedQuantum = ASSIGN_QUANTUM(priority);
         addProcessToQueue(allBlockedQueue, process);
     } else {

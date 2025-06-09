@@ -9,20 +9,31 @@
 
 typedef struct{
     uint64_t pid;
-    char semName[20]; //nombre del semaforo
+    char *semName; //nombre del semaforo
     int state; // 0 = thinking, 1 = eating
+    int hunger;
 } Philosopher;
 
-#define MUTEX_ARRAY "accessArray"
 
-#define MUTEX_THINKERS "thinkersMutex"
+#define MUTEX_PHILO "philoMutex"
+#define MUTEX_COUNT_PHILO "countPhiloMutex"
+#define MAX_PHILOS 10
+#define MIN_PHILOS 3
+#define INITIAL_PHILOS 5
+
+
+void philoSimulation();
+
+void printPhiloState();
+
+
 
 uint64_t initPhilosophers(uint64_t argc, char *argv[]);
-uint64_t controllersHandler(uint64_t argc, char *argv[]);
-void reprint();
+
+
 void eat(int philo);
 void think(int philo);
 void addPhilosopher(int philo);
-void philosopherProcess(uint64_t argc, char *argv[]);
+void philosopher(uint64_t argc, char *argv[]);
 
 #endif

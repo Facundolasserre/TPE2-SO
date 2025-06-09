@@ -126,4 +126,7 @@ int stringArrayLength(char **array);
 
 int isVowel(char lett);
 
+uint32_t GetUniform(uint32_t max);
+
+int64_t satoi(char *str);
 #endif /* _USERLIB_H_ */
