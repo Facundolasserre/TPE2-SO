@@ -40,8 +40,8 @@ int isUpperArrow(char c);
 int isDownArrow(char c);
 
 
-const char *commands[] = {"undefined", "help", "ls", "time", "clear", "registersinfo", "zerodiv", "invopcode", "setusername", "whoami", "exit", "ascii", "eliminator", "memtest", "schetest", "priotest", "testsync", "ps", "cat", "loop", "kill", "philo", "wc", "filter", "block", "unblock", "nice", "mem", "testchildren"};
-static program_t commands_ptr[MAX_ARGS] = {cmd_undefined, cmd_help, cmd_help, cmd_time, cmd_clear, cmd_registersinfo, cmd_zeroDiv, cmd_invOpcode, cmd_setusername, cmd_whoami, cmd_exit, cmd_ascii, cmd_eliminator, cmd_memoryManagerTest, cmd_schetest, cmd_priotest, cmd_test_sync, cmd_ps, cmd_cat, cmd_loop, cmd_kill, cmd_philo, cmd_wc, cmd_filter, cmd_block, cmd_unblock, cmd_nice, cmd_mem, cmd_test_children};
+const char *commands[] = {"undefined", "help", "ls", "time", "clear", "registersinfo", "zerodiv", "invopcode", "setusername", "whoami", "exit", "ascii", "eliminator", "memtest", "schetest", "priotest", "testsync", "ps", "cat", "loop", "kill", "philo", "wc", "filter", "block", "unblock", "nice", "mem"};
+static program_t commands_ptr[MAX_ARGS] = {cmd_undefined, cmd_help, cmd_help, cmd_time, cmd_clear, cmd_registersinfo, cmd_zeroDiv, cmd_invOpcode, cmd_setusername, cmd_whoami, cmd_exit, cmd_ascii, cmd_eliminator, cmd_memoryManagerTest, cmd_schetest, cmd_priotest, cmd_test_sync, cmd_ps, cmd_cat, cmd_loop, cmd_kill, cmd_philo, cmd_wc, cmd_filter, cmd_block, cmd_unblock, cmd_nice, cmd_mem};
 
 
 uint64_t cmd_help(uint64_t argc, char *argv[]){
@@ -50,7 +50,6 @@ uint64_t cmd_help(uint64_t argc, char *argv[]){
 	for(int i = 0; i < strlen(help); i++){
 		write_char(help[i]);
 	}
-	write_string("\n    >testchildren                - test children processes\n", MAX_BUFF);
 	return 0;
 }
 
@@ -503,35 +502,3 @@ void welcome()
 	cmd_help(0, NULL);
 }
 
-uint64_t cmd_test_children(uint64_t argc, char *argv[]){
-	create_process(0, (program_t)child0, 0, NULL, NULL, 0);
-	return 1;
-}
-
-void child0(uint64_t argc, char *argv[]){
-	create_process(0, (program_t)child1, 0, NULL, NULL, 0);
-	//sys_wait(300);
-	//write_string("Child 0 is dead\n", MAX_BUFF);
-	while(1){
-		__asm__("hlt");
-	}
-}
-
-void child1(uint64_t argc, char *argv[]){
-	create_process(0, (program_t)child2, 0, NULL, NULL, 0);
-	//sys_wait(300);
-	//write_string("Child 1 is dead\n", MAX_BUFF);
-	while(1){
-		__asm__("hlt");
-	}
-
-}
-
-void child2(uint64_t argc, char *argv[]){
-	sys_block(sys_getPID());
-	//sys_wait(300);
-	//write_string("Child 2 is dead\n", MAX_BUFF);
-	while(1){
-		__asm__("hlt");
-	}
-}
