@@ -16,9 +16,8 @@ int size, current;
 void * free_ptrs[CHUNK_COUNT];
 
 
-void mem_init(void * ptr, uint64_t s){
+void mem_init(void * ptr, uint32_t s){
     start = (void *)ALIGN_POINTER(ptr, ALIGNMENT);
-    
     size = s;
     current = 0;
     for(int i=0; i< CHUNK_COUNT; i++){
@@ -26,14 +25,13 @@ void mem_init(void * ptr, uint64_t s){
     }
 }
 
+
 void * mem_alloc(uint32_t s){
     if(current >= CHUNK_COUNT || s > CHUNK_SIZE){
         return NULL;
     }
-
     //alineamos direccion del bloque actual
     void * alignedPtr = (void *) ALIGN_POINTER(free_ptrs[current], ALIGNMENT);
-
     //verificamos que la lineacion del bloque tenga espacio suficiente
     if((uintptr_t)alignedPtr + s > (uintptr_t)free_ptrs[current] + CHUNK_SIZE){
         current++;
@@ -42,9 +40,7 @@ void * mem_alloc(uint32_t s){
         }
         alignedPtr = (void *)ALIGN_POINTER(free_ptrs[current], ALIGNMENT);
     }
-
     current++;
-
     return alignedPtr;
 }
 
@@ -53,7 +49,6 @@ void mem_free(void *ptr){
     if(ptr < start || ptr > start +size){
         return;
     }
-
     free_ptrs[--current] = ptr;
 }
 
@@ -63,32 +58,27 @@ char * mem_state(){
         return NULL;
     }
     int offset = 0;
-
     strcpy(buffer + offset, "Memory State:\n", strlen("Memory State:\n"));
     offset += strlen("Memory State:\n");
     intToStr(CHUNK_COUNT, buffer + offset);
     offset += strlen(buffer + offset);
     buffer[offset++] = '\n';
-
     strcpy(buffer + offset, "Chunk size: ", strlen("Chunk size: "));
     offset += strlen("Chunk size: ");
     intToStr(CHUNK_SIZE, buffer + offset);
     offset += strlen(buffer + offset);
     buffer[offset++] = '\n';
-
     strcpy(buffer + offset, "Current index: ", strlen("Current index: "));
     offset += strlen("Current index: ");
     intToStr(current, buffer + offset);
     offset += strlen(buffer + offset);
     buffer[offset++] = '\n';
-
     int freeChunks = CHUNK_COUNT - current;
     strcpy(buffer + offset, "Free chunks: ", strlen("Free chunks: "));
     offset += strlen("Free chunks: ");
     intToStr(freeChunks, buffer + offset);
     offset += strlen(buffer + offset);
     buffer[offset++] = '\n';
-
     buffer[offset] = '\0'; //termino la cadena
     return buffer;
 }

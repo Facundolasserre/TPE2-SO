@@ -61,22 +61,7 @@ void * initializeKernelBinary(){
 	return getStackBase();
 }
 
-//Testeo de procesos
-void testProcess1(){
-	while(1){
-		vDriver_prints("ONE", WHITE, BLACK);
-	}
-}
-void testProcess2(){
-	while(1){
-		vDriver_prints("TWO", WHITE, BLACK);
-	}
-}
-void testProcess3(){
-	while(1){
-		vDriver_prints("THREE", WHITE, BLACK);
-	}
-}
+
 
 int main()
 {	

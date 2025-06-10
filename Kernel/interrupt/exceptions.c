@@ -20,6 +20,7 @@ const char* registers[18] = {
     "RAX", "RBX", "RCX", "RDX", "RSI", "RDI", "RBP", "RSP", "R8 ", "R9 ", "R10", "R11", "R12", "R13", "R14", "R15", "RIP", "RFLAGS "
 };
 
+
 static void uint64ToHex(uint64_t n, char buf[16]) {
     int i=15;
     do {
@@ -36,13 +37,11 @@ void exception_handler(int exception, const uint64_t register_data[17]) {
     hexbuf[0] = '0';
     hexbuf[1] = 'x';
     hexbuf[18] = '\0';
-
 	if (exception == ZERO_ID){
 		vDriver_prints("zero division detected\n",white, black);
 	} else if (exception == INVAL_OPCODE_ID){
 		vDriver_prints("invalid op code detected\n", white, black);
 	}
-
 	for (int i = 0; i < 16; i++) {
         vDriver_prints(registers[i],white,black);
         vDriver_prints(": ",white,black);
@@ -53,6 +52,5 @@ void exception_handler(int exception, const uint64_t register_data[17]) {
         else
             vDriver_prints("   ",white,black);
     }
-
     reset();
 }

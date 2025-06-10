@@ -140,17 +140,12 @@ void addPhilosopher(int philo){
 
 
 
-
-
 void printPhiloState(){
     char * stateBuffer;
-
     if(philoCount == 0){
         return;
     }
     sys_sem_wait(MUTEX_COUNT_PHILO);
-
-
     for(int i = 0; i < philoCount; i++){
         stateBuffer = philos[i].state == 1 ? "E   " : ".   ";
         write_string(stateBuffer, MAX_BUFF);

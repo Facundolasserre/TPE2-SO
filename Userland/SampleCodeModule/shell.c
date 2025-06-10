@@ -40,13 +40,13 @@ int isUpperArrow(char c);
 int isDownArrow(char c);
 
 
-const char *commands[] = {"undefined", "help", "ls", "time", "clear", "registersinfo", "zerodiv", "invopcode", "setusername", "whoami", "exit", "ascii", "eliminator", "memtest", "schetest", "priotest", "runtestrprocesses", "testsync", "ps", "cat", "loop", "kill", "philo", "wc", "filter", "block", "unblock", "nice", "mem", "testchildren"};
-static program_t commands_ptr[MAX_ARGS] = {cmd_undefined, cmd_help, cmd_help, cmd_time, cmd_clear, cmd_registersinfo, cmd_zeroDiv, cmd_invOpcode, cmd_setusername, cmd_whoami, cmd_exit, cmd_ascii, cmd_eliminator, cmd_memoryManagerTest, cmd_schetest, cmd_priotest, cmd_run_test_processes, cmd_test_sync, cmd_ps, cmd_cat, cmd_loop, cmd_kill, cmd_philo, cmd_wc, cmd_filter, cmd_block, cmd_unblock, cmd_nice, cmd_mem, cmd_test_children};
+const char *commands[] = {"undefined", "help", "ls", "time", "clear", "registersinfo", "zerodiv", "invopcode", "setusername", "whoami", "exit", "ascii", "eliminator", "memtest", "schetest", "priotest", "testsync", "ps", "cat", "loop", "kill", "philo", "wc", "filter", "block", "unblock", "nice", "mem", "testchildren"};
+static program_t commands_ptr[MAX_ARGS] = {cmd_undefined, cmd_help, cmd_help, cmd_time, cmd_clear, cmd_registersinfo, cmd_zeroDiv, cmd_invOpcode, cmd_setusername, cmd_whoami, cmd_exit, cmd_ascii, cmd_eliminator, cmd_memoryManagerTest, cmd_schetest, cmd_priotest, cmd_test_sync, cmd_ps, cmd_cat, cmd_loop, cmd_kill, cmd_philo, cmd_wc, cmd_filter, cmd_block, cmd_unblock, cmd_nice, cmd_mem, cmd_test_children};
 
 
 uint64_t cmd_help(uint64_t argc, char *argv[]){
 	
-	char *help = "===== Listing a preview of available commands =====\n\n>'help' or 'ls'  - displays this shell information\n>whoami             - display current username\n>time               - display current time\n>clear              - clear the display\n>(+)                - increase font size (scaled)\n>(-)                - decrease font size (scaled)\n>registersinfo      - print current register values\n>zerodiv            - testeo divide by zero exception\n>invopcode          - testeo invalid op code exception\n>whoami             - prints current username\n>memtest            - test memory manager\n>schetest           - test scheduler\n>priotest           - priority scheduler\n>runtestprocesses   - run test processes\n>testsync           - test synchro\n>ps                 - list all processes\n>cat                - cat file\n>loop               - prints short greeting and process PID\n>kill [PID]         - kill specified process\n>block [PID]        - block specified process\n>unblock [PID]      - unblock specified process\n>nice [PID] [prio]  - change a given's process priority\n>philo              - test philosophers\n>wc                 - counts the total amount of input lines\n>filter             - filt all input vocals\n>mem                - print memory state\n>exit               - exit OS\n";
+	char *help = "===== Listing a preview of available commands =====\n\n>'help' or 'ls'  - displays this shell information\n>whoami             - display current username\n>time               - display current time\n>clear              - clear the display\n>(+)                - increase font size (scaled)\n>(-)                - decrease font size (scaled)\n>registersinfo      - print current register values\n>zerodiv            - testeo divide by zero exception\n>invopcode          - testeo invalid op code exception\n>whoami             - prints current username\n>memtest            - test memory manager\n>schetest           - test scheduler (test_processes)\n>priotest           - priority scheduler (test_priority)\n>testsync           - test synchro\n>ps                 - list all processes\n>cat                - cat file\n>loop               - prints short greeting and process PID\n>kill [PID]         - kill specified process\n>block [PID]        - block specified process\n>unblock [PID]      - unblock specified process\n>nice [PID] [prio]  - change a given's process priority\n>philo              - test philosophers\n>wc                 - counts the total amount of input lines\n>filter             - filt all input vocals\n>mem                - print memory state\n>exit               - exit OS\n";
 	for(int i = 0; i < strlen(help); i++){
 		write_char(help[i]);
 	}
@@ -400,12 +400,6 @@ void historyCaller(int direction){
 }
 
 uint64_t cmd_ascii(uint64_t argc, char * argv[]){
-	return 0;
-}
-
-uint64_t cmd_run_test_processes(uint64_t argc, char * argv[])
-{
-	run_test_processes();
 	return 0;
 }
 

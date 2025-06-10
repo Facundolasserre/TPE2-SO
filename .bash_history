@@ -7,67 +7,6 @@ cd Toolchain/
 make clean all
 cd ..
 make clean all
-make clean all
-cd Toolchain/
-make clean al
-make clean all
-cd ..
-make clean all
-cd Toolchain/
-make clean all
-cd ..
-make clean all
-cd Toolchain/
-make clean all
-cd ..
-make clean all
-cd Toolchain/
-make clean all
-cd ..
-make clean all
-cd Toolchain/
-make clean all
-cd ..
-clear
-make clean all
-cd Toolchain/
-make clean all
-cd ..
-make clean all
-cd Toolchain/
-make clean all
-cd ..
-make clean all
-cd Toolchain/
-make clean all
-cd ..
-make clean all
-cd Toolchain/
-make clean all
-cd ..
-make clean all
-cd Toolchain/
-make clean all
-cd ..
-make clean all
-cd Toolchain/
-make clean al
-make clean all
-cd ..
-clear
-make clean all
-cd Toolchain/
-make clean all
-cd ..
-make clean all
-cd Toolchain/
-make clean all
-cd ..
-make clean all
-cd Toolchain/
-make clean all
-cd ..
-make clean all
 cd Toolchain/
 make clean all
 cd ..
@@ -497,4 +436,65 @@ cd ..
 make clean
 clear
 make
+exit
+cd root
+cd Toolchain/
+make clean
+make all
+cd ..
+make clean
+clear
+make
+pvs-studio-analyzer credentials "PVS-Studio Free" "FREE-FREE-FREE-FREE"
+dpkg -l | grep pvs-studio
+rpm -qa | grep pvs-studio
+make clean
+cd Toolchain/
+make clean
+make all
+cd ..
+make clean
+clear
+make
+make clean
+cd Toolchain/
+make clean
+make all
+cd ..
+make clean
+clear
+make
+make clean
+cd Toolchain/
+make clean
+make all
+cd ..
+make clean
+make all
+clear
+exit
+cd root
+cd Toolchain/
+make clean
+make all
+cd ..
+make clean
+make all
+cd Toolchain/
+make clean buddy
+cd ..
+make clean buddy
+clear
+cd Toolchain/
+make clean buddy
+cd ..
+make clean buddy
+cd Toolchain/
+make clean buddy
+cd ..
+make clean buddy
+cd Toolchain/
+make clean all
+cd ..
+make clean all
 exit
